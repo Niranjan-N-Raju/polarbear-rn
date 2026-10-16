@@ -1,6 +1,6 @@
 export const en = {
-  pageTitle: 'Polar Bear · Sign in',
   brandInitials: 'PB',
+  pageTitle: 'Polar Bear · Sign in',
   brandName: 'Polar Bear',
   brandShortName: 'POLAR BEAR',
   brandSubtitle: 'Store Operations',

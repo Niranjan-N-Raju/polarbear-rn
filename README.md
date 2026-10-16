@@ -2,6 +2,10 @@ This is a new [**React Native**](https://reactnative.dev) project, bootstrapped 
 
 # Getting Started
 
+## Development login defaults
+
+Copy `.env.example` to `.env` and set `TEST_LOGIN_EMAIL` and `TEST_LOGIN_PASSWORD` to prefill the login form in development. The local `.env` is ignored by Git. These values are bundled into development clients and are not suitable for production credentials.
+
 > **Note**: Make sure you have completed the [Set Up Your Environment](https://reactnative.dev/docs/set-up-your-environment) guide before proceeding.
 
 ## Step 1: Start Metro

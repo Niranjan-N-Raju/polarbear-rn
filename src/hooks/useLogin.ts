@@ -1,11 +1,12 @@
 import { useState } from 'react';
 import { Keyboard } from 'react-native';
 import { login } from '../api/auth';
+import { defaultLoginCredentials } from '../config/testLoginCredentials';
 import { t } from '../i18n';
 
 export function useLogin() {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [email, setEmail] = useState(defaultLoginCredentials.email);
+  const [password, setPassword] = useState(defaultLoginCredentials.password);
   const [showPassword, setShowPassword] = useState(false);
   const [isPending, setIsPending] = useState(false);
   const [emailError, setEmailError] = useState('');
