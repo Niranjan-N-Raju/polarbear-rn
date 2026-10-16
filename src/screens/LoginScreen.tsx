@@ -24,22 +24,35 @@ import {
 
 export function LoginScreen() {
   const safeAreaInsets = useSafeAreaInsets();
-  const { width } = useWindowDimensions();
+  const { width, height } = useWindowDimensions();
   const isWide = width >= theme.layout.desktopBreakpoint;
+  const isWebCompact = Platform.OS === 'web' && !isWide;
+  const isWebTablet =
+    Platform.OS === 'web' && width >= theme.layout.tabletBreakpoint && !isWide;
   const loginState = useLogin();
   const passwordInputRef = useRef<ComponentRef<typeof TextInput>>(null);
   const safeAreaStyles = getLoginSafeAreaStyles(
     safeAreaInsets.top,
     safeAreaInsets.bottom,
+    height,
   );
 
   return (
-    <View style={[styles.container, isWide && styles.containerWide]}>
+    <View
+      style={[
+        styles.container,
+        isWide && styles.containerWide,
+        isWebCompact && styles.webCompactContainer,
+        isWebTablet && styles.webTabletContainer,
+      ]}
+    >
       <StatusBar barStyle={isWide ? 'light-content' : 'dark-content'} />
       <View
         style={[
           styles.shell,
           isWide ? styles.shellWide : styles.shellCompact,
+          isWebCompact && styles.webCompactShell,
+          isWebCompact && safeAreaStyles.webCompactShell,
         ]}
       >
         {isWide ? (
@@ -62,7 +75,11 @@ export function LoginScreen() {
 
         <KeyboardAvoidingView
           behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-          style={[styles.formPanel, !isWide && styles.formPanelCompact]}
+          style={[
+            styles.formPanel,
+            !isWide && styles.formPanelCompact,
+            isWebCompact && styles.webCompactFormPanel,
+          ]}
         >
           {!isWide ? (
             <View
@@ -75,10 +92,15 @@ export function LoginScreen() {
             </View>
           ) : null}
           <ScrollView
-            style={[styles.scrollView, !isWide && styles.scrollViewCompact]}
+            style={[
+              styles.scrollView,
+              !isWide && styles.scrollViewCompact,
+              isWebCompact && styles.webCompactScrollView,
+            ]}
             contentContainerStyle={[
               styles.scrollContent,
               !isWide && styles.scrollContentCompact,
+              isWebCompact && styles.webCompactScrollContent,
               safeAreaStyles.scrollBottom,
               isWide && styles.scrollContentWide,
             ]}

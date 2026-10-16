@@ -17,6 +17,15 @@ export const styles = StyleSheet.create({
     paddingVertical: spacing['10xl'],
     justifyContent: 'center',
   },
+  webCompactContainer: {
+    paddingVertical: spacing['5xl'],
+    justifyContent: 'center',
+  },
+  webTabletContainer: {
+    paddingHorizontal: spacing['8xl'],
+    paddingVertical: spacing['5xl'],
+    justifyContent: 'center',
+  },
   shell: {
     flex: 1,
     width: '100%',
@@ -34,6 +43,12 @@ export const styles = StyleSheet.create({
   },
   shellCompact: {
     flex: 0,
+    maxHeight: '100%',
+  },
+  webCompactShell: {
+    flexGrow: 0,
+    flexShrink: 1,
+    flexBasis: 'auto',
     maxHeight: '100%',
   },
   hero: {
@@ -100,12 +115,20 @@ export const styles = StyleSheet.create({
     flex: 0,
     flexShrink: 1,
   },
+  webCompactFormPanel: {
+    flex: 1,
+    minHeight: 0,
+  },
   scrollView: {
     flex: 1,
   },
   scrollViewCompact: {
     flex: 0,
     flexShrink: 1,
+  },
+  webCompactScrollView: {
+    flex: 1,
+    minHeight: 0,
   },
   mobileBrand: {
     backgroundColor: colors.teal,
@@ -138,6 +161,13 @@ export const styles = StyleSheet.create({
   },
   scrollContentCompact: {
     flexGrow: 0,
+  },
+  webCompactScrollContent: {
+    flexGrow: 1,
+    justifyContent: 'flex-start',
+    width: '100%',
+    maxWidth: theme.layout.compactFormMaxWidth,
+    alignSelf: 'center',
   },
   scrollContentWide: {
     justifyContent: 'center',
@@ -349,7 +379,11 @@ export const styles = StyleSheet.create({
   },
 });
 
-export function getLoginSafeAreaStyles(topInset: number, bottomInset: number) {
+export function getLoginSafeAreaStyles(
+  topInset: number,
+  bottomInset: number,
+  viewportHeight: number,
+) {
   return {
     heroTop: {
       paddingTop: Math.max(topInset, theme.spacing['9xl']),
@@ -362,6 +396,15 @@ export function getLoginSafeAreaStyles(topInset: number, bottomInset: number) {
       paddingBottom: Math.max(
         bottomInset + theme.spacing['2xl'],
         theme.spacing['7xl'],
+      ),
+    },
+    webCompactShell: {
+      height: Math.max(
+        Math.min(
+          theme.layout.webCompactCardHeight,
+          viewportHeight - theme.spacing['5xl'] * 2,
+        ),
+        0,
       ),
     },
   };
