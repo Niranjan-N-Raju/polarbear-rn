@@ -73,3 +73,22 @@ yarn-error.log
 !.yarn/releases
 !.yarn/sdks
 !.yarn/versions
+
+# Local environment files
+.env
+.env.*
+!.env.example
+!.env.*.example
+
+# Expo and tooling caches
+.expo/
+.expo-shared/
+web-build/
+.turbo/
+.eslintcache
+*.tsbuildinfo
+
+# Additional package manager logs
+npm-debug.log*
+yarn-debug.log*
+pnpm-debug.log*
