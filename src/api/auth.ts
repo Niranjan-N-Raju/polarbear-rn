@@ -1,10 +1,17 @@
-import { Platform } from 'react-native';
+import { apiBaseUrl } from '../config/apiBaseUrl';
 import { t } from '../i18n';
 
-const API_BASE_URL = Platform.select({
-  android: 'http://10.0.2.2:4000/api',
-  default: 'http://localhost:4000/api',
-});
+let accessToken: string | null = null;
+
+export function setAccessToken(token: string | null): void {
+  accessToken = token;
+}
+
+export async function apiRequest(path: string, init: RequestInit = {}): Promise<Response> {
+  const headers = new Headers(init.headers);
+  if (accessToken) headers.set('Authorization', `Bearer ${accessToken}`);
+  return fetch(`${apiBaseUrl}${path}`, { ...init, headers });
+}
 
 export interface AuthenticatedUser {
   id: string;
@@ -21,7 +28,7 @@ export interface LoginResponse {
 export async function login(email: string, password: string): Promise<LoginResponse> {
   let response: Response;
   try {
-    response = await fetch(`${API_BASE_URL}/auth/login`, {
+    response = await fetch(`${apiBaseUrl}/auth/login`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email, password }),
@@ -51,5 +58,6 @@ export async function login(email: string, password: string): Promise<LoginRespo
     throw new Error(t('invalidLoginResponse'));
   }
 
+  setAccessToken(data.token);
   return { token: data.token, user: data.user };
 }

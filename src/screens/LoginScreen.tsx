@@ -16,6 +16,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { theme } from '../config/theme';
 import { useLogin } from '../hooks/useLogin';
 import { t, translateRole } from '../i18n';
+import { AdminHomeScreen } from './admin/AdminHomeScreen';
 import {
   getLoginSafeAreaStyles,
   getSignInButtonStyle,
@@ -36,6 +37,15 @@ export function LoginScreen() {
     safeAreaInsets.bottom,
     height,
   );
+
+  if (loginState.session) {
+    return (
+      <AdminHomeScreen
+        user={loginState.session.user}
+        onLogout={loginState.signOut}
+      />
+    );
+  }
 
   return (
     <View
@@ -106,35 +116,13 @@ export function LoginScreen() {
             ]}
             keyboardShouldPersistTaps="handled"
           >
-            {!isWide && !loginState.session ? (
+            {!isWide ? (
               <View style={styles.mobileProgress}>
                 <View style={styles.mobileProgressOrange} />
                 <View style={styles.mobileProgressYellow} />
               </View>
             ) : null}
-            {loginState.session ? (
-              <View style={styles.successView}>
-                <Text style={styles.eyebrow}>{t('loginSuccessEyebrow')}</Text>
-                <Text style={styles.heading}>{t('signedIn')}</Text>
-                <Text style={styles.subtitle}>
-                  {t('welcomeUser', { name: loginState.session.user.name })}
-                </Text>
-                <View style={styles.userSummary}>
-                  <Text style={styles.userEmail}>{loginState.session.user.email}</Text>
-                  <Text style={styles.userRole}>
-                    {translateRole(loginState.session.user.role)}
-                  </Text>
-                </View>
-                <Pressable
-                  accessibilityRole="button"
-                  onPress={loginState.signOut}
-                  style={styles.secondaryButton}
-                >
-                  <Text style={styles.secondaryButtonText}>{t('signOut')}</Text>
-                </Pressable>
-              </View>
-            ) : (
-              <>
+            <>
                 <View style={styles.headingBlock}>
                   <Text style={[styles.eyebrow, !isWide && styles.eyebrowMobile]}>
                     {t('welcomeBack')}
@@ -246,8 +234,7 @@ export function LoginScreen() {
                     )}
                   </Pressable>
                 </View>
-              </>
-            )}
+            </>
             <Text style={styles.footer}>
               {t('protectedAccess')}
             </Text>

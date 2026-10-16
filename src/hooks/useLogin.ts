@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Keyboard } from 'react-native';
-import { login } from '../api/auth';
+import { login, setAccessToken } from '../api/auth';
 import { defaultLoginCredentials } from '../config/testLoginCredentials';
 import { t } from '../i18n';
 
@@ -24,6 +24,11 @@ export function useLogin() {
     setIsPending(true);
     try {
       const result = await login(normalizedEmail, password);
+      if (result.user.role !== 'admin') {
+        setAccessToken(null);
+        setFormError(t('mobileSuperAdminOnly'));
+        return;
+      }
       Keyboard.dismiss();
       setSession(result);
     } catch (error) {
@@ -50,6 +55,11 @@ export function useLogin() {
     setFormError('');
   }
 
+  function signOut(): void {
+    setAccessToken(null);
+    setSession(null);
+  }
+
   return {
     email,
     password,
@@ -63,6 +73,6 @@ export function useLogin() {
     updateEmail,
     updatePassword,
     submit,
-    signOut: () => setSession(null),
+    signOut,
   };
 }
