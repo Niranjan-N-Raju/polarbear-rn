@@ -3,8 +3,11 @@
 
 import { createRoot } from 'react-dom/client';
 import App from '../App';
+import { t } from './i18n';
+
+document.title = t('pageTitle');
 
 const root = document.getElementById('root');
-if (!root) throw new Error('Web root element was not found.');
+if (!root) throw new Error(t('webRootMissing'));
 
 createRoot(root).render(<App />);

@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Keyboard } from 'react-native';
 import { login } from '../api/auth';
+import { t } from '../i18n';
 
 export function useLogin() {
   const [email, setEmail] = useState('');
@@ -14,8 +15,8 @@ export function useLogin() {
 
   async function submit(): Promise<void> {
     const normalizedEmail = email.trim();
-    setEmailError(normalizedEmail ? '' : 'Email address is required.');
-    setPasswordError(password ? '' : 'Password is required.');
+    setEmailError(normalizedEmail ? '' : t('emailRequired'));
+    setPasswordError(password ? '' : t('passwordRequired'));
     setFormError('');
     if (!normalizedEmail || !password) return;
 
@@ -25,11 +26,9 @@ export function useLogin() {
       Keyboard.dismiss();
       setSession(result);
     } catch (error) {
-      const message = error instanceof Error ? error.message : 'Login failed. Please try again.';
-      if (/email or password|password/i.test(message)) {
+      const message = error instanceof Error ? error.message : t('loginFailed');
+      if (message === t('invalidCredentials')) {
         setPasswordError(message);
-      } else if (/email/i.test(message)) {
-        setEmailError(message);
       } else {
         setFormError(message);
       }

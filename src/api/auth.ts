@@ -1,4 +1,5 @@
 import { Platform } from 'react-native';
+import { t } from '../i18n';
 
 const API_BASE_URL = Platform.select({
   android: 'http://10.0.2.2:4000/api',
@@ -26,7 +27,7 @@ export async function login(email: string, password: string): Promise<LoginRespo
       body: JSON.stringify({ email, password }),
     });
   } catch {
-    throw new Error('Unable to reach the server. Check that the backend is running.');
+    throw new Error(t('unableToReachServer'));
   }
 
   const data = (await response.json().catch(() => ({}))) as {
@@ -36,10 +37,18 @@ export async function login(email: string, password: string): Promise<LoginRespo
   };
 
   if (!response.ok) {
-    throw new Error(data.message ?? 'Login failed. Please try again.');
+    const localizedErrors: Record<number, string> = {
+      400: t('invalidInput'),
+      401: t('invalidCredentials'),
+      403: t('noAssociatedStores'),
+      413: t('requestTooLarge'),
+      429: t('tooManyAttempts'),
+      500: t('internalServerError'),
+    };
+    throw new Error(localizedErrors[response.status] ?? data.message ?? t('loginFailed'));
   }
   if (!data.token || !data.user?.id || !data.user.name) {
-    throw new Error('The server returned an invalid login response.');
+    throw new Error(t('invalidLoginResponse'));
   }
 
   return { token: data.token, user: data.user };

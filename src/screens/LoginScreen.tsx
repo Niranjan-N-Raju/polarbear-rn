@@ -15,6 +15,7 @@ import { ChevronRight, Eye, EyeOff, LockKeyhole, Mail } from 'lucide-react-nativ
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { theme } from '../config/theme';
 import { useLogin } from '../hooks/useLogin';
+import { t, translateRole } from '../i18n';
 import {
   getLoginSafeAreaStyles,
   getSignInButtonStyle,
@@ -48,14 +49,14 @@ export function LoginScreen() {
             <View>
               <Brand />
               <View style={styles.heroCopy}>
-                <Text style={styles.heroEyebrow}>STORE OPERATIONS</Text>
-                <Text style={styles.heroHeading}>Keep every shift moving.</Text>
+                <Text style={styles.heroEyebrow}>{t('heroEyebrow')}</Text>
+                <Text style={styles.heroHeading}>{t('heroHeadline')}</Text>
                 <Text style={styles.heroText}>
-                  One focused workspace for people, attendance, inventory, and the details that keep your stores ready.
+                  {t('heroDescription')}
                 </Text>
               </View>
             </View>
-            <Text style={styles.heroFooter}>Polar Bear Management Platform · Secure workspace</Text>
+            <Text style={styles.heroFooter}>{t('heroFooter')}</Text>
           </View>
         ) : null}
 
@@ -91,13 +92,15 @@ export function LoginScreen() {
             ) : null}
             {loginState.session ? (
               <View style={styles.successView}>
-                <Text style={styles.eyebrow}>LOGIN SUCCESSFUL</Text>
-                <Text style={styles.heading}>You’re signed in.</Text>
-                <Text style={styles.subtitle}>Welcome, {loginState.session.user.name}.</Text>
+                <Text style={styles.eyebrow}>{t('loginSuccessEyebrow')}</Text>
+                <Text style={styles.heading}>{t('signedIn')}</Text>
+                <Text style={styles.subtitle}>
+                  {t('welcomeUser', { name: loginState.session.user.name })}
+                </Text>
                 <View style={styles.userSummary}>
                   <Text style={styles.userEmail}>{loginState.session.user.email}</Text>
                   <Text style={styles.userRole}>
-                    {loginState.session.user.role.replaceAll('_', ' ')}
+                    {translateRole(loginState.session.user.role)}
                   </Text>
                 </View>
                 <Pressable
@@ -105,17 +108,17 @@ export function LoginScreen() {
                   onPress={loginState.signOut}
                   style={styles.secondaryButton}
                 >
-                  <Text style={styles.secondaryButtonText}>Sign out</Text>
+                  <Text style={styles.secondaryButtonText}>{t('signOut')}</Text>
                 </Pressable>
               </View>
             ) : (
               <>
                 <View style={styles.headingBlock}>
                   <Text style={[styles.eyebrow, !isWide && styles.eyebrowMobile]}>
-                    WELCOME BACK
+                    {t('welcomeBack')}
                   </Text>
-                  <Text style={styles.heading}>Sign in to your workspace</Text>
-                  <Text style={styles.subtitle}>Use your account credentials to continue.</Text>
+                  <Text style={styles.heading}>{t('loginHeading')}</Text>
+                  <Text style={styles.subtitle}>{t('loginDescription')}</Text>
                 </View>
 
                 {loginState.formError ? (
@@ -126,7 +129,7 @@ export function LoginScreen() {
 
                 <View style={styles.form}>
                   <View style={styles.fieldGroup}>
-                    <Text style={styles.label}>Email address</Text>
+                    <Text style={styles.label}>{t('emailLabel')}</Text>
                     <View style={styles.inputWrap}>
                       <Mail
                         color={theme.colors.placeholder}
@@ -135,13 +138,13 @@ export function LoginScreen() {
                         style={styles.inputIcon}
                       />
                       <TextInput
-                        accessibilityLabel="Email address"
+                        accessibilityLabel={t('emailLabel')}
                         autoCapitalize="none"
                         autoComplete="email"
                         autoCorrect={false}
                         keyboardType="email-address"
                         onChangeText={loginState.updateEmail}
-                        placeholder="you@example.com"
+                        placeholder={t('emailPlaceholder')}
                         placeholderTextColor={theme.colors.placeholder}
                         onSubmitEditing={() => passwordInputRef.current?.focus()}
                         returnKeyType="next"
@@ -155,7 +158,7 @@ export function LoginScreen() {
                   </View>
 
                   <View style={styles.fieldGroup}>
-                    <Text style={styles.label}>Password</Text>
+                    <Text style={styles.label}>{t('passwordLabel')}</Text>
                     <View style={styles.inputWrap}>
                       <LockKeyhole
                         color={theme.colors.placeholder}
@@ -165,12 +168,12 @@ export function LoginScreen() {
                       />
                       <TextInput
                         ref={passwordInputRef}
-                        accessibilityLabel="Password"
+                        accessibilityLabel={t('passwordLabel')}
                         autoCapitalize="none"
                         autoComplete="current-password"
                         onChangeText={loginState.updatePassword}
                         onSubmitEditing={() => void loginState.submit()}
-                        placeholder="Enter your password"
+                        placeholder={t('passwordPlaceholder')}
                         placeholderTextColor={theme.colors.placeholder}
                         returnKeyType="done"
                         secureTextEntry={!loginState.showPassword}
@@ -179,7 +182,9 @@ export function LoginScreen() {
                       />
                       <Pressable
                         accessibilityRole="button"
-                        accessibilityLabel={loginState.showPassword ? 'Hide password' : 'Show password'}
+                        accessibilityLabel={
+                          loginState.showPassword ? t('hidePassword') : t('showPassword')
+                        }
                         onPress={() => loginState.setShowPassword(!loginState.showPassword)}
                         style={styles.visibilityButton}
                       >
@@ -214,7 +219,7 @@ export function LoginScreen() {
                       <ActivityIndicator color={theme.colors.white} />
                     ) : (
                       <>
-                        <Text style={styles.signInText}>Sign in</Text>
+                        <Text style={styles.signInText}>{t('signIn')}</Text>
                         <ChevronRight
                           color={theme.colors.white}
                           size={theme.layout.iconSize}
@@ -228,7 +233,7 @@ export function LoginScreen() {
               </>
             )}
             <Text style={styles.footer}>
-              Protected access for authorized store teams.
+              {t('protectedAccess')}
             </Text>
           </ScrollView>
         </KeyboardAvoidingView>
@@ -241,16 +246,16 @@ function Brand({ compact = false }: { compact?: boolean }) {
   return (
     <View style={styles.brandRow}>
       <View style={[styles.brandMark, compact && styles.brandMarkCompact]}>
-        <Text style={styles.brandMarkText}>PB</Text>
+        <Text style={styles.brandMarkText}>{t('brandInitials')}</Text>
       </View>
       <View>
         {compact ? (
           <>
-            <Text style={styles.brandCompactName}>POLAR BEAR</Text>
-            <Text style={styles.brandSubtitle}>Store Operations</Text>
+            <Text style={styles.brandCompactName}>{t('brandShortName')}</Text>
+            <Text style={styles.brandSubtitle}>{t('brandSubtitle')}</Text>
           </>
         ) : (
-          <Text style={styles.brand}>Polar Bear</Text>
+          <Text style={styles.brand}>{t('brandName')}</Text>
         )}
       </View>
     </View>
