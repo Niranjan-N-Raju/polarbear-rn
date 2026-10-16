@@ -1,8 +1,9 @@
 import type { PropsWithChildren } from 'react';
 import { View } from 'react-native';
+import { styles } from './safeAreaStyles';
 
 export function SafeAreaProvider({ children }: PropsWithChildren) {
-  return <View style={{ flex: 1 }}>{children}</View>;
+  return <View style={styles.container}>{children}</View>;
 }
 
 export function useSafeAreaInsets() {

@@ -348,3 +348,28 @@ export const styles = StyleSheet.create({
     textAlign: 'center',
   },
 });
+
+export function getLoginSafeAreaStyles(topInset: number, bottomInset: number) {
+  return {
+    heroTop: {
+      paddingTop: Math.max(topInset, theme.spacing['9xl']),
+    },
+    mobileBrandTop: {
+      paddingTop:
+        Math.max(topInset, theme.spacing['7xl']) + theme.spacing.lg,
+    },
+    scrollBottom: {
+      paddingBottom: Math.max(
+        bottomInset + theme.spacing['2xl'],
+        theme.spacing['7xl'],
+      ),
+    },
+  };
+}
+
+export function getSignInButtonStyle(isPending: boolean) {
+  return ({ pressed }: { pressed: boolean }) => [
+    styles.signInButton,
+    (pressed || isPending) && styles.signInButtonPressed,
+  ];
+}

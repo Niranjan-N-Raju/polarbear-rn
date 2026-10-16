@@ -15,7 +15,11 @@ import { ChevronRight, Eye, EyeOff, LockKeyhole, Mail } from 'lucide-react-nativ
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { theme } from '../config/theme';
 import { useLogin } from '../hooks/useLogin';
-import { styles } from '../styles/loginScreenStyles';
+import {
+  getLoginSafeAreaStyles,
+  getSignInButtonStyle,
+  styles,
+} from '../styles/loginScreenStyles';
 
 export function LoginScreen() {
   const safeAreaInsets = useSafeAreaInsets();
@@ -23,6 +27,10 @@ export function LoginScreen() {
   const isWide = width >= theme.layout.desktopBreakpoint;
   const loginState = useLogin();
   const passwordInputRef = useRef<TextInput>(null);
+  const safeAreaStyles = getLoginSafeAreaStyles(
+    safeAreaInsets.top,
+    safeAreaInsets.bottom,
+  );
 
   return (
     <View style={[styles.container, isWide && styles.containerWide]}>
@@ -34,7 +42,7 @@ export function LoginScreen() {
         ]}
       >
         {isWide ? (
-          <View style={[styles.hero, { paddingTop: Math.max(safeAreaInsets.top, theme.spacing['9xl']) }]}>
+          <View style={[styles.hero, safeAreaStyles.heroTop]}>
             <View pointerEvents="none" style={styles.heroRingTop} />
             <View pointerEvents="none" style={styles.heroRingBottom} />
             <View>
@@ -59,10 +67,7 @@ export function LoginScreen() {
             <View
               style={[
                 styles.mobileBrand,
-                {
-                  paddingTop:
-                    Math.max(safeAreaInsets.top, theme.spacing['7xl']) + theme.spacing.lg,
-                },
+                safeAreaStyles.mobileBrandTop,
               ]}
             >
               <Brand compact />
@@ -73,12 +78,7 @@ export function LoginScreen() {
             contentContainerStyle={[
               styles.scrollContent,
               !isWide && styles.scrollContentCompact,
-              {
-                paddingBottom: Math.max(
-                  safeAreaInsets.bottom + theme.spacing['2xl'],
-                  theme.spacing['7xl'],
-                ),
-              },
+              safeAreaStyles.scrollBottom,
               isWide && styles.scrollContentWide,
             ]}
             keyboardShouldPersistTaps="handled"
@@ -208,10 +208,7 @@ export function LoginScreen() {
                     accessibilityState={{ disabled: loginState.isPending }}
                     disabled={loginState.isPending}
                     onPress={() => void loginState.submit()}
-                    style={({ pressed }) => [
-                      styles.signInButton,
-                      (pressed || loginState.isPending) && styles.signInButtonPressed,
-                    ]}
+                    style={getSignInButtonStyle(loginState.isPending)}
                   >
                     {loginState.isPending ? (
                       <ActivityIndicator color={theme.colors.white} />
