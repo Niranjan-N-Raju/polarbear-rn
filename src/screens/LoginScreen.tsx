@@ -10,7 +10,7 @@ import {
   useWindowDimensions,
   View,
 } from 'react-native';
-import { useRef } from 'react';
+import { useRef, type ComponentRef } from 'react';
 import { ChevronRight, Eye, EyeOff, LockKeyhole, Mail } from 'lucide-react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { theme } from '../config/theme';
@@ -27,7 +27,7 @@ export function LoginScreen() {
   const { width } = useWindowDimensions();
   const isWide = width >= theme.layout.desktopBreakpoint;
   const loginState = useLogin();
-  const passwordInputRef = useRef<TextInput>(null);
+  const passwordInputRef = useRef<ComponentRef<typeof TextInput>>(null);
   const safeAreaStyles = getLoginSafeAreaStyles(
     safeAreaInsets.top,
     safeAreaInsets.bottom,
@@ -220,12 +220,6 @@ export function LoginScreen() {
                     ) : (
                       <>
                         <Text style={styles.signInText}>{t('signIn')}</Text>
-                        <ChevronRight
-                          color={theme.colors.white}
-                          size={theme.layout.iconSize}
-                          strokeWidth={theme.layout.iconStrokeWidth}
-                          style={styles.signInArrow}
-                        />
                       </>
                     )}
                   </Pressable>
