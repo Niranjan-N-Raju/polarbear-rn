@@ -10,14 +10,16 @@ import {
   useWindowDimensions,
   View,
 } from 'react-native';
+import { ChevronRight, Eye, EyeOff, LockKeyhole, Mail } from 'lucide-react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { theme } from '../config/theme';
 import { useLogin } from '../hooks/useLogin';
-import { colors, styles } from '../styles/loginStyles';
+import { styles } from '../styles/loginScreenStyles';
 
 export function LoginScreen() {
   const safeAreaInsets = useSafeAreaInsets();
   const { width } = useWindowDimensions();
-  const isWide = width >= 820;
+  const isWide = width >= theme.layout.desktopBreakpoint;
   const loginState = useLogin();
 
   return (
@@ -25,7 +27,9 @@ export function LoginScreen() {
       <StatusBar barStyle={isWide ? 'light-content' : 'dark-content'} />
       <View style={[styles.shell, isWide && styles.shellWide]}>
         {isWide ? (
-          <View style={[styles.hero, { paddingTop: Math.max(safeAreaInsets.top, 36) }]}>
+          <View style={[styles.hero, { paddingTop: Math.max(safeAreaInsets.top, theme.spacing['9xl']) }]}>
+            <View pointerEvents="none" style={styles.heroRingTop} />
+            <View pointerEvents="none" style={styles.heroRingBottom} />
             <View>
               <Brand />
               <View style={styles.heroCopy}>
@@ -48,21 +52,27 @@ export function LoginScreen() {
             <View
               style={[
                 styles.mobileBrand,
-                { paddingTop: Math.max(safeAreaInsets.top, 28) },
+                { paddingTop: Math.max(safeAreaInsets.top, theme.spacing['7xl']) },
               ]}
             >
               <Brand compact />
-              <View style={styles.brandAccent} />
             </View>
           ) : null}
           <ScrollView
+            style={styles.scrollView}
             contentContainerStyle={[
               styles.scrollContent,
-              { paddingBottom: Math.max(safeAreaInsets.bottom, 28) },
+              { paddingBottom: Math.max(safeAreaInsets.bottom, theme.spacing['7xl']) },
               isWide && styles.scrollContentWide,
             ]}
             keyboardShouldPersistTaps="handled"
           >
+            {!isWide && !loginState.session ? (
+              <View style={styles.mobileProgress}>
+                <View style={styles.mobileProgressOrange} />
+                <View style={styles.mobileProgressYellow} />
+              </View>
+            ) : null}
             {loginState.session ? (
               <View style={styles.successView}>
                 <Text style={styles.eyebrow}>LOGIN SUCCESSFUL</Text>
@@ -85,7 +95,9 @@ export function LoginScreen() {
             ) : (
               <>
                 <View style={styles.headingBlock}>
-                  <Text style={styles.eyebrow}>WELCOME BACK</Text>
+                  <Text style={[styles.eyebrow, !isWide && styles.eyebrowMobile]}>
+                    WELCOME BACK
+                  </Text>
                   <Text style={styles.heading}>Sign in to your workspace</Text>
                   <Text style={styles.subtitle}>Use your account credentials to continue.</Text>
                 </View>
@@ -97,52 +109,81 @@ export function LoginScreen() {
                 ) : null}
 
                 <View style={styles.form}>
-                  <Text style={styles.label}>Email address</Text>
-                  <TextInput
-                    accessibilityLabel="Email address"
-                    autoCapitalize="none"
-                    autoComplete="email"
-                    autoCorrect={false}
-                    keyboardType="email-address"
-                    onChangeText={loginState.updateEmail}
-                    placeholder="you@example.com"
-                    placeholderTextColor="#92999B"
-                    returnKeyType="next"
-                    style={[styles.input, loginState.emailError ? styles.inputError : null]}
-                    value={loginState.email}
-                  />
-                  {loginState.emailError ? (
-                    <Text style={styles.fieldError}>{loginState.emailError}</Text>
-                  ) : null}
-
-                  <View style={styles.passwordLabelRow}>
-                    <Text style={styles.label}>Password</Text>
-                    <Pressable
-                      accessibilityRole="button"
-                      accessibilityLabel={loginState.showPassword ? 'Hide password' : 'Show password'}
-                      onPress={() => loginState.setShowPassword(!loginState.showPassword)}
-                    >
-                      <Text style={styles.showPassword}>
-                        {loginState.showPassword ? 'Hide password' : 'Show password'}
-                      </Text>
-                    </Pressable>
+                  <View style={styles.fieldGroup}>
+                    <Text style={styles.label}>Email address</Text>
+                    <View style={styles.inputWrap}>
+                      <Mail
+                        color={theme.colors.placeholder}
+                        size={theme.layout.iconSize}
+                        strokeWidth={theme.layout.iconStrokeWidth}
+                        style={styles.inputIcon}
+                      />
+                      <TextInput
+                        accessibilityLabel="Email address"
+                        autoCapitalize="none"
+                        autoComplete="email"
+                        autoCorrect={false}
+                        keyboardType="email-address"
+                        onChangeText={loginState.updateEmail}
+                        placeholder="you@example.com"
+                        placeholderTextColor={theme.colors.placeholder}
+                        returnKeyType="next"
+                        style={[styles.input, loginState.emailError ? styles.inputError : null]}
+                        value={loginState.email}
+                      />
+                    </View>
+                    {loginState.emailError ? (
+                      <Text style={styles.fieldError}>{loginState.emailError}</Text>
+                    ) : null}
                   </View>
-                  <TextInput
-                    accessibilityLabel="Password"
-                    autoCapitalize="none"
-                    autoComplete="current-password"
-                    onChangeText={loginState.updatePassword}
-                    onSubmitEditing={() => void loginState.submit()}
-                    placeholder="Enter your password"
-                    placeholderTextColor="#92999B"
-                    returnKeyType="done"
-                    secureTextEntry={!loginState.showPassword}
-                    style={[styles.input, loginState.passwordError ? styles.inputError : null]}
-                    value={loginState.password}
-                  />
-                  {loginState.passwordError ? (
-                    <Text style={styles.fieldError}>{loginState.passwordError}</Text>
-                  ) : null}
+
+                  <View style={styles.fieldGroup}>
+                    <Text style={styles.label}>Password</Text>
+                    <View style={styles.inputWrap}>
+                      <LockKeyhole
+                        color={theme.colors.placeholder}
+                        size={theme.layout.iconSize}
+                        strokeWidth={theme.layout.iconStrokeWidth}
+                        style={styles.inputIcon}
+                      />
+                      <TextInput
+                        accessibilityLabel="Password"
+                        autoCapitalize="none"
+                        autoComplete="current-password"
+                        onChangeText={loginState.updatePassword}
+                        onSubmitEditing={() => void loginState.submit()}
+                        placeholder="Enter your password"
+                        placeholderTextColor={theme.colors.placeholder}
+                        returnKeyType="done"
+                        secureTextEntry={!loginState.showPassword}
+                        style={[styles.input, loginState.passwordError ? styles.inputError : null]}
+                        value={loginState.password}
+                      />
+                      <Pressable
+                        accessibilityRole="button"
+                        accessibilityLabel={loginState.showPassword ? 'Hide password' : 'Show password'}
+                        onPress={() => loginState.setShowPassword(!loginState.showPassword)}
+                        style={styles.visibilityButton}
+                      >
+                        {loginState.showPassword ? (
+                          <EyeOff
+                            color={theme.colors.iconMuted}
+                            size={theme.layout.iconSize}
+                            strokeWidth={theme.layout.iconStrokeWidth}
+                          />
+                        ) : (
+                          <Eye
+                            color={theme.colors.iconMuted}
+                            size={theme.layout.iconSize}
+                            strokeWidth={theme.layout.iconStrokeWidth}
+                          />
+                        )}
+                      </Pressable>
+                    </View>
+                    {loginState.passwordError ? (
+                      <Text style={styles.fieldError}>{loginState.passwordError}</Text>
+                    ) : null}
+                  </View>
 
                   <Pressable
                     accessibilityRole="button"
@@ -155,18 +196,25 @@ export function LoginScreen() {
                     ]}
                   >
                     {loginState.isPending ? (
-                      <ActivityIndicator color="#FFFFFF" />
+                      <ActivityIndicator color={theme.colors.white} />
                     ) : (
                       <>
                         <Text style={styles.signInText}>Sign in</Text>
-                        <Text style={styles.signInArrow}>{'\u203a'}</Text>
+                        <ChevronRight
+                          color={theme.colors.white}
+                          size={theme.layout.iconSize}
+                          strokeWidth={theme.layout.iconStrokeWidth}
+                          style={styles.signInArrow}
+                        />
                       </>
                     )}
                   </Pressable>
                 </View>
               </>
             )}
-            <Text style={styles.footer}>Protected access for authorized store teams.</Text>
+            <Text style={[styles.footer, !isWide && styles.footerBottom]}>
+              Protected access for authorized store teams.
+            </Text>
           </ScrollView>
         </KeyboardAvoidingView>
       </View>
@@ -181,8 +229,14 @@ function Brand({ compact = false }: { compact?: boolean }) {
         <Text style={styles.brandMarkText}>PB</Text>
       </View>
       <View>
-        <Text style={styles.brand}>Polar Bear</Text>
-        <Text style={styles.brandSubtitle}>Store Operations</Text>
+        {compact ? (
+          <>
+            <Text style={styles.brandCompactName}>POLAR BEAR</Text>
+            <Text style={styles.brandSubtitle}>Store Operations</Text>
+          </>
+        ) : (
+          <Text style={styles.brand}>Polar Bear</Text>
+        )}
       </View>
     </View>
   );
