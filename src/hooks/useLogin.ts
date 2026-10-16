@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Keyboard } from 'react-native';
 import { login } from '../api/auth';
 
 export function useLogin() {
@@ -20,7 +21,9 @@ export function useLogin() {
 
     setIsPending(true);
     try {
-      setSession(await login(normalizedEmail, password));
+      const result = await login(normalizedEmail, password);
+      Keyboard.dismiss();
+      setSession(result);
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Login failed. Please try again.';
       if (/email or password|password/i.test(message)) {

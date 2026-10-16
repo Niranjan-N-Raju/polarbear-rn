@@ -8,7 +8,8 @@ export const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: colors.sand,
     paddingHorizontal: spacing['2xl'],
-    paddingVertical: 0,
+    paddingVertical: spacing['5xl'],
+    justifyContent: 'center',
   },
   containerWide: {
     backgroundColor: colors.sand,
@@ -30,6 +31,10 @@ export const styles = StyleSheet.create({
   shellWide: {
     flexDirection: 'row',
     borderRadius: theme.radius.none,
+  },
+  shellCompact: {
+    flex: 0,
+    maxHeight: '100%',
   },
   hero: {
     position: 'relative',
@@ -91,20 +96,28 @@ export const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: colors.white,
   },
+  formPanelCompact: {
+    flex: 0,
+    flexShrink: 1,
+  },
   scrollView: {
     flex: 1,
+  },
+  scrollViewCompact: {
+    flex: 0,
+    flexShrink: 1,
   },
   mobileBrand: {
     backgroundColor: colors.teal,
     paddingHorizontal: spacing['5xl'],
-    paddingBottom: spacing['9xl'],
+    paddingBottom: spacing['3xl'],
   },
   mobileProgress: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: spacing.sm,
     paddingHorizontal: spacing['6xl'],
-    paddingBottom: spacing['2xl'],
+    paddingBottom: spacing.lg,
   },
   mobileProgressOrange: {
     width: spacing['8xl'],
@@ -118,9 +131,13 @@ export const styles = StyleSheet.create({
   },
   scrollContent: {
     flexGrow: 1,
-    justifyContent: 'flex-start',
+    justifyContent: 'center',
     paddingHorizontal: spacing['6xl'],
-    paddingTop: spacing['4xl'],
+    paddingTop: spacing['3xl'],
+    paddingBottom: spacing['3xl'],
+  },
+  scrollContentCompact: {
+    flexGrow: 0,
   },
   scrollContentWide: {
     justifyContent: 'center',
@@ -173,7 +190,7 @@ export const styles = StyleSheet.create({
     letterSpacing: typography.letterSpacing.compactBrand,
   },
   headingBlock: {
-    marginBottom: spacing['8xl'],
+    marginBottom: spacing['3xl'],
   },
   eyebrowMobile: {
     alignSelf: 'flex-start',
@@ -188,14 +205,14 @@ export const styles = StyleSheet.create({
     letterSpacing: typography.letterSpacing.eyebrow,
   },
   heading: {
-    marginTop: spacing.lg,
+    marginTop: spacing.md,
     color: colors.ink,
     fontSize: typography.heading,
     fontWeight: theme.fontWeight.medium,
     lineHeight: typography.headingLineHeight,
   },
   subtitle: {
-    marginTop: spacing.md,
+    marginTop: spacing.xs,
     color: colors.muted,
     fontSize: typography.sm,
     lineHeight: typography.bodyLineHeight,
@@ -204,7 +221,7 @@ export const styles = StyleSheet.create({
     width: '100%',
   },
   fieldGroup: {
-    marginBottom: spacing['4xl'],
+    marginBottom: spacing.lg,
   },
   label: {
     color: colors.ink,
@@ -259,7 +276,6 @@ export const styles = StyleSheet.create({
   },
   signInButton: {
     height: theme.layout.buttonHeight,
-    marginTop: spacing.md,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
@@ -326,12 +342,9 @@ export const styles = StyleSheet.create({
     fontWeight: theme.fontWeight.medium,
   },
   footer: {
-    paddingTop: spacing['9xl'],
+    paddingTop: spacing.lg,
     color: colors.quiet,
     fontSize: typography.xs,
     textAlign: 'center',
-  },
-  footerBottom: {
-    marginTop: 'auto',
   },
 });

@@ -10,6 +10,7 @@ import {
   useWindowDimensions,
   View,
 } from 'react-native';
+import { useRef } from 'react';
 import { ChevronRight, Eye, EyeOff, LockKeyhole, Mail } from 'lucide-react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { theme } from '../config/theme';
@@ -21,11 +22,17 @@ export function LoginScreen() {
   const { width } = useWindowDimensions();
   const isWide = width >= theme.layout.desktopBreakpoint;
   const loginState = useLogin();
+  const passwordInputRef = useRef<TextInput>(null);
 
   return (
     <View style={[styles.container, isWide && styles.containerWide]}>
       <StatusBar barStyle={isWide ? 'light-content' : 'dark-content'} />
-      <View style={[styles.shell, isWide && styles.shellWide]}>
+      <View
+        style={[
+          styles.shell,
+          isWide ? styles.shellWide : styles.shellCompact,
+        ]}
+      >
         {isWide ? (
           <View style={[styles.hero, { paddingTop: Math.max(safeAreaInsets.top, theme.spacing['9xl']) }]}>
             <View pointerEvents="none" style={styles.heroRingTop} />
@@ -46,23 +53,32 @@ export function LoginScreen() {
 
         <KeyboardAvoidingView
           behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-          style={styles.formPanel}
+          style={[styles.formPanel, !isWide && styles.formPanelCompact]}
         >
           {!isWide ? (
             <View
               style={[
                 styles.mobileBrand,
-                { paddingTop: Math.max(safeAreaInsets.top, theme.spacing['7xl']) },
+                {
+                  paddingTop:
+                    Math.max(safeAreaInsets.top, theme.spacing['7xl']) + theme.spacing.lg,
+                },
               ]}
             >
               <Brand compact />
             </View>
           ) : null}
           <ScrollView
-            style={styles.scrollView}
+            style={[styles.scrollView, !isWide && styles.scrollViewCompact]}
             contentContainerStyle={[
               styles.scrollContent,
-              { paddingBottom: Math.max(safeAreaInsets.bottom, theme.spacing['7xl']) },
+              !isWide && styles.scrollContentCompact,
+              {
+                paddingBottom: Math.max(
+                  safeAreaInsets.bottom + theme.spacing['2xl'],
+                  theme.spacing['7xl'],
+                ),
+              },
               isWide && styles.scrollContentWide,
             ]}
             keyboardShouldPersistTaps="handled"
@@ -127,6 +143,7 @@ export function LoginScreen() {
                         onChangeText={loginState.updateEmail}
                         placeholder="you@example.com"
                         placeholderTextColor={theme.colors.placeholder}
+                        onSubmitEditing={() => passwordInputRef.current?.focus()}
                         returnKeyType="next"
                         style={[styles.input, loginState.emailError ? styles.inputError : null]}
                         value={loginState.email}
@@ -147,6 +164,7 @@ export function LoginScreen() {
                         style={styles.inputIcon}
                       />
                       <TextInput
+                        ref={passwordInputRef}
                         accessibilityLabel="Password"
                         autoCapitalize="none"
                         autoComplete="current-password"
@@ -212,7 +230,7 @@ export function LoginScreen() {
                 </View>
               </>
             )}
-            <Text style={[styles.footer, !isWide && styles.footerBottom]}>
+            <Text style={styles.footer}>
               Protected access for authorized store teams.
             </Text>
           </ScrollView>
