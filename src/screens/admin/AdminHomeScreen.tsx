@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import { ActivityIndicator, Modal, Pressable, Text, View } from 'react-native';
-import { LayoutDashboard, LogOut, Menu, Store, UserRound, UsersRound, X } from 'lucide-react-native';
+import { ActivityIndicator, Modal, Platform, Pressable, Text, useWindowDimensions, View } from 'react-native';
+import { LayoutDashboard, LogOut, Menu, PanelLeftClose, PanelLeftOpen, Store, UserRound, UsersRound, X } from 'lucide-react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { apiRequest, setAccessToken, type AuthenticatedUser } from '../../api/auth';
 import { theme } from '../../config/theme';
@@ -20,8 +20,11 @@ interface AdminHomeScreenProps {
 
 export function AdminHomeScreen({ user: initialUser, onLogout }: AdminHomeScreenProps) {
   const insets = useSafeAreaInsets();
+  const { width } = useWindowDimensions();
+  const hasWebSidebar = Platform.OS === 'web' && width >= theme.layout.adminSidebarBreakpoint;
   const [user, setUser] = useState(initialUser);
   const [activeTab, setActiveTab] = useState<AdminTab>('dashboard');
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
   const safeAreaStyles = getAdminSafeAreaStyles(insets.top, insets.bottom);
@@ -46,40 +49,103 @@ export function AdminHomeScreen({ user: initialUser, onLogout }: AdminHomeScreen
     { key: 'users' as const, label: 'adminUsers' as const, Icon: UsersRound },
     { key: 'profile' as const, label: 'adminProfile' as const, Icon: UserRound },
   ];
+  const webTabs = tabs.filter((tab) => tab.key !== 'profile');
 
   return (
-    <View style={[styles.root, safeAreaStyles.root]}>
-      <View style={styles.header}>
-        <Pressable
-          accessibilityRole="button"
-          accessibilityLabel={t('adminOpenMenu')}
-          onPress={() => setIsDrawerOpen(true)}
-          style={styles.menuButton}
-        >
-          <Menu color={theme.colors.ink} size={theme.layout.iconSize} />
-        </Pressable>
-        <View style={styles.headerBrand}>
-          <View style={styles.headerMark}>
-            <Text style={styles.headerMarkText}>{t('brandInitials')}</Text>
+    <View style={[styles.root, safeAreaStyles.root, hasWebSidebar && styles.rootWeb]}>
+      {hasWebSidebar ? (
+        <View style={[styles.webSidebar, isSidebarCollapsed && styles.webSidebarCollapsed, drawerSafeAreaStyles.drawerTop]}>
+          <View style={[styles.webSidebarBrand, isSidebarCollapsed && styles.webSidebarBrandCollapsed]}>
+            {!isSidebarCollapsed ? (
+              <View style={styles.headerIdentity}>
+                <View style={styles.headerBrand}>
+                  <View style={styles.headerMark}><Text style={styles.headerMarkText}>{t('brandInitials')}</Text></View>
+                  <Text style={styles.headerName}>{t('brandName')}</Text>
+                </View>
+                <Text style={styles.headerUser}>{user.name}</Text>
+              </View>
+            ) : null}
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel={isSidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+              onPress={() => setIsSidebarCollapsed((collapsed) => !collapsed)}
+              style={styles.webSidebarCollapseButton}
+            >
+              {isSidebarCollapsed ? <PanelLeftOpen color={theme.colors.muted} size={16} /> : <PanelLeftClose color={theme.colors.muted} size={16} />}
+            </Pressable>
           </View>
-          <View style={styles.headerIdentity}>
-            <Text style={styles.headerName} numberOfLines={1}>{t('brandName')}</Text>
-            <Text style={styles.headerUser} numberOfLines={1}>
-              {user.name} · {translateRole(user.role)}
-            </Text>
-            <Text style={styles.headerTitle}>{t(tabs.find((tab) => tab.key === activeTab)!.label)}</Text>
+          <View style={styles.webSidebarNav}>
+            {webTabs.map(({ key, label, Icon }) => {
+              const active = activeTab === key;
+              return (
+                <Pressable
+                  key={key}
+                  accessibilityRole="button"
+                  accessibilityState={{ selected: active }}
+                  onPress={() => setActiveTab(key)}
+                  accessibilityLabel={isSidebarCollapsed ? t(label) : undefined}
+                  style={[styles.webSidebarItem, isSidebarCollapsed && styles.webSidebarItemCollapsed, active && styles.webSidebarItemActive]}
+                >
+                  <Icon color={active ? theme.colors.teal : theme.colors.muted} size={theme.layout.iconSize} />
+                  {!isSidebarCollapsed ? <Text style={[styles.webSidebarItemText, active && styles.webSidebarItemTextActive]}>{t(label)}</Text> : null}
+                </Pressable>
+              );
+            })}
+          </View>
+          <View style={styles.webSidebarFooter}>
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel={t('adminProfile')}
+              onPress={() => setActiveTab('profile')}
+              style={[styles.webSidebarProfile, isSidebarCollapsed && styles.webSidebarProfileCollapsed]}
+            >
+              <UserRound color={activeTab === 'profile' ? theme.colors.teal : theme.colors.muted} size={theme.layout.iconSize} />
+              {!isSidebarCollapsed ? <Text style={[styles.webSidebarItemText, activeTab === 'profile' && styles.webSidebarItemTextActive]}>{t('adminProfile')}</Text> : null}
+            </Pressable>
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel={t('signOut')}
+              disabled={isLoggingOut}
+              onPress={() => void logout()}
+              style={[styles.webSidebarLogout, isSidebarCollapsed && styles.webSidebarItemCollapsed]}
+            >
+              {isLoggingOut ? <ActivityIndicator color={theme.colors.muted} /> : <LogOut color={theme.colors.muted} size={theme.layout.iconSize} />}
+              {!isSidebarCollapsed ? <Text style={styles.logoutText}>{t('signOut')}</Text> : null}
+            </Pressable>
           </View>
         </View>
-      </View>
+      ) : (
+        <View style={styles.header}>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel={t('adminOpenMenu')}
+            onPress={() => setIsDrawerOpen(true)}
+            style={styles.menuButton}
+          >
+            <Menu color={theme.colors.ink} size={theme.layout.iconSize} />
+          </Pressable>
+          <View style={styles.headerBrand}>
+            <View style={styles.headerMark}><Text style={styles.headerMarkText}>{t('brandInitials')}</Text></View>
+            <View style={styles.headerIdentity}>
+              <Text style={styles.headerName} numberOfLines={1}>{t('brandName')}</Text>
+              <Text style={styles.headerUser} numberOfLines={1}>{user.name} · {translateRole(user.role)}</Text>
+              <Text style={styles.headerTitle}>{t(tabs.find((tab) => tab.key === activeTab)!.label)}</Text>
+            </View>
+          </View>
+        </View>
+      )}
 
-      <View style={styles.content}>
+      <View style={[styles.mainPanel, hasWebSidebar && styles.mainPanelWeb]}>
+      <View style={[styles.content, Platform.OS === 'web' && width < theme.layout.adminSidebarBreakpoint && styles.contentCompact]}>
         {activeTab === 'dashboard' ? <AdminDashboardScreen /> : null}
         {activeTab === 'stores' ? <AdminStoresScreen userId={user.id} /> : null}
         {activeTab === 'users' ? <AdminUsersScreen /> : null}
         {activeTab === 'profile' ? <AdminProfileScreen user={user} onUserUpdated={setUser} /> : null}
       </View>
 
-      <Modal
+      </View>
+
+      {!hasWebSidebar ? <Modal
         visible={isDrawerOpen}
         transparent
         animationType="fade"
@@ -149,7 +215,7 @@ export function AdminHomeScreen({ user: initialUser, onLogout }: AdminHomeScreen
             style={styles.drawerScrim}
           />
         </View>
-      </Modal>
+      </Modal> : null}
     </View>
   );
 }

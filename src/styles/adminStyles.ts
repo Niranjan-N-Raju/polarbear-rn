@@ -1,12 +1,74 @@
-import { StyleSheet } from 'react-native';
+import { Platform, StyleSheet } from 'react-native';
 import { theme } from '../config/theme';
 
 const { colors, spacing, typography } = theme;
 
-export const adminStyles = StyleSheet.create({
+const baseAdminStyles = StyleSheet.create({
   root: {
     flex: 1,
-    backgroundColor: colors.sand,
+    backgroundColor: colors.paleBackground,
+  },
+  rootWeb: {
+    flexDirection: 'row',
+  },
+  mainPanel: {
+    flex: 1,
+    minWidth: 0,
+  },
+  mainPanelWeb: {
+    minHeight: '100%',
+  },
+  webSidebar: {
+    width: theme.layout.adminSidebarWidth,
+    flexShrink: 0,
+    backgroundColor: colors.white,
+    borderRightWidth: theme.border.width,
+    borderRightColor: colors.beige,
+    paddingHorizontal: spacing.md,
+    paddingBottom: spacing.lg,
+  },
+  webSidebarBrand: {
+    minHeight: 64,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.md,
+    paddingHorizontal: spacing.md,
+    borderBottomWidth: theme.border.width,
+    borderBottomColor: colors.sand,
+  },
+  webSidebarNav: {
+    flex: 1,
+    paddingTop: spacing['2xl'],
+  },
+  webSidebarItem: {
+    minHeight: 48,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.md,
+    paddingHorizontal: spacing.md,
+    marginBottom: spacing.xs,
+  },
+  webSidebarItemActive: {
+    borderWidth: theme.border.width,
+    borderColor: 'rgba(0, 162, 192, 0.15)',
+    backgroundColor: 'rgba(0, 162, 192, 0.1)',
+  },
+  webSidebarItemText: {
+    color: colors.muted,
+    fontSize: typography.sm,
+    fontWeight: theme.fontWeight.medium,
+  },
+  webSidebarItemTextActive: {
+    color: colors.teal,
+  },
+  webSidebarLogout: {
+    minHeight: 48,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.md,
+    paddingHorizontal: spacing.md,
+    borderTopWidth: theme.border.width,
+    borderTopColor: colors.sand,
   },
   header: {
     flexDirection: 'row',
@@ -171,11 +233,20 @@ export const adminStyles = StyleSheet.create({
     paddingHorizontal: spacing['2xl'],
     paddingTop: spacing['2xl'],
   },
-  screenWide: {
-    paddingHorizontal: spacing['8xl'],
-  },
   screenHeader: {
     marginBottom: spacing['2xl'],
+    padding: spacing['2xl'],
+    borderWidth: theme.border.width,
+    borderColor: colors.beige,
+    backgroundColor: 'rgba(255, 255, 255, 0.8)',
+    ...theme.shadows.frame,
+  },
+  screenEyebrow: {
+    color: colors.orange,
+    fontSize: typography.xs,
+    fontWeight: theme.fontWeight.bold,
+    letterSpacing: typography.letterSpacing.eyebrow,
+    textTransform: 'uppercase',
   },
   screenTitle: {
     color: colors.ink,
@@ -189,22 +260,6 @@ export const adminStyles = StyleSheet.create({
     fontSize: typography.sm,
     lineHeight: typography.bodyLineHeight,
   },
-  refreshButton: {
-    minHeight: 40,
-    alignSelf: 'flex-start',
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.sm,
-    marginTop: spacing.lg,
-    paddingHorizontal: spacing.lg,
-    borderWidth: theme.border.width,
-    borderColor: colors.teal,
-  },
-  refreshText: {
-    color: colors.teal,
-    fontSize: typography.xs,
-    fontWeight: theme.fontWeight.medium,
-  },
   cardGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
@@ -213,26 +268,59 @@ export const adminStyles = StyleSheet.create({
   },
   statCard: {
     width: '48%',
-    minHeight: 112,
+    minHeight: 96,
     justifyContent: 'space-between',
-    padding: spacing['2xl'],
+    padding: spacing.lg,
     borderWidth: theme.border.width,
-    borderColor: colors.beige,
+    borderColor: '#E5E7EB',
     backgroundColor: colors.white,
-    ...theme.shadows.brandMark,
+    borderRadius: theme.radius.none,
   },
   statCardWide: {
-    width: '23.5%',
+    width: '22.5%',
+  },
+  statCardTeal: {
+    borderTopWidth: 3,
+    borderTopColor: colors.teal,
+  },
+  statCardOrange: {
+    borderTopWidth: 3,
+    borderTopColor: colors.orange,
+  },
+  statIconTile: {
+    position: 'absolute',
+    top: spacing.md,
+    right: spacing.md,
+    width: 32,
+    height: 32,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderTopWidth: 2,
+    backgroundColor: colors.sand,
+  },
+  statIconTeal: {
+    borderTopColor: colors.teal,
+  },
+  statIconOrange: {
+    borderTopColor: colors.orange,
   },
   statLabel: {
+    maxWidth: '84%',
     color: colors.muted,
-    fontSize: typography.xs,
-    fontWeight: theme.fontWeight.medium,
+    fontSize: 11,
+    fontWeight: theme.fontWeight.bold,
+    letterSpacing: 1,
+    textTransform: 'uppercase',
+  },
+  statValueTeal: {
+    color: colors.teal,
+  },
+  statValueOrange: {
+    color: colors.orange,
   },
   statValue: {
     marginTop: spacing.lg,
-    color: colors.ink,
-    fontSize: typography.heading,
+    fontSize: typography.xl,
     fontWeight: theme.fontWeight.bold,
   },
   stateMessage: {
@@ -517,7 +605,289 @@ export const adminStyles = StyleSheet.create({
     borderColor: colors.beige,
     backgroundColor: colors.white,
   },
+  profileColumns: {
+    flexDirection: 'column',
+  },
+  profileColumn: {},
+  profileIdentity: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.lg,
+  },
+  profileAvatar: {
+    width: 56,
+    height: 56,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'rgba(244, 117, 33, 0.1)',
+  },
+  profileAvatarText: {
+    color: colors.orange,
+    fontSize: typography.xl,
+    fontWeight: theme.fontWeight.bold,
+  },
+  profileRoleBadge: {
+    alignSelf: 'flex-start',
+    marginTop: spacing.xs,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.xxs,
+    backgroundColor: 'rgba(244, 117, 33, 0.1)',
+  },
+  profileRoleText: {
+    color: colors.orange,
+    fontSize: typography.xs,
+    fontWeight: theme.fontWeight.medium,
+  },
 });
+
+const webAdminStyles = StyleSheet.create({
+  ...baseAdminStyles,
+  webSidebar: {
+    ...baseAdminStyles.webSidebar,
+    width: 240,
+    paddingHorizontal: 12,
+    paddingBottom: 0,
+    backgroundColor: 'rgba(255, 255, 255, 0.95)',
+    shadowColor: '#24323A',
+    shadowOffset: { width: 8, height: 0 },
+    shadowOpacity: 0.04,
+    shadowRadius: 15,
+    elevation: 2,
+  },
+  webSidebarCollapsed: {
+    width: 64,
+  },
+  webSidebarBrand: {
+    ...baseAdminStyles.webSidebarBrand,
+    minHeight: 56,
+    gap: 8,
+    paddingHorizontal: 12,
+    justifyContent: 'space-between',
+  },
+  webSidebarBrandCollapsed: {
+    justifyContent: 'center',
+    paddingHorizontal: 8,
+  },
+  webSidebarCollapseButton: {
+    width: 32,
+    height: 32,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  webSidebarNav: {
+    ...baseAdminStyles.webSidebarNav,
+    paddingHorizontal: 12,
+    paddingTop: 20,
+  },
+  webSidebarItem: {
+    ...baseAdminStyles.webSidebarItem,
+    minHeight: 44,
+    gap: 12,
+    paddingHorizontal: 12,
+  },
+  webSidebarItemCollapsed: {
+    justifyContent: 'center',
+    paddingHorizontal: 12,
+  },
+  webSidebarFooter: {
+    paddingHorizontal: 8,
+    paddingTop: 8,
+    borderTopWidth: theme.border.width,
+    borderTopColor: colors.sand,
+  },
+  webSidebarProfile: {
+    minHeight: 40,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    paddingHorizontal: 10,
+  },
+  webSidebarProfileCollapsed: {
+    justifyContent: 'center',
+    paddingHorizontal: 8,
+  },
+  webSidebarItemActive: {
+    ...baseAdminStyles.webSidebarItemActive,
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.08,
+    shadowRadius: 2,
+    elevation: 1,
+  },
+  webSidebarLogout: {
+    ...baseAdminStyles.webSidebarLogout,
+    minHeight: 40,
+    gap: 12,
+    paddingHorizontal: 10,
+  },
+  headerMark: {
+    ...baseAdminStyles.headerMark,
+    width: 32,
+    height: 32,
+  },
+  headerMarkText: {
+    ...baseAdminStyles.headerMarkText,
+    fontSize: 10,
+  },
+  content: {
+    ...baseAdminStyles.content,
+    maxWidth: theme.layout.adminWebContentMaxWidth,
+    paddingHorizontal: 32,
+    paddingVertical: 32,
+  },
+  contentCompact: {
+    paddingHorizontal: 16,
+    paddingVertical: 20,
+  },
+  screen: {
+    ...baseAdminStyles.screen,
+    paddingHorizontal: 0,
+    paddingTop: 0,
+  },
+  screenHeader: {
+    ...baseAdminStyles.screenHeader,
+    marginBottom: 32,
+    padding: 24,
+    shadowOffset: { width: 0, height: 5 },
+    shadowOpacity: 0.05,
+    shadowRadius: 15,
+    elevation: 2,
+  },
+  screenEyebrow: {
+    ...baseAdminStyles.screenEyebrow,
+    fontSize: 12,
+    letterSpacing: 2.16,
+  },
+  screenTitle: {
+    ...baseAdminStyles.screenTitle,
+    fontSize: 30,
+    lineHeight: 36,
+  },
+  screenDescription: {
+    ...baseAdminStyles.screenDescription,
+    marginTop: 8,
+    fontSize: 14,
+    lineHeight: 20,
+  },
+  cardGrid: {
+    ...baseAdminStyles.cardGrid,
+    gap: 12,
+  },
+  statCard: {
+    ...baseAdminStyles.statCard,
+    minHeight: 96,
+    padding: 16,
+    borderColor: colors.beige,
+    shadowColor: '#1F292B',
+    shadowOffset: { width: 0, height: 2.5 },
+    shadowOpacity: 0.045,
+    shadowRadius: 8,
+    elevation: 1,
+  },
+  statCardWide: {
+    ...baseAdminStyles.statCardWide,
+    width: '24%',
+  },
+  statIconTile: {
+    ...baseAdminStyles.statIconTile,
+    top: 16,
+    right: 16,
+    width: 40,
+    height: 40,
+  },
+  statLabel: {
+    ...baseAdminStyles.statLabel,
+    maxWidth: '100%',
+    fontSize: 12,
+    letterSpacing: 1.2,
+  },
+  statValue: {
+    ...baseAdminStyles.statValue,
+    marginTop: 12,
+    fontSize: 24,
+  },
+  row: {
+    ...baseAdminStyles.row,
+    marginBottom: 12,
+    padding: 20,
+    borderColor: colors.beige,
+    shadowColor: '#1F292B',
+    shadowOffset: { width: 0, height: 2.5 },
+    shadowOpacity: 0.045,
+    shadowRadius: 8,
+    elevation: 1,
+  },
+  listContent: {
+    ...baseAdminStyles.listContent,
+    paddingBottom: 24,
+  },
+  fieldLabel: {
+    ...baseAdminStyles.fieldLabel,
+    marginBottom: 4,
+    fontSize: 14,
+  },
+  fieldInput: {
+    ...baseAdminStyles.fieldInput,
+    minHeight: 40,
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderColor: colors.beige,
+    backgroundColor: colors.white,
+    fontSize: 14,
+  },
+  primaryButton: {
+    ...baseAdminStyles.primaryButton,
+    minHeight: 36,
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+  },
+  primaryButtonText: {
+    ...baseAdminStyles.primaryButtonText,
+    fontSize: 14,
+  },
+  secondaryButton: {
+    ...baseAdminStyles.secondaryButton,
+    minHeight: 32,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+  },
+  secondaryButtonText: {
+    ...baseAdminStyles.secondaryButtonText,
+    fontSize: 12,
+  },
+  dangerButton: {
+    ...baseAdminStyles.dangerButton,
+    minHeight: 32,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+  },
+  dangerButtonText: {
+    ...baseAdminStyles.dangerButtonText,
+    fontSize: 12,
+  },
+  profileCard: {
+    ...baseAdminStyles.profileCard,
+    marginBottom: 0,
+    padding: 20,
+    borderColor: colors.beige,
+    shadowColor: '#1F292B',
+    shadowOffset: { width: 0, height: 2.5 },
+    shadowOpacity: 0.045,
+    shadowRadius: 8,
+    elevation: 1,
+  },
+  profileColumns: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: 24,
+  },
+  profileColumn: {
+    flex: 1,
+    gap: 24,
+  },
+});
+
+export const adminStyles = (Platform.OS === 'web' ? webAdminStyles : baseAdminStyles) as typeof baseAdminStyles & typeof webAdminStyles;
 
 export function getAdminSafeAreaStyles(topInset: number, bottomInset: number) {
   return {

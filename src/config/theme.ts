@@ -70,6 +70,7 @@ export const theme = {
   },
   radius: {
     none: 0,
+    small: 12,
   },
   border: {
     width: 1,
@@ -83,6 +84,9 @@ export const theme = {
     heroCopyMaxWidth: 390,
     desktopBreakpoint: 1024,
     tabletBreakpoint: 600,
+    adminSidebarBreakpoint: 768,
+    adminSidebarWidth: 240,
+    adminWebContentMaxWidth: 1440,
     compactFormMaxWidth: 520,
     webCompactCardHeight: 680,
     topHeroRingSize: 256,

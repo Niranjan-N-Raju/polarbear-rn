@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
-import { ActivityIndicator, Pressable, ScrollView, Text, useWindowDimensions, View } from 'react-native';
-import { RefreshCw } from 'lucide-react-native';
+import { ActivityIndicator, Platform, ScrollView, Text, useWindowDimensions, View } from 'react-native';
+import { Building2, CircleCheck, Handshake, ShieldCheck, Store, UserRoundCog, UsersRound } from 'lucide-react-native';
 import { apiRequest } from '../../api/auth';
 import { theme } from '../../config/theme';
 import { t, type TranslationKey } from '../../i18n';
@@ -18,15 +18,15 @@ interface DashboardStats {
   employees: number;
 }
 
-const statCards: { key: keyof DashboardStats; label: TranslationKey }[] = [
-  { key: 'totalStores', label: 'adminStoreTotal' },
-  { key: 'activeStores', label: 'adminActiveStores' },
-  { key: 'franchiseStores', label: 'adminFranchiseStores' },
-  { key: 'companyStores', label: 'adminCompanyStores' },
-  { key: 'totalUsers', label: 'adminTotalUsers' },
-  { key: 'subAdmins', label: 'adminSubAdmins' },
-  { key: 'storeAdmins', label: 'adminStoreAdmins' },
-  { key: 'employees', label: 'adminEmployees' },
+const statCards: { key: keyof DashboardStats; label: TranslationKey; color: 'teal' | 'orange'; Icon: typeof Store }[] = [
+  { key: 'totalStores', label: 'adminStoreTotal', color: 'teal', Icon: Store },
+  { key: 'activeStores', label: 'adminActiveStores', color: 'orange', Icon: CircleCheck },
+  { key: 'franchiseStores', label: 'adminFranchiseStores', color: 'orange', Icon: Handshake },
+  { key: 'companyStores', label: 'adminCompanyStores', color: 'teal', Icon: Building2 },
+  { key: 'totalUsers', label: 'adminTotalUsers', color: 'teal', Icon: UsersRound },
+  { key: 'subAdmins', label: 'adminSubAdmins', color: 'orange', Icon: ShieldCheck },
+  { key: 'storeAdmins', label: 'adminStoreAdmins', color: 'orange', Icon: UserRoundCog },
+  { key: 'employees', label: 'adminEmployees', color: 'teal', Icon: UsersRound },
 ];
 
 export function AdminDashboardScreen() {
@@ -53,17 +53,14 @@ export function AdminDashboardScreen() {
     void loadStats();
   }, [loadStats]);
 
-  const cardsWide = width >= theme.layout.tabletBreakpoint;
+  const cardsWide = width >= (Platform.OS === 'web' ? 640 : theme.layout.tabletBreakpoint);
 
   return (
     <ScrollView contentContainerStyle={styles.screen}>
       <View style={styles.screenHeader}>
-        <Text style={styles.screenTitle}>{t('adminOverview')}</Text>
+        <Text style={styles.screenEyebrow}>{t('adminOverview')}</Text>
+        <Text style={styles.screenTitle}>{t('adminDashboard')}</Text>
         <Text style={styles.screenDescription}>{t('adminOverviewDescription')}</Text>
-        <Pressable accessibilityRole="button" onPress={() => void loadStats()} style={styles.refreshButton}>
-          <RefreshCw color={theme.colors.teal} size={theme.layout.iconSize} />
-          <Text style={styles.refreshText}>{t('adminRefresh')}</Text>
-        </Pressable>
       </View>
 
       {isLoading ? (
@@ -75,9 +72,21 @@ export function AdminDashboardScreen() {
       ) : (
         <View style={styles.cardGrid}>
           {statCards.map((card) => (
-            <View key={card.key} style={[styles.statCard, cardsWide && styles.statCardWide]}>
+            <View
+              key={card.key}
+              style={[
+                styles.statCard,
+                card.color === 'teal' ? styles.statCardTeal : styles.statCardOrange,
+                cardsWide && styles.statCardWide,
+              ]}
+            >
+              <View style={[styles.statIconTile, card.color === 'teal' ? styles.statIconTeal : styles.statIconOrange]}>
+                <card.Icon color={card.color === 'teal' ? theme.colors.teal : theme.colors.orange} size={Platform.OS === 'web' ? 16 : theme.layout.iconSize} />
+              </View>
               <Text style={styles.statLabel}>{t(card.label)}</Text>
-              <Text style={styles.statValue}>{stats[card.key] ?? 0}</Text>
+              <Text style={[styles.statValue, card.color === 'teal' ? styles.statValueTeal : styles.statValueOrange]}>
+                {stats[card.key] ?? 0}
+              </Text>
             </View>
           ))}
         </View>
