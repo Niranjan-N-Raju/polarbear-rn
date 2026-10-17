@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
-import { ActivityIndicator, Modal, Pressable, ScrollView, Text, TextInput, View } from 'react-native';
+import { ActivityIndicator, Modal, Platform, Pressable, ScrollView, Text, TextInput, useWindowDimensions, View } from 'react-native';
 import { apiRequest } from '../../api/auth';
 import { theme } from '../../config/theme';
 import { t, translateRole } from '../../i18n';
@@ -29,6 +29,7 @@ interface UserForm {
 const blankForm: UserForm = { name: '', email: '', password: '', role: 'sub_admin', franchiseIds: [] };
 
 export function AdminUsersScreen() {
+  const { width } = useWindowDimensions();
   const [users, setUsers] = useState<AdminUser[]>([]);
   const [stores, setStores] = useState<StoreOption[]>([]);
   const [filterStore, setFilterStore] = useState('');
@@ -163,10 +164,13 @@ export function AdminUsersScreen() {
 
   return (
     <View style={styles.screen}>
-      <View style={styles.screenHeader}>
-        <Text style={styles.screenTitle}>{t('adminUsers')}</Text>
-        <Text style={styles.screenDescription}>{t('adminManageUsers')}</Text>
-        <Pressable accessibilityRole="button" onPress={openCreate} style={[styles.primaryButton, { marginTop: theme.spacing.lg }]}>
+      <View style={[styles.screenHeader, Platform.OS === 'web' && width >= 640 && styles.screenHeaderInline, Platform.OS === 'web' && width < 640 && styles.screenHeaderStack]}>
+        <View style={Platform.OS === 'web' ? styles.screenHeaderCopy : undefined}>
+          {Platform.OS === 'web' && width >= 640 ? <Text style={[styles.screenEyebrow, styles.screenEyebrowTeal]}>Access management</Text> : null}
+          <Text style={styles.screenTitle}>{t('adminUsers')}</Text>
+          <Text style={styles.screenDescription}>{t('adminManageUsers')}</Text>
+        </View>
+        <Pressable accessibilityRole="button" onPress={openCreate} style={[styles.primaryButton, Platform.OS === 'web' && width >= 640 && styles.screenHeaderAction, { marginTop: Platform.OS === 'web' && width >= 640 ? 0 : theme.spacing.lg }]}>
           <Text style={styles.primaryButtonText}>{t('adminAddUser')}</Text>
         </Pressable>
       </View>
@@ -185,6 +189,42 @@ export function AdminUsersScreen() {
       {isLoading ? <ActivityIndicator color={theme.colors.orange} size="large" /> : null}
       {loadError ? <Text accessibilityRole="alert" style={[styles.stateMessage, styles.stateError]}>{loadError}</Text> : null}
       {!isLoading && !loadError && users.length === 0 ? <Text style={styles.stateMessage}>{t('adminNoUsers')}</Text> : null}
+      {Platform.OS === 'web' && width >= theme.layout.adminSidebarBreakpoint ? (
+        <View style={styles.usersTable}>
+          <View style={[styles.usersTableRow, styles.usersTableHeader]}>
+            <Text style={[styles.usersTableCell, styles.usersTableHeaderText, styles.usersTableName]}>Name</Text>
+            <Text style={[styles.usersTableCell, styles.usersTableHeaderText, styles.usersTableEmail]}>Email</Text>
+            <Text style={[styles.usersTableCell, styles.usersTableHeaderText, styles.usersTableRole]}>Role</Text>
+            <Text style={[styles.usersTableCell, styles.usersTableHeaderText, styles.usersTableStores]}>Stores</Text>
+            <View style={styles.usersTableActions} />
+          </View>
+          <ScrollView style={styles.list} contentContainerStyle={styles.listContent}>
+            {users.map((user) => (
+              <View key={user._id} style={styles.usersTableRow}>
+                <View style={[styles.usersTableCell, styles.usersTableName]}>
+                  <View style={styles.userAvatar}><Text style={styles.userAvatarText}>{user.name.charAt(0).toUpperCase()}</Text></View>
+                  <Text numberOfLines={1} style={styles.userTableNameText}>{user.name}</Text>
+                </View>
+                <Text numberOfLines={1} style={[styles.usersTableCell, styles.usersTableEmail]}>{user.email}</Text>
+                <View style={[styles.usersTableCell, styles.usersTableRole]}><Text style={styles.userTableRole}>{translateRole(user.role)}</Text></View>
+                <View style={[styles.usersTableCell, styles.usersTableStores]}>
+                  {user.franchises.length === 0
+                    ? <Text style={styles.rowSubtext}>{t('adminNoStore')}</Text>
+                    : user.franchises.map((store) => <Text key={store._id} style={styles.userTableStore}>{store.name}</Text>)}
+                </View>
+                <View style={styles.usersTableActions}>
+                  <Pressable accessibilityRole="button" onPress={() => openEdit(user)} style={styles.secondaryButton}>
+                    <Text style={styles.secondaryButtonText}>{t('adminEditUser')}</Text>
+                  </Pressable>
+                  <Pressable accessibilityRole="button" onPress={() => setPendingDelete(user)} style={styles.dangerButton}>
+                    <Text style={styles.dangerButtonText}>{t('adminDelete')}</Text>
+                  </Pressable>
+                </View>
+              </View>
+            ))}
+          </ScrollView>
+        </View>
+      ) : (
       <ScrollView style={styles.list} contentContainerStyle={styles.listContent}>
         {users.map((user) => (
           <View key={user._id} style={styles.row}>
@@ -207,6 +247,7 @@ export function AdminUsersScreen() {
           </View>
         ))}
       </ScrollView>
+      )}
 
       <Modal visible={isFormOpen} transparent animationType="slide" onRequestClose={() => setIsFormOpen(false)}>
         <View style={styles.modalBackdrop}>

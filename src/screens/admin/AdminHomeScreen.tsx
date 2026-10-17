@@ -84,9 +84,9 @@ export function AdminHomeScreen({ user: initialUser, onLogout }: AdminHomeScreen
                   accessibilityState={{ selected: active }}
                   onPress={() => setActiveTab(key)}
                   accessibilityLabel={isSidebarCollapsed ? t(label) : undefined}
-                  style={[styles.webSidebarItem, isSidebarCollapsed && styles.webSidebarItemCollapsed, active && styles.webSidebarItemActive]}
+                  style={[styles.webSidebarItem, key === 'dashboard' && styles.webSidebarGroupEnd, isSidebarCollapsed && styles.webSidebarItemCollapsed, active && styles.webSidebarItemActive]}
                 >
-                  <Icon color={active ? theme.colors.teal : theme.colors.muted} size={theme.layout.iconSize} />
+                  <Icon color={active ? theme.colors.teal : theme.colors.muted} size={20} />
                   {!isSidebarCollapsed ? <Text style={[styles.webSidebarItemText, active && styles.webSidebarItemTextActive]}>{t(label)}</Text> : null}
                 </Pressable>
               );
@@ -99,7 +99,7 @@ export function AdminHomeScreen({ user: initialUser, onLogout }: AdminHomeScreen
               onPress={() => setActiveTab('profile')}
               style={[styles.webSidebarProfile, isSidebarCollapsed && styles.webSidebarProfileCollapsed]}
             >
-              <UserRound color={activeTab === 'profile' ? theme.colors.teal : theme.colors.muted} size={theme.layout.iconSize} />
+              <UserRound color={activeTab === 'profile' ? theme.colors.teal : theme.colors.muted} size={20} />
               {!isSidebarCollapsed ? <Text style={[styles.webSidebarItemText, activeTab === 'profile' && styles.webSidebarItemTextActive]}>{t('adminProfile')}</Text> : null}
             </Pressable>
             <Pressable
@@ -109,7 +109,7 @@ export function AdminHomeScreen({ user: initialUser, onLogout }: AdminHomeScreen
               onPress={() => void logout()}
               style={[styles.webSidebarLogout, isSidebarCollapsed && styles.webSidebarItemCollapsed]}
             >
-              {isLoggingOut ? <ActivityIndicator color={theme.colors.muted} /> : <LogOut color={theme.colors.muted} size={theme.layout.iconSize} />}
+              {isLoggingOut ? <ActivityIndicator color={theme.colors.muted} /> : <LogOut color={theme.colors.muted} size={20} />}
               {!isSidebarCollapsed ? <Text style={styles.logoutText}>{t('signOut')}</Text> : null}
             </Pressable>
           </View>

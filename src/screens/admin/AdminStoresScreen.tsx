@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
-import { ActivityIndicator, Modal, Pressable, ScrollView, Text, TextInput, View } from 'react-native';
+import { ActivityIndicator, Modal, Platform, Pressable, ScrollView, Text, TextInput, useWindowDimensions, View } from 'react-native';
 import { apiRequest } from '../../api/auth';
 import { theme } from '../../config/theme';
 import { t } from '../../i18n';
@@ -42,6 +42,15 @@ interface AdminStoresScreenProps {
 }
 
 export function AdminStoresScreen({ userId }: AdminStoresScreenProps) {
+  const { width } = useWindowDimensions();
+  const storeColumns = width >= 1280 ? 3 : width >= 640 ? 2 : 1;
+  const webHasSidebar = width >= theme.layout.adminSidebarBreakpoint;
+  const webContentWidth = Math.min(
+    theme.layout.adminWebContentMaxWidth,
+    width - (webHasSidebar ? theme.layout.adminSidebarWidth : 0),
+  );
+  const webContentPadding = webHasSidebar ? 64 : 32;
+  const webStoreCardWidth = (webContentWidth - webContentPadding - 16 * (storeColumns - 1)) / storeColumns;
   const [stores, setStores] = useState<StoreRecord[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
@@ -174,10 +183,13 @@ export function AdminStoresScreen({ userId }: AdminStoresScreenProps) {
 
   return (
     <View style={styles.screen}>
-      <View style={styles.screenHeader}>
-        <Text style={styles.screenTitle}>{t('adminStores')}</Text>
-        <Text style={styles.screenDescription}>{t('adminStoreCount', { count: stores.length })}</Text>
-        <Pressable accessibilityRole="button" onPress={openCreate} style={[styles.primaryButton, { marginTop: theme.spacing.lg }]}>
+      <View style={[styles.screenHeader, Platform.OS === 'web' && width >= 640 && styles.screenHeaderInline]}>
+        <View style={Platform.OS === 'web' ? styles.screenHeaderCopy : undefined}>
+          {Platform.OS === 'web' && width >= 640 ? <Text style={[styles.screenEyebrow, styles.screenEyebrowTeal]}>Workspace setup</Text> : null}
+          <Text style={styles.screenTitle}>{t('adminStores')}</Text>
+          <Text style={styles.screenDescription}>{t('adminStoreCount', { count: stores.length })}</Text>
+        </View>
+        <Pressable accessibilityRole="button" onPress={openCreate} style={[styles.primaryButton, Platform.OS === 'web' && width >= 640 && styles.screenHeaderAction, { marginTop: Platform.OS === 'web' && width >= 640 ? 0 : theme.spacing.lg }]}>
           <Text style={styles.primaryButtonText}>{t('adminAddStore')}</Text>
         </Pressable>
       </View>
@@ -186,11 +198,23 @@ export function AdminStoresScreen({ userId }: AdminStoresScreenProps) {
       {error ? <Text accessibilityRole="alert" style={[styles.stateMessage, styles.stateError]}>{error}</Text> : null}
       {!isLoading && !error && stores.length === 0 ? <Text style={styles.stateMessage}>{t('adminNoStores')}</Text> : null}
 
-      <ScrollView style={styles.list} contentContainerStyle={styles.listContent}>
+      <ScrollView
+        style={styles.list}
+        contentContainerStyle={[
+          styles.listContent,
+          Platform.OS === 'web' && styles.storeGrid,
+        ]}
+      >
         {stores.map((store) => {
           const canManage = store.createdBy === userId;
           return (
-            <View key={store._id} style={styles.row}>
+            <View
+              key={store._id}
+              style={[
+                Platform.OS === 'web' ? styles.storeCard : styles.row,
+                Platform.OS === 'web' && { width: webStoreCardWidth },
+              ]}
+            >
               <View style={styles.rowHeader}>
                 <View style={styles.rowMain}>
                   <Text style={styles.rowTitle}>{store.name}</Text>

@@ -139,24 +139,55 @@ export function AdminProfileScreen({ user: initialUser, onUserUpdated }: AdminPr
   return (
     <ScrollView contentContainerStyle={styles.screen}>
       <View style={styles.screenHeader}>
+        {Platform.OS === 'web' && width >= 640 ? <Text style={[styles.screenEyebrow, styles.screenEyebrowTeal]}>Account settings</Text> : null}
         <Text style={styles.screenTitle}>{t('adminProfileTitle')}</Text>
         <Text style={styles.screenDescription}>{t('adminManageAccount')}</Text>
       </View>
       {showCurrentError ? <Text accessibilityRole="alert" style={[styles.formError, styles.stateError]}>{showCurrentError}</Text> : null}
 
-      <View style={[styles.profileColumns, !profileTwoColumn && { gap: 0 }]}>
-        <View style={styles.profileColumn}>
-          <View style={[styles.profileCard, styles.profileIdentity]}>
-            <View style={styles.profileAvatar}>
-              <Text style={styles.profileAvatarText}>{user.name.charAt(0).toUpperCase()}</Text>
+      {Platform.OS === 'web' ? (
+        <View style={[styles.profileColumns, !profileTwoColumn && styles.profileColumnsStacked]}>
+          <View style={styles.profileColumn}>
+            <View style={[styles.profileCard, styles.profileIdentity]}>
+              <View style={styles.profileAvatar}>
+                <Text style={styles.profileAvatarText}>{user.name.charAt(0).toUpperCase()}</Text>
+              </View>
+              <View style={styles.rowMain}>
+                <Text style={styles.rowTitle}>{user.name}</Text>
+                <Text style={styles.rowSubtext}>{user.email}</Text>
+                <View style={styles.profileRoleBadge}><Text style={styles.profileRoleText}>{translateRole(user.role)}</Text></View>
+              </View>
             </View>
-            <View style={styles.rowMain}>
-              <Text style={styles.rowTitle}>{user.name}</Text>
-              <Text style={styles.rowSubtext}>{user.email}</Text>
-              <View style={styles.profileRoleBadge}><Text style={styles.profileRoleText}>{translateRole(user.role)}</Text></View>
+
+            <View style={styles.profileCard}>
+              <Text style={styles.sectionLabel}>{t('adminUpdateName')}</Text>
+              <Field label={t('adminFullName')} value={name} onChangeText={(value) => { setName(value); setNameError(''); }} error={nameError} />
+              <Pressable disabled={isSavingName} onPress={() => void saveName()} style={styles.primaryButton}>
+                {isSavingName ? <ActivityIndicator color={theme.colors.white} /> : <Text style={styles.primaryButtonText}>{t('adminSaveName')}</Text>}
+              </Pressable>
             </View>
           </View>
 
+          <View style={styles.profileColumn}>
+            <View style={styles.profileCard}>
+              <Text style={styles.sectionLabel}>{t('adminChangePassword')}</Text>
+              <Field label={t('adminCurrentPassword')} value={currentPassword} onChangeText={(value) => { setCurrentPassword(value); setCurrentPasswordError(''); }} error={currentPasswordError} secureTextEntry={!showCurrent} onToggleVisibility={() => setShowCurrent((value) => !value)} visible={showCurrent} />
+              <Field label={t('adminNewPassword')} value={newPassword} onChangeText={(value) => { setNewPassword(value); setNewPasswordError(''); }} error={newPasswordError} secureTextEntry={!showNew} onToggleVisibility={() => setShowNew((value) => !value)} visible={showNew} />
+              <Field label={t('adminConfirmPassword')} value={confirmPassword} onChangeText={(value) => { setConfirmPassword(value); setConfirmPasswordError(''); }} error={confirmPasswordError} secureTextEntry={!showConfirm} onToggleVisibility={() => setShowConfirm((value) => !value)} visible={showConfirm} />
+              {passwordError ? <Text accessibilityRole="alert" style={[styles.formError, styles.stateError]}>{passwordError}</Text> : null}
+              <Pressable disabled={isSavingPassword} onPress={() => void changePassword()} style={styles.primaryButton}>
+                {isSavingPassword ? <ActivityIndicator color={theme.colors.white} /> : <Text style={styles.primaryButtonText}>{t('adminUpdatePassword')}</Text>}
+              </Pressable>
+            </View>
+          </View>
+        </View>
+      ) : (
+        <>
+          <View style={styles.profileCard}>
+            <Text style={styles.rowTitle}>{user.name}</Text>
+            <Text style={styles.rowSubtext}>{user.email}</Text>
+            <Text style={styles.rowRole}>{translateRole(user.role)}</Text>
+          </View>
           <View style={styles.profileCard}>
             <Text style={styles.sectionLabel}>{t('adminUpdateName')}</Text>
             <Field label={t('adminFullName')} value={name} onChangeText={(value) => { setName(value); setNameError(''); }} error={nameError} />
@@ -164,9 +195,6 @@ export function AdminProfileScreen({ user: initialUser, onUserUpdated }: AdminPr
               {isSavingName ? <ActivityIndicator color={theme.colors.white} /> : <Text style={styles.primaryButtonText}>{t('adminSaveName')}</Text>}
             </Pressable>
           </View>
-        </View>
-
-        <View style={styles.profileColumn}>
           <View style={styles.profileCard}>
             <Text style={styles.sectionLabel}>{t('adminChangePassword')}</Text>
             <Field label={t('adminCurrentPassword')} value={currentPassword} onChangeText={(value) => { setCurrentPassword(value); setCurrentPasswordError(''); }} error={currentPasswordError} secureTextEntry={!showCurrent} onToggleVisibility={() => setShowCurrent((value) => !value)} visible={showCurrent} />
@@ -177,8 +205,8 @@ export function AdminProfileScreen({ user: initialUser, onUserUpdated }: AdminPr
               {isSavingPassword ? <ActivityIndicator color={theme.colors.white} /> : <Text style={styles.primaryButtonText}>{t('adminUpdatePassword')}</Text>}
             </Pressable>
           </View>
-        </View>
-      </View>
+        </>
+      )}
     </ScrollView>
   );
 }

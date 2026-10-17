@@ -6,7 +6,7 @@ const { colors, spacing, typography } = theme;
 const baseAdminStyles = StyleSheet.create({
   root: {
     flex: 1,
-    backgroundColor: colors.paleBackground,
+    backgroundColor: colors.sand,
   },
   rootWeb: {
     flexDirection: 'row',
@@ -17,6 +17,7 @@ const baseAdminStyles = StyleSheet.create({
   },
   mainPanelWeb: {
     minHeight: '100%',
+    overflow: 'scroll',
   },
   webSidebar: {
     width: theme.layout.adminSidebarWidth,
@@ -305,7 +306,7 @@ const baseAdminStyles = StyleSheet.create({
     borderTopColor: colors.orange,
   },
   statLabel: {
-    maxWidth: '84%',
+    maxWidth: '78%',
     color: colors.muted,
     fontSize: 11,
     fontWeight: theme.fontWeight.bold,
@@ -608,6 +609,10 @@ const baseAdminStyles = StyleSheet.create({
   profileColumns: {
     flexDirection: 'column',
   },
+  profileColumnsStacked: {
+    flexDirection: 'column',
+    gap: spacing['2xl'],
+  },
   profileColumn: {},
   profileIdentity: {
     flexDirection: 'row',
@@ -642,6 +647,10 @@ const baseAdminStyles = StyleSheet.create({
 
 const webAdminStyles = StyleSheet.create({
   ...baseAdminStyles,
+  root: {
+    ...baseAdminStyles.root,
+    backgroundColor: colors.paleBackground,
+  },
   webSidebar: {
     ...baseAdminStyles.webSidebar,
     width: 240,
@@ -653,6 +662,25 @@ const webAdminStyles = StyleSheet.create({
     shadowOpacity: 0.04,
     shadowRadius: 15,
     elevation: 2,
+  },
+  screenHeaderInline: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: 12,
+  },
+  screenHeaderCopy: {
+    flex: 1,
+    minWidth: 0,
+  },
+  screenHeaderStack: {
+    flexDirection: 'column',
+    gap: 16,
+    alignItems: 'flex-start',
+  },
+  screenHeaderAction: {
+    alignSelf: 'flex-start',
+    marginTop: 0,
   },
   webSidebarCollapsed: {
     width: 64,
@@ -684,6 +712,10 @@ const webAdminStyles = StyleSheet.create({
     minHeight: 44,
     gap: 12,
     paddingHorizontal: 12,
+    marginBottom: 6,
+  },
+  webSidebarGroupEnd: {
+    marginBottom: 20,
   },
   webSidebarItemCollapsed: {
     justifyContent: 'center',
@@ -758,8 +790,12 @@ const webAdminStyles = StyleSheet.create({
     fontSize: 12,
     letterSpacing: 2.16,
   },
+  screenEyebrowTeal: {
+    color: colors.teal,
+  },
   screenTitle: {
     ...baseAdminStyles.screenTitle,
+    marginTop: 8,
     fontSize: 30,
     lineHeight: 36,
   },
@@ -786,7 +822,7 @@ const webAdminStyles = StyleSheet.create({
   },
   statCardWide: {
     ...baseAdminStyles.statCardWide,
-    width: '24%',
+    width: '23%',
   },
   statIconTile: {
     ...baseAdminStyles.statIconTile,
@@ -820,6 +856,125 @@ const webAdminStyles = StyleSheet.create({
   listContent: {
     ...baseAdminStyles.listContent,
     paddingBottom: 24,
+  },
+  storeGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 16,
+  },
+  storeCard: {
+    ...baseAdminStyles.row,
+    marginBottom: 0,
+    padding: 20,
+    borderColor: colors.beige,
+    shadowColor: '#1F292B',
+    shadowOffset: { width: 0, height: 2.5 },
+    shadowOpacity: 0.045,
+    shadowRadius: 8,
+    elevation: 1,
+  },
+  storeCardSingle: {
+    width: '100%',
+  },
+  storeCardDouble: {
+    width: '48%',
+  },
+  storeCardTriple: {
+    width: '32%',
+  },
+  usersTable: {
+    overflow: 'hidden',
+    borderWidth: theme.border.width,
+    borderColor: colors.beige,
+    backgroundColor: colors.white,
+    shadowColor: '#1F292B',
+    shadowOffset: { width: 0, height: 2.5 },
+    shadowOpacity: 0.045,
+    shadowRadius: 8,
+    elevation: 1,
+  },
+  usersTableRow: {
+    minHeight: 48,
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderBottomWidth: theme.border.width,
+    borderBottomColor: 'rgba(232, 228, 215, 0.6)',
+  },
+  usersTableHeader: {
+    minHeight: 44,
+    backgroundColor: 'rgba(236, 234, 213, 0.5)',
+  },
+  usersTableCell: {
+    paddingHorizontal: 20,
+    paddingVertical: 12,
+    fontSize: 14,
+    color: colors.muted,
+  },
+  usersTableHeaderText: {
+    fontSize: 14,
+    fontWeight: theme.fontWeight.bold,
+    color: '#4B5563',
+    letterSpacing: 1.12,
+    textTransform: 'uppercase',
+  },
+  usersTableName: {
+    flex: 1.2,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    color: colors.ink,
+  },
+  usersTableEmail: {
+    flex: 1.4,
+  },
+  usersTableRole: {
+    flex: 0.9,
+  },
+  usersTableStores: {
+    flex: 1.2,
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 6,
+  },
+  usersTableActions: {
+    width: 112,
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    gap: 8,
+    paddingRight: 20,
+  },
+  userAvatar: {
+    width: 32,
+    height: 32,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'rgba(244, 117, 33, 0.1)',
+  },
+  userAvatarText: {
+    color: colors.orange,
+    fontSize: 12,
+    fontWeight: theme.fontWeight.bold,
+  },
+  userTableNameText: {
+    flexShrink: 1,
+    color: colors.ink,
+    fontSize: 14,
+    fontWeight: theme.fontWeight.medium,
+  },
+  userTableRole: {
+    alignSelf: 'flex-start',
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    backgroundColor: 'rgba(244, 117, 33, 0.1)',
+    color: colors.orange,
+    fontSize: 12,
+  },
+  userTableStore: {
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    backgroundColor: 'rgba(236, 234, 213, 0.65)',
+    color: colors.teal,
+    fontSize: 12,
   },
   fieldLabel: {
     ...baseAdminStyles.fieldLabel,
@@ -879,6 +1034,10 @@ const webAdminStyles = StyleSheet.create({
   profileColumns: {
     flexDirection: 'row',
     alignItems: 'flex-start',
+    gap: 24,
+  },
+  profileColumnsStacked: {
+    flexDirection: 'column',
     gap: 24,
   },
   profileColumn: {

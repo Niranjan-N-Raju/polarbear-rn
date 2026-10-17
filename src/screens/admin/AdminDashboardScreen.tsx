@@ -53,12 +53,19 @@ export function AdminDashboardScreen() {
     void loadStats();
   }, [loadStats]);
 
+  const webHasSidebar = width >= theme.layout.adminSidebarBreakpoint;
+  const webContentWidth = Math.min(
+    theme.layout.adminWebContentMaxWidth,
+    width - (webHasSidebar ? theme.layout.adminSidebarWidth : 0),
+  );
+  const webContentPadding = webHasSidebar ? 32 : 16;
+  const webCardWidth = (webContentWidth - webContentPadding * 2 - 12 * 3) / 4;
   const cardsWide = width >= (Platform.OS === 'web' ? 640 : theme.layout.tabletBreakpoint);
 
   return (
     <ScrollView contentContainerStyle={styles.screen}>
       <View style={styles.screenHeader}>
-        <Text style={styles.screenEyebrow}>{t('adminOverview')}</Text>
+        {Platform.OS !== 'web' || width >= 640 ? <Text style={styles.screenEyebrow}>{t('adminOverview')}</Text> : null}
         <Text style={styles.screenTitle}>{t('adminDashboard')}</Text>
         <Text style={styles.screenDescription}>{t('adminOverviewDescription')}</Text>
       </View>
@@ -78,6 +85,7 @@ export function AdminDashboardScreen() {
                 styles.statCard,
                 card.color === 'teal' ? styles.statCardTeal : styles.statCardOrange,
                 cardsWide && styles.statCardWide,
+                Platform.OS === 'web' && cardsWide && { width: webCardWidth },
               ]}
             >
               <View style={[styles.statIconTile, card.color === 'teal' ? styles.statIconTeal : styles.statIconOrange]}>
