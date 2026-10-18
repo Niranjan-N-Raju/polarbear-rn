@@ -654,7 +654,7 @@ const webAdminStyles = StyleSheet.create({
   webSidebar: {
     ...baseAdminStyles.webSidebar,
     width: 240,
-    paddingHorizontal: 12,
+    paddingHorizontal: 0,
     paddingBottom: 0,
     backgroundColor: 'rgba(255, 255, 255, 0.95)',
     shadowColor: '#24323A',
@@ -689,7 +689,7 @@ const webAdminStyles = StyleSheet.create({
     ...baseAdminStyles.webSidebarBrand,
     minHeight: 56,
     gap: 8,
-    paddingHorizontal: 12,
+    paddingHorizontal: 16,
     justifyContent: 'space-between',
   },
   webSidebarBrandCollapsed: {
@@ -722,7 +722,7 @@ const webAdminStyles = StyleSheet.create({
     paddingHorizontal: 12,
   },
   webSidebarFooter: {
-    paddingHorizontal: 8,
+    paddingHorizontal: 0,
     paddingTop: 8,
     borderTopWidth: theme.border.width,
     borderTopColor: colors.sand,
@@ -733,6 +733,8 @@ const webAdminStyles = StyleSheet.create({
     alignItems: 'center',
     gap: 12,
     paddingHorizontal: 10,
+    marginHorizontal: 8,
+    marginBottom: 8,
   },
   webSidebarProfileCollapsed: {
     justifyContent: 'center',
@@ -751,6 +753,13 @@ const webAdminStyles = StyleSheet.create({
     minHeight: 40,
     gap: 12,
     paddingHorizontal: 10,
+    borderTopWidth: 0,
+  },
+  webSidebarLogoutContainer: {
+    borderTopWidth: theme.border.width,
+    borderTopColor: colors.sand,
+    paddingHorizontal: 8,
+    paddingVertical: 12,
   },
   headerMark: {
     ...baseAdminStyles.headerMark,
@@ -760,6 +769,21 @@ const webAdminStyles = StyleSheet.create({
   headerMarkText: {
     ...baseAdminStyles.headerMarkText,
     fontSize: 10,
+  },
+  headerBrand: {
+    ...baseAdminStyles.headerBrand,
+    gap: 8,
+  },
+  headerName: {
+    ...baseAdminStyles.headerName,
+    color: '#1F2937',
+    fontSize: 14,
+    fontWeight: theme.fontWeight.medium,
+  },
+  headerUser: {
+    ...baseAdminStyles.headerUser,
+    marginTop: 0,
+    fontSize: 11,
   },
   content: {
     ...baseAdminStyles.content,
@@ -883,7 +907,9 @@ const webAdminStyles = StyleSheet.create({
     width: '32%',
   },
   usersTable: {
-    overflow: 'hidden',
+    width: '100%',
+    minWidth: 900,
+    overflow: 'visible',
     borderWidth: theme.border.width,
     borderColor: colors.beige,
     backgroundColor: colors.white,

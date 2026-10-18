@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { ActivityIndicator, Modal, Platform, Pressable, Text, useWindowDimensions, View } from 'react-native';
-import { LayoutDashboard, LogOut, Menu, PanelLeftClose, PanelLeftOpen, Store, UserRound, UsersRound, X } from 'lucide-react-native';
+import { ChevronsLeft, LayoutDashboard, LogOut, Menu, Store, UserRound, UsersRound, X } from 'lucide-react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { apiRequest, setAccessToken, type AuthenticatedUser } from '../../api/auth';
 import { theme } from '../../config/theme';
@@ -71,7 +71,7 @@ export function AdminHomeScreen({ user: initialUser, onLogout }: AdminHomeScreen
               onPress={() => setIsSidebarCollapsed((collapsed) => !collapsed)}
               style={styles.webSidebarCollapseButton}
             >
-              {isSidebarCollapsed ? <PanelLeftOpen color={theme.colors.muted} size={16} /> : <PanelLeftClose color={theme.colors.muted} size={16} />}
+              {isSidebarCollapsed ? <Menu color={theme.colors.muted} size={20} strokeWidth={1.8} /> : <ChevronsLeft color={theme.colors.muted} size={20} strokeWidth={1.8} />}
             </Pressable>
           </View>
           <View style={styles.webSidebarNav}>
@@ -102,16 +102,18 @@ export function AdminHomeScreen({ user: initialUser, onLogout }: AdminHomeScreen
               <UserRound color={activeTab === 'profile' ? theme.colors.teal : theme.colors.muted} size={20} />
               {!isSidebarCollapsed ? <Text style={[styles.webSidebarItemText, activeTab === 'profile' && styles.webSidebarItemTextActive]}>{t('adminProfile')}</Text> : null}
             </Pressable>
-            <Pressable
-              accessibilityRole="button"
-              accessibilityLabel={t('signOut')}
-              disabled={isLoggingOut}
-              onPress={() => void logout()}
-              style={[styles.webSidebarLogout, isSidebarCollapsed && styles.webSidebarItemCollapsed]}
-            >
-              {isLoggingOut ? <ActivityIndicator color={theme.colors.muted} /> : <LogOut color={theme.colors.muted} size={20} />}
-              {!isSidebarCollapsed ? <Text style={styles.logoutText}>{t('signOut')}</Text> : null}
-            </Pressable>
+            <View style={styles.webSidebarLogoutContainer}>
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel={t('signOut')}
+                disabled={isLoggingOut}
+                onPress={() => void logout()}
+                style={[styles.webSidebarLogout, isSidebarCollapsed && styles.webSidebarItemCollapsed]}
+              >
+                {isLoggingOut ? <ActivityIndicator color={theme.colors.muted} /> : <LogOut color={theme.colors.muted} size={20} />}
+                {!isSidebarCollapsed ? <Text style={styles.logoutText}>{t('signOut')}</Text> : null}
+              </Pressable>
+            </View>
           </View>
         </View>
       ) : (
