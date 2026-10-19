@@ -3,6 +3,7 @@ import { Modal, Platform, Pressable, StyleProp, useWindowDimensions, View, ViewS
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useEffect, useRef, useState } from 'react';
 import { responsiveDrawerStyles as styles } from '../styles/responsiveDrawerStyles';
+import { getResponsiveDrawerLayout } from '../utils/adminLayout';
 
 interface ResponsiveDrawerModalProps {
   visible: boolean;
@@ -17,14 +18,15 @@ interface ResponsiveDrawerModalProps {
 export function ResponsiveDrawerModal({ visible, closeLabel, onClose, onAfterClose, children, presentation = 'drawer', panelStyle }: ResponsiveDrawerModalProps) {
   const insets = useSafeAreaInsets();
   const { width, height } = useWindowDimensions();
-  const isWeb = Platform.OS === 'web';
-  const isDialog = presentation === 'dialog';
+  const drawerLayout = getResponsiveDrawerLayout(width, height, presentation);
+  const isWeb = drawerLayout.isWeb;
+  const isDialog = drawerLayout.position === 'dialog';
   const [webMounted, setWebMounted] = useState(visible && isWeb);
   const [webOpen, setWebOpen] = useState(false);
   const [nativePresented, setNativePresented] = useState(visible && !isWeb);
   const webMountedRef = useRef(visible && isWeb);
   const nativePresentedRef = useRef(visible && !isWeb);
-  const openFrameRef = useRef<number | null>(null);
+  const openTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const closeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const onAfterCloseRef = useRef(onAfterClose);
 
@@ -35,15 +37,18 @@ export function ResponsiveDrawerModal({ visible, closeLabel, onClose, onAfterClo
   useEffect(() => {
     if (isWeb) {
       if (visible) {
+        if (openTimerRef.current) clearTimeout(openTimerRef.current);
         if (closeTimerRef.current) clearTimeout(closeTimerRef.current);
         webMountedRef.current = true;
         setWebMounted(true);
         setWebOpen(false);
-        openFrameRef.current = requestAnimationFrame(() => {
-          openFrameRef.current = null;
+        openTimerRef.current = setTimeout(() => {
+          openTimerRef.current = null;
           setWebOpen(true);
-        });
+        }, 30);
       } else if (webMountedRef.current) {
+        if (openTimerRef.current) clearTimeout(openTimerRef.current);
+        openTimerRef.current = null;
         setWebOpen(false);
         closeTimerRef.current = setTimeout(() => {
           closeTimerRef.current = null;
@@ -65,14 +70,12 @@ export function ResponsiveDrawerModal({ visible, closeLabel, onClose, onAfterClo
       }, 350);
     }
 
-    return () => {
-      if (openFrameRef.current !== null) cancelAnimationFrame(openFrameRef.current);
-    };
+    return undefined;
   }, [isDialog, isWeb, visible]);
 
   useEffect(() => () => {
+    if (openTimerRef.current) clearTimeout(openTimerRef.current);
     if (closeTimerRef.current) clearTimeout(closeTimerRef.current);
-    if (openFrameRef.current !== null) cancelAnimationFrame(openFrameRef.current);
   }, []);
 
   return (
@@ -83,7 +86,7 @@ export function ResponsiveDrawerModal({ visible, closeLabel, onClose, onAfterClo
       statusBarTranslucent
       onRequestClose={onClose}
     >
-      <View style={[styles.root, isDialog ? styles.dialogRoot : isWeb && styles.webRoot]}>
+      <View style={[styles.root, isDialog ? styles.dialogRoot : drawerLayout.position === 'right' && styles.webRoot]}>
         <Pressable
           testID="responsive-drawer-scrim"
           accessibilityRole="button"
@@ -96,12 +99,15 @@ export function ResponsiveDrawerModal({ visible, closeLabel, onClose, onAfterClo
           testID="responsive-drawer-panel"
           style={[
             styles.panel,
-            isDialog ? styles.dialogPanel : isWeb ? styles.webPanel : styles.nativePanel,
-            !isWeb && !isDialog ? { paddingBottom: insets.bottom } : undefined,
+            isDialog ? styles.dialogPanel : drawerLayout.position === 'right' ? styles.webPanel : styles.nativePanel,
+            drawerLayout.position === 'bottom' && !isDialog ? { paddingBottom: insets.bottom } : undefined,
             panelStyle,
             isWeb ? {
               opacity: webOpen ? 1 : 0,
-              transform: [{ translateX: isDialog || webOpen ? 0 : width * 0.3 }],
+              transform: [
+                { translateX: drawerLayout.position === 'right' && !webOpen ? drawerLayout.hiddenOffset : 0 },
+                { translateY: drawerLayout.position === 'bottom' && !webOpen ? drawerLayout.hiddenOffset : 0 },
+              ],
             } : undefined,
           ]}
         >

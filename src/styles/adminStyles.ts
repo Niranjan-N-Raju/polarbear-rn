@@ -399,6 +399,7 @@ const baseAdminStyles = StyleSheet.create({
     bottom: spacing['2xl'],
     width: 56,
     height: 56,
+    borderRadius: 28,
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: colors.orange,
@@ -594,6 +595,18 @@ const baseAdminStyles = StyleSheet.create({
     padding: spacing['2xl'],
     backgroundColor: colors.white,
   },
+  drawerHeading: {
+    marginTop: -spacing['2xl'],
+    marginHorizontal: -spacing['2xl'],
+    marginBottom: spacing['2xl'],
+    paddingHorizontal: spacing['2xl'],
+    paddingVertical: spacing.lg,
+    borderBottomWidth: theme.border.width,
+    borderBottomColor: colors.beige,
+  },
+  drawerHeadingTitle: {
+    marginBottom: 0,
+  },
   confirmDialogContent: {
     width: '100%',
     padding: spacing['2xl'],
@@ -730,10 +743,22 @@ const baseAdminStyles = StyleSheet.create({
     gap: spacing.md,
     marginBottom: spacing.lg,
   },
+  storeFiltersOpen: {
+    zIndex: 20,
+    elevation: 20,
+  },
+  storeFiltersDismissLayer: {
+    ...StyleSheet.absoluteFill,
+    zIndex: 10,
+    elevation: 10,
+  },
   storeFiltersWeb: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     alignItems: 'center',
+  },
+  storeFiltersWebDesktop: {
+    flexWrap: 'nowrap',
   },
   storeSearch: {
     width: '100%',
@@ -741,6 +766,10 @@ const baseAdminStyles = StyleSheet.create({
   storeSearchWeb: {
     flex: 1,
     minWidth: 220,
+  },
+  storeSearchWebDesktop: {
+    width: 'auto',
+    minWidth: 0,
   },
   storeFilterGroup: {
     flexDirection: 'row',
@@ -753,9 +782,95 @@ const baseAdminStyles = StyleSheet.create({
     fontSize: typography.xs,
     fontWeight: theme.fontWeight.medium,
   },
+  storeFilterDropdownRowWeb: {
+    flexDirection: 'row',
+    width: '100%',
+  },
+  storeFilterDropdownRowWebDesktop: {
+    flex: 2,
+    minWidth: 0,
+    width: 'auto',
+  },
+  storeFilterDropdownRowWebCompact: {
+    width: '100%',
+  },
+  storeMobileFilterRow: {
+    flexDirection: 'row',
+    gap: spacing.md,
+  },
+  storeFilterDropdown: {
+    flex: 1,
+    minWidth: 0,
+    position: 'relative',
+  },
+  storeFilterDropdownOpen: {
+    zIndex: 21,
+    elevation: 21,
+  },
+  storeFilterDropdownButton: {
+    minHeight: 44,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: spacing.xs,
+    paddingHorizontal: spacing.lg,
+    borderWidth: theme.border.width,
+    borderColor: colors.beige,
+    borderRadius: 4,
+    backgroundColor: colors.white,
+  },
+  storeFilterDropdownButtonOpen: {
+    borderColor: colors.teal,
+  },
+  storeFilterDropdownCopy: {
+    flex: 1,
+    minWidth: 0,
+  },
+  storeFilterDropdownLabel: {
+    color: colors.muted,
+    fontSize: 11,
+  },
+  storeFilterDropdownValue: {
+    marginTop: 2,
+    color: colors.ink,
+    fontSize: typography.sm,
+    fontWeight: theme.fontWeight.medium,
+  },
+  storeFilterDropdownOptions: {
+    position: 'absolute',
+    top: 48,
+    left: 0,
+    right: 0,
+    zIndex: 22,
+    elevation: 22,
+    borderWidth: theme.border.width,
+    borderColor: colors.beige,
+    borderRadius: 4,
+    backgroundColor: colors.white,
+    shadowColor: '#1F292B',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.12,
+    shadowRadius: 8,
+  },
+  storeFilterDropdownOption: {
+    minHeight: 36,
+    justifyContent: 'center',
+    paddingHorizontal: spacing.md,
+  },
+  storeFilterDropdownOptionActive: {
+    backgroundColor: 'rgba(0, 162, 192, 0.1)',
+  },
+  storeFilterDropdownOptionText: {
+    color: colors.ink,
+    fontSize: typography.sm,
+  },
+  storeFilterDropdownOptionTextActive: {
+    color: colors.teal,
+    fontWeight: theme.fontWeight.bold,
+  },
   storeCardHeader: {
     flexDirection: 'row',
-    alignItems: 'flex-start',
+    alignItems: 'center',
     gap: 12,
   },
   storeIconTile: {
@@ -770,6 +885,17 @@ const baseAdminStyles = StyleSheet.create({
     flex: 1,
     minWidth: 0,
     gap: 4,
+  },
+  storeCardHeaderActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+  },
+  storeCardHeaderAction: {
+    width: 36,
+    height: 36,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   storeTitleRow: {
     flexDirection: 'row',
@@ -1134,6 +1260,12 @@ const webAdminStyles = StyleSheet.create({
   listContent: {
     ...baseAdminStyles.listContent,
     paddingBottom: 24,
+  },
+  storeListWithFab: {
+    paddingBottom: 88,
+  },
+  storeListFabViewport: {
+    marginBottom: 72,
   },
   storeGrid: {
     flexDirection: 'row',

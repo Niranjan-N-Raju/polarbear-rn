@@ -79,6 +79,7 @@ export const en = {
   adminOwnerDetails: 'Franchise Owner Details',
   adminStoreCount: '{{count}} stores registered',
   adminSearchStores: 'Search stores or codes',
+  adminCloseFilters: 'Close store filters',
   adminStatus: 'Status',
   adminActive: 'Active',
   adminAllTypes: 'All types',

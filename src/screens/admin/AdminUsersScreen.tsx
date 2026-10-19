@@ -255,7 +255,9 @@ export function AdminUsersScreen() {
 
       <ResponsiveDrawerModal visible={isFormOpen} closeLabel={t('adminCloseMenu')} onClose={() => setIsFormOpen(false)}>
         <View style={styles.drawerContent}>
-          <Text style={styles.modalTitle}>{t(editing ? 'adminEditUser' : 'adminAddUser')}</Text>
+          <View style={styles.drawerHeading}>
+            <Text style={[styles.modalTitle, styles.drawerHeadingTitle]}>{t(editing ? 'adminEditUser' : 'adminAddUser')}</Text>
+          </View>
           <ScrollView style={styles.drawerFormScroll} keyboardShouldPersistTaps="handled">
               {formError ? <Text accessibilityRole="alert" style={[styles.formError, styles.stateError]}>{formError}</Text> : null}
               <Field label={t('adminFullName')} value={form.name} onChangeText={(name) => setForm((current) => ({ ...current, name }))} />
