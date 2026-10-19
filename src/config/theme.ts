@@ -16,7 +16,7 @@ export const theme = {
     placeholder: '#9CA3AF',
     iconMuted: '#6B7280',
     inputBorder: '#D1D5DB',
-    inputBackground: '#FBFAF7',
+    inputBackground: '#FFFFFF',
     paleBackground: '#F8F7F1',
     errorBorder: '#F3C4C0',
     errorBackground: '#FFF3F1',

@@ -50,7 +50,7 @@ export function AdminHomeScreen({ user: initialUser, onLogout }: AdminHomeScreen
     { key: 'users' as const, label: 'adminUsers' as const, Icon: UsersRound },
     { key: 'profile' as const, label: 'adminProfile' as const, Icon: UserRound },
   ];
-  const webTabs = tabs.filter((tab) => tab.key !== 'profile');
+  const primaryTabs = tabs.filter((tab) => tab.key !== 'profile');
 
   return (
     <View style={[styles.root, safeAreaStyles.root, layout.hasSidebar && styles.rootWeb]}>
@@ -76,7 +76,7 @@ export function AdminHomeScreen({ user: initialUser, onLogout }: AdminHomeScreen
             </Pressable>
           </View>
           <View style={styles.webSidebarNav}>
-            {webTabs.map(({ key, label, Icon }) => {
+            {primaryTabs.map(({ key, label, Icon }) => {
               const active = activeTab === key;
               return (
                 <Pressable
@@ -156,8 +156,8 @@ export function AdminHomeScreen({ user: initialUser, onLogout }: AdminHomeScreen
         onRequestClose={() => setIsDrawerOpen(false)}
       >
         <View style={styles.drawerRoot}>
-          <View style={[styles.drawerPanel, drawerSafeAreaStyles.drawerTop]}>
-            <View style={styles.drawerHeader}>
+          <View style={[styles.drawerPanel, layout.isWeb && styles.drawerPanelWeb, drawerSafeAreaStyles.drawerTop]}>
+            <View style={[styles.drawerHeader, layout.isWeb && styles.drawerHeaderWeb]}>
               <View style={styles.headerBrand}>
                 <View style={styles.headerMark}>
                   <Text style={styles.headerMarkText}>{t('brandInitials')}</Text>
@@ -177,8 +177,8 @@ export function AdminHomeScreen({ user: initialUser, onLogout }: AdminHomeScreen
               </Pressable>
             </View>
 
-            <View style={styles.drawerList}>
-              {tabs.map(({ key, label, Icon }) => {
+            <View style={[styles.drawerList, layout.isWeb && styles.drawerListWeb]}>
+              {primaryTabs.map(({ key, label, Icon }) => {
                 const active = activeTab === key;
                 return (
                   <Pressable
@@ -189,26 +189,50 @@ export function AdminHomeScreen({ user: initialUser, onLogout }: AdminHomeScreen
                       setActiveTab(key);
                       setIsDrawerOpen(false);
                     }}
-                    style={[styles.drawerItem, active && styles.drawerItemActive]}
+                    style={[
+                      layout.isWeb ? styles.webSidebarItem : styles.drawerItem,
+                      layout.isWeb && key === 'dashboard' && styles.webSidebarGroupEnd,
+                      active && (layout.isWeb ? styles.webSidebarItemActive : styles.drawerItemActive),
+                    ]}
                   >
-                    <Icon color={active ? theme.colors.orange : theme.colors.muted} size={theme.layout.iconSize} />
-                    <Text style={[styles.drawerItemText, active && styles.drawerItemTextActive]}>{t(label)}</Text>
+                    <Icon color={active ? (layout.isWeb ? theme.colors.teal : theme.colors.orange) : theme.colors.muted} size={layout.isWeb ? layout.sidebarIconSize : theme.layout.iconSize} />
+                    <Text style={[
+                      layout.isWeb ? styles.webSidebarItemText : styles.drawerItemText,
+                      active && (layout.isWeb ? styles.webSidebarItemTextActive : styles.drawerItemTextActive),
+                    ]}>{t(label)}</Text>
                   </Pressable>
                 );
               })}
             </View>
 
-            <View style={[styles.drawerFooter, drawerSafeAreaStyles.drawerBottom]}>
+            <View style={[layout.isWeb ? styles.webSidebarFooter : styles.drawerFooter, drawerSafeAreaStyles.drawerBottom]}>
               <Pressable
                 accessibilityRole="button"
-                accessibilityLabel={t('signOut')}
-                disabled={isLoggingOut}
-                onPress={() => void logout()}
-                style={styles.drawerLogout}
+                accessibilityLabel={t('adminProfile')}
+                onPress={() => {
+                  setActiveTab('profile');
+                  setIsDrawerOpen(false);
+                }}
+                style={layout.isWeb ? styles.webSidebarProfile : styles.drawerItem}
               >
-                {isLoggingOut ? <ActivityIndicator color={theme.colors.muted} /> : <LogOut color={theme.colors.muted} size={theme.layout.iconSize} />}
-                <Text style={styles.logoutText}>{t('signOut')}</Text>
+                <UserRound color={activeTab === 'profile' ? (layout.isWeb ? theme.colors.teal : theme.colors.orange) : theme.colors.muted} size={layout.isWeb ? layout.sidebarIconSize : theme.layout.iconSize} />
+                <Text style={[
+                  layout.isWeb ? styles.webSidebarItemText : styles.drawerItemText,
+                  activeTab === 'profile' && (layout.isWeb ? styles.webSidebarItemTextActive : styles.drawerItemTextActive),
+                ]}>{t('adminProfile')}</Text>
               </Pressable>
+              <View style={layout.isWeb ? styles.webSidebarLogoutContainer : undefined}>
+                <Pressable
+                  accessibilityRole="button"
+                  accessibilityLabel={t('signOut')}
+                  disabled={isLoggingOut}
+                  onPress={() => void logout()}
+                  style={layout.isWeb ? styles.webSidebarLogout : styles.drawerLogout}
+                >
+                  {isLoggingOut ? <ActivityIndicator color={theme.colors.muted} /> : <LogOut color={theme.colors.muted} size={layout.isWeb ? layout.sidebarIconSize : theme.layout.iconSize} />}
+                  <Text style={styles.logoutText}>{t('signOut')}</Text>
+                </Pressable>
+              </View>
             </View>
           </View>
           <Pressable

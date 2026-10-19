@@ -5,7 +5,7 @@ import { apiRequest } from '../../api/auth';
 import { theme } from '../../config/theme';
 import { t, type TranslationKey } from '../../i18n';
 import { adminStyles as styles } from '../../styles/adminStyles';
-import { getAdminLayout } from '../../utils/adminLayout';
+import { getAdminLayout, getDashboardCardColor } from '../../utils/adminLayout';
 
 interface DashboardStats {
   totalStores: number;
@@ -56,7 +56,7 @@ export function AdminDashboardScreen() {
   }, [loadStats]);
 
   return (
-    <ScrollView contentContainerStyle={styles.screen}>
+    <ScrollView contentContainerStyle={styles.screenScroll}>
       <View style={styles.screenHeader}>
         {layout.dashboardEyebrow ? <Text style={styles.screenEyebrow}>{t('adminOverview')}</Text> : null}
         <Text style={styles.screenTitle}>{t('adminDashboard')}</Text>
@@ -71,24 +71,28 @@ export function AdminDashboardScreen() {
         </Text>
       ) : (
         <View style={styles.cardGrid}>
-          {statCards.map((card) => (
-            <View
-              key={card.key}
-              style={[
-                styles.statCard,
-                card.color === 'teal' ? styles.statCardTeal : styles.statCardOrange,
-                layout.dashboardCardsWide && styles.statCardWide,
-              ]}
-            >
-              <View style={[styles.statIconTile, card.color === 'teal' ? styles.statIconTeal : styles.statIconOrange]}>
-                <card.Icon color={card.color === 'teal' ? theme.colors.teal : theme.colors.orange} size={layout.dashboardIconSize} />
+          {statCards.map((card, index) => {
+            const color = getDashboardCardColor(index, card.color, layout.isWeb);
+            const isTeal = color === 'teal';
+            return (
+              <View
+                key={card.key}
+                style={[
+                  styles.statCard,
+                  isTeal ? styles.statCardTeal : styles.statCardOrange,
+                  layout.dashboardCardsWide && styles.statCardWide,
+                ]}
+              >
+                <View style={[styles.statIconTile, isTeal ? styles.statIconTeal : styles.statIconOrange]}>
+                  <card.Icon color={isTeal ? theme.colors.teal : theme.colors.orange} size={layout.dashboardIconSize} />
+                </View>
+                <Text style={styles.statLabel}>{t(card.label)}</Text>
+                <Text style={[styles.statValue, isTeal ? styles.statValueTeal : styles.statValueOrange]}>
+                  {stats[card.key] ?? 0}
+                </Text>
               </View>
-              <Text style={styles.statLabel}>{t(card.label)}</Text>
-              <Text style={[styles.statValue, card.color === 'teal' ? styles.statValueTeal : styles.statValueOrange]}>
-                {stats[card.key] ?? 0}
-              </Text>
-            </View>
-          ))}
+            );
+          })}
         </View>
       )}
     </ScrollView>

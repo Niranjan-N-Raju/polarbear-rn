@@ -2,6 +2,12 @@ import { Platform } from 'react-native';
 import { theme } from '../config/theme';
 
 export type StoreCardStyleKey = 'storeCardSingle' | 'storeCardDouble' | 'storeCardTriple';
+export type DashboardCardColor = 'teal' | 'orange';
+
+export function getDashboardCardColor(index: number, nativeColor: DashboardCardColor, isWeb: boolean): DashboardCardColor {
+  if (!isWeb) return nativeColor;
+  return index % 2 === 0 ? 'teal' : 'orange';
+}
 
 export function getAdminLayout(width: number) {
   const isWeb = Platform.OS === 'web';

@@ -135,10 +135,16 @@ export function AdminProfileScreen({ user: initialUser, onUserUpdated }: AdminPr
     }
   }
 
-  if (isLoading) return <ActivityIndicator color={theme.colors.orange} size="large" />;
+  if (isLoading) {
+    return (
+      <View style={styles.loadingScreen}>
+        <ActivityIndicator color={theme.colors.orange} size="large" />
+      </View>
+    );
+  }
 
   return (
-    <ScrollView contentContainerStyle={styles.screen}>
+    <ScrollView contentContainerStyle={styles.screenScroll}>
       <View style={styles.screenHeader}>
         {layout.desktopWeb ? <Text style={[styles.screenEyebrow, styles.screenEyebrowTeal]}>Account settings</Text> : null}
         <Text style={styles.screenTitle}>{t('adminProfileTitle')}</Text>

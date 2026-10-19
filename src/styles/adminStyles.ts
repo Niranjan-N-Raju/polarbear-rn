@@ -157,6 +157,19 @@ const baseAdminStyles = StyleSheet.create({
     borderRightWidth: theme.border.width,
     borderRightColor: colors.beige,
   },
+  drawerPanelWeb: {
+    width: 256,
+    maxWidth: '100%',
+  },
+  drawerHeaderWeb: {
+    minHeight: 56,
+    paddingBottom: 0,
+    borderBottomColor: colors.sand,
+  },
+  drawerListWeb: {
+    paddingHorizontal: 12,
+    paddingTop: 20,
+  },
   drawerHeader: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -233,6 +246,12 @@ const baseAdminStyles = StyleSheet.create({
     flex: 1,
     paddingHorizontal: spacing['2xl'],
     paddingTop: spacing['2xl'],
+  },
+  screenScroll: {
+    flexGrow: 1,
+    paddingHorizontal: spacing['2xl'],
+    paddingTop: spacing['2xl'],
+    paddingBottom: spacing['5xl'],
   },
   screenHeader: {
     marginBottom: spacing['2xl'],
@@ -329,6 +348,11 @@ const baseAdminStyles = StyleSheet.create({
     color: colors.muted,
     fontSize: typography.sm,
     textAlign: 'center',
+  },
+  loadingScreen: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   stateError: {
     color: colors.error,
@@ -799,6 +823,12 @@ const webAdminStyles = StyleSheet.create({
     ...baseAdminStyles.screen,
     paddingHorizontal: 0,
     paddingTop: 0,
+  },
+  screenScroll: {
+    ...baseAdminStyles.screenScroll,
+    paddingHorizontal: 0,
+    paddingTop: 0,
+    paddingBottom: 0,
   },
   screenHeader: {
     ...baseAdminStyles.screenHeader,
