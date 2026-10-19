@@ -2,12 +2,6 @@ import { Platform } from 'react-native';
 import { theme } from '../config/theme';
 
 export type StoreCardStyleKey = 'storeCardSingle' | 'storeCardDouble' | 'storeCardTriple';
-export type DashboardCardColor = 'teal' | 'orange';
-
-export function getDashboardCardColor(index: number, nativeColor: DashboardCardColor, useWebAlternatingColors: boolean): DashboardCardColor {
-  if (!useWebAlternatingColors) return nativeColor;
-  return index % 2 === 0 ? 'teal' : 'orange';
-}
 
 export function getAdminLayout(width: number) {
   const isWeb = Platform.OS === 'web';
@@ -25,10 +19,6 @@ export function getAdminLayout(width: number) {
     compactWeb: isWeb && !hasSidebar,
     desktopWeb,
     storeFiltersInline: isWeb && width >= 768,
-    dashboardCardsTablet: width >= 768 && width < theme.layout.adminSidebarBreakpoint,
-    dashboardCardsWide: hasSidebar,
-    dashboardEyebrow: !isWeb || desktopWeb,
-    dashboardIconSize: isWeb ? 16 : theme.layout.iconSize,
     sidebarIconSize: isWeb ? 20 : theme.layout.iconSize,
     storeCardStyle,
     usersTable: hasSidebar,
