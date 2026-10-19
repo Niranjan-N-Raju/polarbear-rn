@@ -142,6 +142,26 @@ const baseAdminStyles = StyleSheet.create({
     fontSize: typography.xs,
     fontWeight: theme.fontWeight.medium,
   },
+  drawerRoot: {
+    flex: 1,
+    flexDirection: 'row',
+    backgroundColor: 'rgba(0, 0, 0, 0.4)',
+  },
+  drawerScrim: {
+    flex: 1,
+  },
+  drawerPanel: {
+    width: '84%',
+    maxWidth: 320,
+    height: '100%',
+    backgroundColor: colors.white,
+    borderRightWidth: theme.border.width,
+    borderRightColor: colors.beige,
+  },
+  drawerPanelWeb: {
+    width: 256,
+    maxWidth: '100%',
+  },
   drawerHeaderWeb: {
     minHeight: 56,
     paddingBottom: 0,
@@ -551,10 +571,22 @@ const baseAdminStyles = StyleSheet.create({
     fontWeight: theme.fontWeight.bold,
   },
   modalActions: {
+    width: '100%',
     flexDirection: 'row',
-    justifyContent: 'flex-end',
-    gap: spacing.md,
+    alignItems: 'stretch',
+    gap: 0,
     paddingTop: spacing.lg,
+    borderTopWidth: theme.border.width,
+    borderTopColor: colors.beige,
+  },
+  drawerActionSlot: {
+    flex: 1,
+    minWidth: 0,
+    paddingHorizontal: spacing.xs,
+  },
+  drawerActionButton: {
+    width: '100%',
+    minWidth: 0,
   },
   drawerContent: {
     flex: 1,
@@ -562,10 +594,35 @@ const baseAdminStyles = StyleSheet.create({
     padding: spacing['2xl'],
     backgroundColor: colors.white,
   },
-  drawerConfirmContent: {
-    flex: 1,
-    justifyContent: 'center',
+  confirmDialogContent: {
+    width: '100%',
     padding: spacing['2xl'],
+    backgroundColor: colors.white,
+  },
+  confirmDialogHeader: {
+    paddingBottom: spacing.lg,
+    borderBottomWidth: theme.border.width,
+    borderBottomColor: colors.beige,
+  },
+  confirmDialogTitle: {
+    marginBottom: 0,
+  },
+  confirmDialogBody: {
+    paddingVertical: spacing['2xl'],
+  },
+  confirmDialogActions: {
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    gap: spacing.sm,
+    paddingTop: spacing.lg,
+    borderTopWidth: theme.border.width,
+    borderTopColor: colors.beige,
+  },
+  confirmDialogActionSlot: {
+    width: '25%',
+  },
+  confirmDialogActionButton: {
+    width: '100%',
   },
   formError: {
     marginBottom: spacing.lg,
@@ -791,6 +848,11 @@ const baseAdminStyles = StyleSheet.create({
   },
   storeEditActionText: {
     color: colors.teal,
+    fontSize: 12,
+    fontWeight: theme.fontWeight.medium,
+  },
+  storeArchiveActionText: {
+    color: colors.orange,
     fontSize: 12,
     fontWeight: theme.fontWeight.medium,
   },

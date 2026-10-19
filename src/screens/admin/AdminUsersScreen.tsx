@@ -45,6 +45,7 @@ export function AdminUsersScreen() {
   const [formError, setFormError] = useState('');
   const [isSaving, setIsSaving] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
 
   const load = useCallback(async () => {
     setIsLoading(true);
@@ -156,7 +157,7 @@ export function AdminUsersScreen() {
       const response = await apiRequest(`/users/${encodeURIComponent(pendingDelete._id)}`, { method: 'DELETE' });
       const data = await response.json() as { message?: string };
       if (!response.ok) throw new Error(data.message ?? t('adminSaveFailed'));
-      setPendingDelete(null);
+      setIsDeleteDialogOpen(false);
       await load();
     } catch (error) {
       setLoadError(error instanceof Error ? error.message : t('adminNetworkError'));
@@ -219,7 +220,7 @@ export function AdminUsersScreen() {
                   <Pressable accessibilityRole="button" onPress={() => openEdit(user)} style={styles.secondaryButton}>
                     <Text style={styles.secondaryButtonText}>{t('adminEditUser')}</Text>
                   </Pressable>
-                  <Pressable accessibilityRole="button" onPress={() => setPendingDelete(user)} style={styles.dangerButton}>
+                  <Pressable accessibilityRole="button" onPress={() => { setPendingDelete(user); setIsDeleteDialogOpen(true); }} style={styles.dangerButton}>
                     <Text style={styles.dangerButtonText}>{t('adminDelete')}</Text>
                   </Pressable>
                 </View>
@@ -243,7 +244,7 @@ export function AdminUsersScreen() {
               <Pressable accessibilityRole="button" onPress={() => openEdit(user)} style={styles.secondaryButton}>
                 <Text style={styles.secondaryButtonText}>{t('adminEditUser')}</Text>
               </Pressable>
-              <Pressable accessibilityRole="button" onPress={() => setPendingDelete(user)} style={styles.dangerButton}>
+              <Pressable accessibilityRole="button" onPress={() => { setPendingDelete(user); setIsDeleteDialogOpen(true); }} style={styles.dangerButton}>
                 <Text style={styles.dangerButtonText}>{t('adminDelete')}</Text>
               </Pressable>
             </View>
@@ -284,23 +285,35 @@ export function AdminUsersScreen() {
               ) : null}
           </ScrollView>
           <View style={styles.modalActions}>
-            <Pressable onPress={() => setIsFormOpen(false)} style={styles.secondaryButton}><Text style={styles.secondaryButtonText}>{t('adminCancel')}</Text></Pressable>
-            <Pressable disabled={isSaving} onPress={() => void save()} style={styles.primaryButton}>
-              {isSaving ? <ActivityIndicator color={theme.colors.white} /> : <Text style={styles.primaryButtonText}>{t('adminSave')}</Text>}
-            </Pressable>
+            <View style={styles.drawerActionSlot}>
+              <Pressable onPress={() => setIsFormOpen(false)} style={[styles.secondaryButton, styles.drawerActionButton]}><Text style={styles.secondaryButtonText}>{t('adminCancel')}</Text></Pressable>
+            </View>
+            <View style={styles.drawerActionSlot}>
+              <Pressable disabled={isSaving} onPress={() => void save()} style={[styles.primaryButton, styles.drawerActionButton]}>
+                {isSaving ? <ActivityIndicator color={theme.colors.white} /> : <Text style={styles.primaryButtonText}>{t('adminSave')}</Text>}
+              </Pressable>
+            </View>
           </View>
         </View>
       </ResponsiveDrawerModal>
 
-      <ResponsiveDrawerModal visible={pendingDelete !== null} closeLabel={t('adminCloseMenu')} onClose={() => setPendingDelete(null)}>
-        <View style={styles.drawerConfirmContent}>
-          <Text style={styles.modalTitle}>{t('adminDeleteUser')}</Text>
-          <Text style={styles.screenDescription}>{t('adminConfirmDeleteUser', { name: pendingDelete?.name ?? '' })}</Text>
-          <View style={styles.modalActions}>
-            <Pressable onPress={() => setPendingDelete(null)} style={styles.secondaryButton}><Text style={styles.secondaryButtonText}>{t('adminCancel')}</Text></Pressable>
-            <Pressable disabled={isDeleting} onPress={() => void deleteUser()} style={styles.dangerButton}>
-              {isDeleting ? <ActivityIndicator color={theme.colors.white} /> : <Text style={styles.dangerButtonText}>{t('adminDelete')}</Text>}
-            </Pressable>
+      <ResponsiveDrawerModal visible={isDeleteDialogOpen && pendingDelete !== null} presentation="dialog" closeLabel={t('adminCloseMenu')} onClose={() => setIsDeleteDialogOpen(false)} onAfterClose={() => setPendingDelete(null)}>
+        <View style={styles.confirmDialogContent}>
+          <View style={styles.confirmDialogHeader}>
+            <Text style={[styles.modalTitle, styles.confirmDialogTitle]}>{t('adminDeleteUser')}</Text>
+          </View>
+          <View style={styles.confirmDialogBody}>
+            <Text style={styles.screenDescription}>{t('adminConfirmDeleteUser', { name: pendingDelete?.name ?? '' })}</Text>
+          </View>
+          <View style={styles.confirmDialogActions}>
+            <View style={styles.confirmDialogActionSlot}>
+              <Pressable onPress={() => setIsDeleteDialogOpen(false)} style={[styles.secondaryButton, styles.confirmDialogActionButton]}><Text style={styles.secondaryButtonText}>{t('adminCancel')}</Text></Pressable>
+            </View>
+            <View style={styles.confirmDialogActionSlot}>
+              <Pressable disabled={isDeleting} onPress={() => void deleteUser()} style={[styles.dangerButton, styles.confirmDialogActionButton]}>
+                {isDeleting ? <ActivityIndicator color={theme.colors.white} /> : <Text style={styles.dangerButtonText}>{t('adminDelete')}</Text>}
+              </Pressable>
+            </View>
           </View>
         </View>
       </ResponsiveDrawerModal>

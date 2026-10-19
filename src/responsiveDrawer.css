@@ -1,0 +1,7 @@
+[data-testid='responsive-drawer-panel'] {
+  transition: transform 240ms cubic-bezier(0.22, 1, 0.36, 1), opacity 160ms ease;
+}
+
+[data-testid='responsive-drawer-scrim'] {
+  transition: opacity 180ms ease;
+}

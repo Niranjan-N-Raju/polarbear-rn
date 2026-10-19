@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { ActivityIndicator, Pressable, Text, useWindowDimensions, View } from 'react-native';
+import { ActivityIndicator, Modal, Pressable, Text, useWindowDimensions, View } from 'react-native';
 import { ChevronsLeft, LayoutDashboard, LogOut, Menu, Store, UserRound, UsersRound, X } from 'lucide-react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { apiRequest, setAccessToken, type AuthenticatedUser } from '../../api/auth';
@@ -7,7 +7,6 @@ import { theme } from '../../config/theme';
 import { t, translateRole } from '../../i18n';
 import { adminStyles as styles, getAdminDrawerSafeAreaStyles, getAdminSafeAreaStyles } from '../../styles/adminStyles';
 import { getAdminLayout } from '../../utils/adminLayout';
-import { ResponsiveDrawerModal } from '../../components/ResponsiveDrawerModal';
 import { AdminDashboardScreen } from './AdminDashboardScreen';
 import { AdminProfileScreen } from './AdminProfileScreen';
 import { AdminStoresScreen } from './AdminStoresScreen';
@@ -150,7 +149,15 @@ export function AdminHomeScreen({ user: initialUser, onLogout }: AdminHomeScreen
       </View>
 
       {!layout.hasSidebar ? (
-        <ResponsiveDrawerModal visible={isDrawerOpen} closeLabel={t('adminCloseMenu')} onClose={() => setIsDrawerOpen(false)}>
+        <Modal
+          visible={isDrawerOpen}
+          transparent
+          animationType="fade"
+          statusBarTranslucent
+          onRequestClose={() => setIsDrawerOpen(false)}
+        >
+          <View style={styles.drawerRoot}>
+            <View style={[styles.drawerPanel, layout.isWeb && styles.drawerPanelWeb, drawerSafeAreaStyles.drawerTop]}>
             <View style={[styles.drawerHeader, layout.isWeb && styles.drawerHeaderWeb]}>
               <View style={styles.headerBrand}>
                 <View style={styles.headerMark}>
@@ -228,7 +235,15 @@ export function AdminHomeScreen({ user: initialUser, onLogout }: AdminHomeScreen
                 </Pressable>
               </View>
             </View>
-        </ResponsiveDrawerModal>
+            </View>
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel={t('adminCloseMenu')}
+              onPress={() => setIsDrawerOpen(false)}
+              style={styles.drawerScrim}
+            />
+          </View>
+        </Modal>
       ) : null}
     </View>
   );

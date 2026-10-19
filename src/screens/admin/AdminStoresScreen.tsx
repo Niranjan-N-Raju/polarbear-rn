@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { ActivityIndicator, Pressable, ScrollView, Text, TextInput, useWindowDimensions, View } from 'react-native';
-import { MapPin, Pencil, Phone, Store as StoreIcon, Trash2 } from 'lucide-react-native';
+import { Archive, MapPin, Pencil, Phone, RotateCcw, Store as StoreIcon } from 'lucide-react-native';
 import { apiRequest } from '../../api/auth';
 import { theme } from '../../config/theme';
 import { t } from '../../i18n';
@@ -21,6 +21,7 @@ interface StoreRecord {
   ownerEmail?: string;
   createdBy?: string;
   isActive?: boolean;
+  archivedAt?: string | null;
 }
 
 interface StoreForm {
@@ -52,11 +53,12 @@ export function AdminStoresScreen({ userId }: AdminStoresScreenProps) {
   const [error, setError] = useState('');
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingStore, setEditingStore] = useState<StoreRecord | null>(null);
-  const [pendingDelete, setPendingDelete] = useState<StoreRecord | null>(null);
+  const [pendingArchive, setPendingArchive] = useState<StoreRecord | null>(null);
   const [form, setForm] = useState<StoreForm>(emptyForm);
   const [formError, setFormError] = useState('');
   const [isSaving, setIsSaving] = useState(false);
-  const [isDeleting, setIsDeleting] = useState(false);
+  const [updatingArchiveId, setUpdatingArchiveId] = useState<string | null>(null);
+  const [isArchiveDialogOpen, setIsArchiveDialogOpen] = useState(false);
 
   const loadStores = useCallback(async () => {
     setIsLoading(true);
@@ -158,22 +160,25 @@ export function AdminStoresScreen({ userId }: AdminStoresScreenProps) {
     }
   }
 
-  async function deleteStore(): Promise<void> {
-    if (!pendingDelete) return;
-    setIsDeleting(true);
+  async function updateStoreArchive(store: StoreRecord, archived: boolean): Promise<void> {
+    setUpdatingArchiveId(store._id);
     try {
-      const response = await apiRequest(`/stores?id=${encodeURIComponent(pendingDelete._id)}`, { method: 'DELETE' });
+      const response = await apiRequest(`/stores/archive?id=${encodeURIComponent(store._id)}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ archived }),
+      });
       const data = await response.json() as { message?: string };
       if (!response.ok) {
         setError(data.message ?? t('adminSaveFailed'));
         return;
       }
-      setPendingDelete(null);
+      if (archived) setIsArchiveDialogOpen(false);
       await loadStores();
     } catch {
       setError(t('adminNetworkError'));
     } finally {
-      setIsDeleting(false);
+      setUpdatingArchiveId(null);
     }
   }
 
@@ -224,9 +229,9 @@ export function AdminStoresScreen({ userId }: AdminStoresScreenProps) {
                         {store.storeType === 'company' ? t('adminCompanyStore') : t('adminFranchiseStore')}
                       </Text>
                     </View>
-                    <View style={[styles.storeStatusBadge, store.isActive ? styles.storeActiveBadge : styles.storeInactiveBadge]}>
-                      <Text style={store.isActive ? styles.storeActiveBadgeText : styles.storeInactiveBadgeText}>
-                        {store.isActive ? 'Active' : 'Inactive'}
+                    <View style={[styles.storeStatusBadge, store.isActive && !store.archivedAt ? styles.storeActiveBadge : styles.storeInactiveBadge]}>
+                      <Text style={store.isActive && !store.archivedAt ? styles.storeActiveBadgeText : styles.storeInactiveBadgeText}>
+                        {store.archivedAt ? t('adminArchived') : store.isActive ? 'Active' : 'Inactive'}
                       </Text>
                     </View>
                   </View>
@@ -245,10 +250,17 @@ export function AdminStoresScreen({ userId }: AdminStoresScreenProps) {
                     <Pencil color={theme.colors.teal} size={14} />
                     <Text style={styles.storeEditActionText}>Edit</Text>
                   </Pressable>
-                  <Pressable accessibilityRole="button" onPress={() => setPendingDelete(store)} style={styles.storeCardAction}>
-                    <Trash2 color="#DC2626" size={14} />
-                    <Text style={styles.storeDeleteActionText}>{t('adminDelete')}</Text>
-                  </Pressable>
+                  {store.archivedAt ? (
+                    <Pressable accessibilityRole="button" disabled={updatingArchiveId === store._id} onPress={() => void updateStoreArchive(store, false)} style={styles.storeCardAction}>
+                      <RotateCcw color={theme.colors.orange} size={14} />
+                      <Text style={styles.storeArchiveActionText}>{updatingArchiveId === store._id ? t('adminSaving') : t('adminRestore')}</Text>
+                    </Pressable>
+                  ) : (
+                    <Pressable accessibilityRole="button" onPress={() => { setPendingArchive(store); setIsArchiveDialogOpen(true); }} style={styles.storeCardAction}>
+                      <Archive color={theme.colors.orange} size={14} />
+                      <Text style={styles.storeArchiveActionText}>{t('adminArchive')}</Text>
+                    </Pressable>
+                  )}
                 </View>
               ) : null}
             </View>
@@ -285,29 +297,41 @@ export function AdminStoresScreen({ userId }: AdminStoresScreenProps) {
               ) : null}
           </ScrollView>
           <View style={styles.modalActions}>
-            <Pressable onPress={() => setIsFormOpen(false)} style={styles.secondaryButton}>
-              <Text style={styles.secondaryButtonText}>{t('adminCancel')}</Text>
-            </Pressable>
-            <Pressable disabled={isSaving} onPress={() => void saveStore()} style={styles.primaryButton}>
-              {isSaving ? <ActivityIndicator color={theme.colors.white} /> : <Text style={styles.primaryButtonText}>{t(editingStore ? 'adminSaveChanges' : 'adminCreateStore')}</Text>}
-            </Pressable>
+            <View style={styles.drawerActionSlot}>
+              <Pressable onPress={() => setIsFormOpen(false)} style={[styles.secondaryButton, styles.drawerActionButton]}>
+                <Text style={styles.secondaryButtonText}>{t('adminCancel')}</Text>
+              </Pressable>
+            </View>
+            <View style={styles.drawerActionSlot}>
+              <Pressable disabled={isSaving} onPress={() => void saveStore()} style={[styles.primaryButton, styles.drawerActionButton]}>
+                {isSaving ? <ActivityIndicator color={theme.colors.white} /> : <Text style={styles.primaryButtonText}>{t(editingStore ? 'adminSaveChanges' : 'adminCreateStore')}</Text>}
+              </Pressable>
+            </View>
           </View>
         </View>
       </ResponsiveDrawerModal>
 
-      <ResponsiveDrawerModal visible={pendingDelete !== null} closeLabel={t('adminCloseMenu')} onClose={() => setPendingDelete(null)}>
-        <View style={styles.drawerConfirmContent}>
-          <Text style={styles.modalTitle}>{t('adminDeleteStore')}</Text>
-          <Text style={styles.screenDescription}>
-            {t('adminConfirmDeleteStore', { name: pendingDelete?.name ?? '' })}
-          </Text>
-          <View style={styles.modalActions}>
-            <Pressable onPress={() => setPendingDelete(null)} style={styles.secondaryButton}>
-              <Text style={styles.secondaryButtonText}>{t('adminCancel')}</Text>
-            </Pressable>
-            <Pressable disabled={isDeleting} onPress={() => void deleteStore()} style={styles.dangerButton}>
-              {isDeleting ? <ActivityIndicator color={theme.colors.white} /> : <Text style={styles.dangerButtonText}>{t('adminDelete')}</Text>}
-            </Pressable>
+      <ResponsiveDrawerModal visible={isArchiveDialogOpen && pendingArchive !== null} presentation="dialog" closeLabel={t('adminCloseMenu')} onClose={() => setIsArchiveDialogOpen(false)} onAfterClose={() => setPendingArchive(null)}>
+        <View style={styles.confirmDialogContent}>
+          <View style={styles.confirmDialogHeader}>
+            <Text style={[styles.modalTitle, styles.confirmDialogTitle]}>{t('adminArchiveStore')}</Text>
+          </View>
+          <View style={styles.confirmDialogBody}>
+            <Text style={styles.screenDescription}>
+              {t('adminConfirmArchiveStore', { name: pendingArchive?.name ?? '' })}
+            </Text>
+          </View>
+          <View style={styles.confirmDialogActions}>
+            <View style={styles.confirmDialogActionSlot}>
+              <Pressable onPress={() => setIsArchiveDialogOpen(false)} style={[styles.secondaryButton, styles.confirmDialogActionButton]}>
+                <Text style={styles.secondaryButtonText}>{t('adminCancel')}</Text>
+              </Pressable>
+            </View>
+            <View style={styles.confirmDialogActionSlot}>
+              <Pressable disabled={updatingArchiveId === pendingArchive?._id} onPress={() => pendingArchive && void updateStoreArchive(pendingArchive, true)} style={[styles.primaryButton, styles.confirmDialogActionButton]}>
+                {updatingArchiveId === pendingArchive?._id ? <ActivityIndicator color={theme.colors.white} /> : <Text style={styles.primaryButtonText}>{t('adminArchive')}</Text>}
+              </Pressable>
+            </View>
           </View>
         </View>
       </ResponsiveDrawerModal>
