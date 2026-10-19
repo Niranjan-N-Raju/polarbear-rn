@@ -787,7 +787,7 @@ const webAdminStyles = StyleSheet.create({
   },
   content: {
     ...baseAdminStyles.content,
-    maxWidth: theme.layout.adminWebContentMaxWidth,
+    maxWidth: '100%',
     paddingHorizontal: 32,
     paddingVertical: 32,
   },
