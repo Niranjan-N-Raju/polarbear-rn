@@ -72,7 +72,7 @@ export function AdminDashboardScreen() {
       ) : (
         <View style={styles.cardGrid}>
           {statCards.map((card, index) => {
-            const color = getDashboardCardColor(index, card.color, layout.isWeb);
+            const color = getDashboardCardColor(index, card.color, layout.isWeb && width >= 768);
             const isTeal = color === 'teal';
             return (
               <View

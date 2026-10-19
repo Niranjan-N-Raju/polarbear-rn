@@ -4,8 +4,8 @@ import { theme } from '../config/theme';
 export type StoreCardStyleKey = 'storeCardSingle' | 'storeCardDouble' | 'storeCardTriple';
 export type DashboardCardColor = 'teal' | 'orange';
 
-export function getDashboardCardColor(index: number, nativeColor: DashboardCardColor, isWeb: boolean): DashboardCardColor {
-  if (!isWeb) return nativeColor;
+export function getDashboardCardColor(index: number, nativeColor: DashboardCardColor, useWebAlternatingColors: boolean): DashboardCardColor {
+  if (!useWebAlternatingColors) return nativeColor;
   return index % 2 === 0 ? 'teal' : 'orange';
 }
 
