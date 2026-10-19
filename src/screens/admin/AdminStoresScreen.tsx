@@ -14,36 +14,57 @@ interface StoreRecord {
   storeCode: string;
   storeType: 'company' | 'franchise';
   address?: string;
-        <View style={[
-          styles.storeMobileFilterRow,
-          layout.isWeb && styles.storeFilterDropdownRowWeb,
-          layout.hasSidebar && styles.storeFilterDropdownRowWebDesktop,
-        ]}>
-          <StoreFilterDropdown
-            label={t('adminStatus')}
-            value={statusFilter}
-            expanded={openMobileFilter === 'status'}
-            onToggle={() => setOpenMobileFilter((current) => current === 'status' ? null : 'status')}
-            onSelect={(value) => { setStatusFilter(value as StoreStatusFilter); setOpenMobileFilter(null); }}
-            options={[
-              { value: 'active', label: t('adminActive') },
-              { value: 'archived', label: t('adminArchived') },
-              { value: 'all', label: t('adminAllStores') },
-            ]}
-          />
-          <StoreFilterDropdown
-            label={t('adminStoreType')}
-            value={typeFilter}
-            expanded={openMobileFilter === 'type'}
-            onToggle={() => setOpenMobileFilter((current) => current === 'type' ? null : 'type')}
-            onSelect={(value) => { setTypeFilter(value as StoreTypeFilter); setOpenMobileFilter(null); }}
-            options={[
-              { value: 'all', label: t('adminAllTypes') },
-              { value: 'company', label: t('adminCompanyStore') },
-              { value: 'franchise', label: t('adminFranchiseStore') },
-            ]}
-          />
-        </View>
+  phone?: string;
+  description?: string;
+  ownerName?: string;
+  ownerPhone?: string;
+  ownerEmail?: string;
+  createdBy?: string;
+  isActive?: boolean;
+  archivedAt?: string | null;
+}
+
+interface StoreForm {
+  name: string;
+  storeCode: string;
+  address: string;
+  phone: string;
+  description: string;
+  storeType: 'company' | 'franchise';
+  ownerName: string;
+  ownerPhone: string;
+  ownerEmail: string;
+}
+
+type StoreStatusFilter = 'active' | 'archived' | 'all';
+type StoreTypeFilter = 'all' | 'company' | 'franchise';
+type StoreFilterValue = StoreStatusFilter | StoreTypeFilter;
+
+const emptyForm: StoreForm = {
+  name: '', storeCode: '', address: '', phone: '', description: '',
+  storeType: 'company', ownerName: '', ownerPhone: '', ownerEmail: '',
+};
+
+interface AdminStoresScreenProps {
+  userId: string;
+}
+
+export function AdminStoresScreen({ userId }: AdminStoresScreenProps) {
+  const { width } = useWindowDimensions();
+  const layout = getAdminLayout(width);
+  const [stores, setStores] = useState<StoreRecord[]>([]);
+  const [searchText, setSearchText] = useState('');
+  const [statusFilter, setStatusFilter] = useState<StoreStatusFilter>('active');
+  const [typeFilter, setTypeFilter] = useState<StoreTypeFilter>('all');
+  const [openMobileFilter, setOpenMobileFilter] = useState<'status' | 'type' | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState('');
+  const [isFormOpen, setIsFormOpen] = useState(false);
+  const [editingStore, setEditingStore] = useState<StoreRecord | null>(null);
+  const [pendingArchive, setPendingArchive] = useState<StoreRecord | null>(null);
+  const [pendingArchiveValue, setPendingArchiveValue] = useState(true);
+  const [form, setForm] = useState<StoreForm>(emptyForm);
+  const [formError, setFormError] = useState('');
   const [isSaving, setIsSaving] = useState(false);
   const [updatingArchiveId, setUpdatingArchiveId] = useState<string | null>(null);
   const [isArchiveDialogOpen, setIsArchiveDialogOpen] = useState(false);
@@ -179,67 +200,58 @@ interface StoreRecord {
     }
   }
 
-        <View style={[
-          styles.storeMobileFilterRow,
-          layout.isWeb && styles.storeFilterDropdownRowWeb,
-          layout.hasSidebar && styles.storeFilterDropdownRowWebDesktop,
-        ]}>
+  return (
+    <View style={styles.screen}>
+      <View style={[styles.screenHeader, layout.desktopWeb && styles.screenHeaderInline]}>
+        <View style={layout.isWeb ? styles.screenHeaderCopy : undefined}>
+          {layout.desktopWeb ? <Text style={[styles.screenEyebrow, styles.screenEyebrowTeal]}>Workspace setup</Text> : null}
+          <Text style={styles.screenTitle}>{t('adminStores')}</Text>
+          <Text style={styles.screenDescription}>{t('adminStoreCount', { count: stores.length })}</Text>
+        </View>
+        {layout.desktopWeb ? (
+          <Pressable accessibilityRole="button" onPress={openCreate} style={[styles.primaryButton, styles.screenHeaderAction]}>
+            <Text style={styles.primaryButtonText}>{t('adminAddStore')}</Text>
+          </Pressable>
+        ) : null}
+      </View>
+
+      {openMobileFilter ? (
+        <Pressable accessibilityRole="button" accessibilityLabel={t('adminCloseFilters')} onPress={() => setOpenMobileFilter(null)} style={styles.storeFiltersDismissLayer} />
+      ) : null}
+
+      <View style={[styles.storeFilters, layout.isWeb && styles.storeFiltersWeb, layout.hasSidebar && styles.storeFiltersWebDesktop, openMobileFilter && styles.storeFiltersOpen]}>
         <TextInput
           value={searchText}
           onChangeText={setSearchText}
           placeholder={t('adminSearchStores')}
-          style={[styles.fieldInput, styles.storeSearch, layout.isWeb && styles.storeSearchWeb]}
+          style={[styles.fieldInput, styles.storeSearch, layout.isWeb && styles.storeSearchWeb, layout.hasSidebar && styles.storeSearchWebDesktop]}
           autoCapitalize="none"
         />
-        {false ? (
-          <>
-            <View style={styles.storeFilterGroup}>
-              <Text style={styles.storeFilterLabel}>{t('adminStatus')}</Text>
-              {(['active', 'archived', 'all'] as const).map((status) => (
-                <Pressable key={status} onPress={() => setStatusFilter(status)} style={[styles.filterChip, statusFilter === status && styles.filterChipActive]}>
-                  <Text style={[styles.filterChipText, statusFilter === status && styles.filterChipTextActive]}>
-                    {t(status === 'active' ? 'adminActive' : status === 'archived' ? 'adminArchived' : 'adminAllStores')}
-                  </Text>
-                </Pressable>
-              ))}
-            </View>
-            <View style={styles.storeFilterGroup}>
-              <Text style={styles.storeFilterLabel}>{t('adminStoreType')}</Text>
-              {(['all', 'company', 'franchise'] as const).map((storeType) => (
-                <Pressable key={storeType} onPress={() => setTypeFilter(storeType)} style={[styles.filterChip, typeFilter === storeType && styles.filterChipActive]}>
-                  <Text style={[styles.filterChipText, typeFilter === storeType && styles.filterChipTextActive]}>
-                    {t(storeType === 'all' ? 'adminAllTypes' : storeType === 'company' ? 'adminCompanyStore' : 'adminFranchiseStore')}
-                  </Text>
-                </Pressable>
-              ))}
-            </View>
-          </>
-        ) : (
-          <View style={[styles.storeMobileFilterRow, layout.compactWeb && styles.storeFilterDropdownRowWebCompact]}>
-            <StoreFilterDropdown
-              label={t('adminStatus')}
-              value={statusFilter}
-              expanded={openMobileFilter === 'status'}
-              onToggle={() => setOpenMobileFilter((current) => current === 'status' ? null : 'status')}
-              onSelect={(value) => { setStatusFilter(value as StoreStatusFilter); setOpenMobileFilter(null); }}
-              options={[
-                { value: 'active', label: t('adminActive') },
-                { value: 'archived', label: t('adminArchived') },
-                { value: 'all', label: t('adminAllStores') },
-              ]}
-            />
-            <StoreFilterDropdown
-              label={t('adminStoreType')}
-              value={typeFilter}
-              expanded={openMobileFilter === 'type'}
-              onToggle={() => setOpenMobileFilter((current) => current === 'type' ? null : 'type')}
-              onSelect={(value) => { setTypeFilter(value as StoreTypeFilter); setOpenMobileFilter(null); }}
-              options={[
-                { value: 'all', label: t('adminAllTypes') },
-                { value: 'company', label: t('adminCompanyStore') },
-                { value: 'franchise', label: t('adminFranchiseStore') },
-              ]}
-            />
+        <View style={[styles.storeMobileFilterRow, layout.isWeb && styles.storeFilterDropdownRowWeb, layout.hasSidebar && styles.storeFilterDropdownRowWebDesktop]}>
+          <StoreFilterDropdown
+            label={t('adminStatus')}
+            value={statusFilter}
+            expanded={openMobileFilter === 'status'}
+            onToggle={() => setOpenMobileFilter((current) => current === 'status' ? null : 'status')}
+            onSelect={(value) => { setStatusFilter(value as StoreStatusFilter); setOpenMobileFilter(null); }}
+            options={[
+              { value: 'active', label: t('adminActive') },
+              { value: 'archived', label: t('adminArchived') },
+              { value: 'all', label: t('adminAllStores') },
+            ]}
+          />
+          <StoreFilterDropdown
+            label={t('adminStoreType')}
+            value={typeFilter}
+            expanded={openMobileFilter === 'type'}
+            onToggle={() => setOpenMobileFilter((current) => current === 'type' ? null : 'type')}
+            onSelect={(value) => { setTypeFilter(value as StoreTypeFilter); setOpenMobileFilter(null); }}
+            options={[
+              { value: 'all', label: t('adminAllTypes') },
+              { value: 'company', label: t('adminCompanyStore') },
+              { value: 'franchise', label: t('adminFranchiseStore') },
+            ]}
+          />
         </View>
       </View>
 
@@ -303,18 +315,29 @@ interface StoreRecord {
                       style={styles.storeCardHeaderAction}
                     >
                       {store.archivedAt
-                        ) : (
-                          <View style={[
-                            styles.storeMobileFilterRow,
-                            layout.isWeb && styles.storeFilterDropdownRowWeb,
-                            layout.hasSidebar && styles.storeFilterDropdownRowWebDesktop,
-                          ]}>
-                  ) : (
-                    <Pressable accessibilityRole="button" onPress={() => { setPendingArchive(store); setPendingArchiveValue(true); setIsArchiveDialogOpen(true); }} style={styles.storeCardAction}>
-                      <Archive color={theme.colors.orange} size={14} />
-                      <Text style={styles.storeArchiveActionText}>{t('adminArchive')}</Text>
+                        ? <RotateCcw color={theme.colors.orange} size={16} />
+                        : <Archive color={theme.colors.orange} size={16} />}
                     </Pressable>
-                  )}
+                  </View>
+                ) : null}
+              </View>
+              {store.description ? <Text style={styles.storeDescription}>{store.description}</Text> : null}
+              {store.address || store.phone ? (
+                <View style={styles.storeContactBlock}>
+                  {store.address ? <View style={styles.storeContactRow}><MapPin color="#9CA3AF" size={14} /><Text style={styles.storeContactText}>{store.address}</Text></View> : null}
+                  {store.phone ? <View style={styles.storeContactRow}><Phone color="#9CA3AF" size={14} /><Text style={styles.storeContactText}>{store.phone}</Text></View> : null}
+                </View>
+              ) : null}
+              {canManage && layout.desktopWeb ? (
+                <View style={styles.storeCardActions}>
+                  <Pressable accessibilityRole="button" onPress={() => openEdit(store)} style={styles.storeCardAction}>
+                    <Pencil color={theme.colors.teal} size={14} />
+                    <Text style={styles.storeEditActionText}>{t('adminEditStore')}</Text>
+                  </Pressable>
+                  <Pressable accessibilityRole="button" onPress={() => { setPendingArchive(store); setPendingArchiveValue(!store.archivedAt); setIsArchiveDialogOpen(true); }} style={styles.storeCardAction}>
+                    {store.archivedAt ? <RotateCcw color={theme.colors.orange} size={14} /> : <Archive color={theme.colors.orange} size={14} />}
+                    <Text style={styles.storeArchiveActionText}>{store.archivedAt ? t('adminRestore') : t('adminArchive')}</Text>
+                  </Pressable>
                 </View>
               ) : null}
             </View>
@@ -334,29 +357,29 @@ interface StoreRecord {
             <Text style={[styles.modalTitle, styles.drawerHeadingTitle]}>{t(editingStore ? 'adminEditStore' : 'adminAddStore')}</Text>
           </View>
           <ScrollView style={styles.drawerFormScroll} keyboardShouldPersistTaps="handled">
-              {formError ? <Text accessibilityRole="alert" style={[styles.formError, styles.stateError]}>{formError}</Text> : null}
-              <Text style={styles.fieldLabel}>{t('adminStoreType')}</Text>
-              <View style={styles.typeOptions}>
-                <Pressable onPress={() => updateField('storeType', 'company')} style={[styles.secondaryButton, styles.typeOption, form.storeType === 'company' && styles.typeOptionSelected]}>
-                  <Text style={styles.secondaryButtonText}>{t('adminCompanyStore')}</Text>
-                </Pressable>
-                <Pressable onPress={() => updateField('storeType', 'franchise')} style={[styles.secondaryButton, styles.typeOption, form.storeType === 'franchise' && styles.typeOptionSelected]}>
-                  <Text style={styles.secondaryButtonText}>{t('adminFranchiseStore')}</Text>
-                </Pressable>
-              </View>
-              <Field label={t('adminStoreName')} value={form.name} onChangeText={(value) => updateField('name', value)} />
-              <Field label={t('adminStoreCode')} value={form.storeCode} onChangeText={(value) => updateField('storeCode', value.toUpperCase())} autoCapitalize="characters" />
-              <Field label={t('adminPhone')} value={form.phone} onChangeText={(value) => updateField('phone', value.replace(/\D/g, '').slice(0, 10))} keyboardType="phone-pad" />
-              <Field label={t('adminAddress')} value={form.address} onChangeText={(value) => updateField('address', value)} />
-              <Field label={t('adminDescription')} value={form.description} onChangeText={(value) => updateField('description', value)} multiline />
-              {form.storeType === 'franchise' ? (
-                <>
-                  <Text style={styles.sectionLabel}>{t('adminOwnerDetails')}</Text>
-                  <Field label={t('adminOwnerName')} value={form.ownerName} onChangeText={(value) => updateField('ownerName', value)} />
-                  <Field label={t('adminOwnerPhone')} value={form.ownerPhone} onChangeText={(value) => updateField('ownerPhone', value.replace(/\D/g, '').slice(0, 10))} keyboardType="phone-pad" />
-                  <Field label={t('adminOwnerEmail')} value={form.ownerEmail} onChangeText={(value) => updateField('ownerEmail', value)} keyboardType="email-address" autoCapitalize="none" />
-                </>
-              ) : null}
+            {formError ? <Text accessibilityRole="alert" style={[styles.formError, styles.stateError]}>{formError}</Text> : null}
+            <Text style={styles.fieldLabel}>{t('adminStoreType')}</Text>
+            <View style={styles.typeOptions}>
+              <Pressable onPress={() => updateField('storeType', 'company')} style={[styles.secondaryButton, styles.typeOption, form.storeType === 'company' && styles.typeOptionSelected]}>
+                <Text style={styles.secondaryButtonText}>{t('adminCompanyStore')}</Text>
+              </Pressable>
+              <Pressable onPress={() => updateField('storeType', 'franchise')} style={[styles.secondaryButton, styles.typeOption, form.storeType === 'franchise' && styles.typeOptionSelected]}>
+                <Text style={styles.secondaryButtonText}>{t('adminFranchiseStore')}</Text>
+              </Pressable>
+            </View>
+            <Field label={t('adminStoreName')} value={form.name} onChangeText={(value) => updateField('name', value)} />
+            <Field label={t('adminStoreCode')} value={form.storeCode} onChangeText={(value) => updateField('storeCode', value.toUpperCase())} autoCapitalize="characters" />
+            <Field label={t('adminPhone')} value={form.phone} onChangeText={(value) => updateField('phone', value.replace(/\D/g, '').slice(0, 10))} keyboardType="phone-pad" />
+            <Field label={t('adminAddress')} value={form.address} onChangeText={(value) => updateField('address', value)} />
+            <Field label={t('adminDescription')} value={form.description} onChangeText={(value) => updateField('description', value)} multiline />
+            {form.storeType === 'franchise' ? (
+              <>
+                <Text style={styles.sectionLabel}>{t('adminOwnerDetails')}</Text>
+                <Field label={t('adminOwnerName')} value={form.ownerName} onChangeText={(value) => updateField('ownerName', value)} />
+                <Field label={t('adminOwnerPhone')} value={form.ownerPhone} onChangeText={(value) => updateField('ownerPhone', value.replace(/\D/g, '').slice(0, 10))} keyboardType="phone-pad" />
+                <Field label={t('adminOwnerEmail')} value={form.ownerEmail} onChangeText={(value) => updateField('ownerEmail', value)} keyboardType="email-address" autoCapitalize="none" />
+              </>
+            ) : null}
           </ScrollView>
           <View style={styles.modalActions}>
             <View style={styles.drawerActionSlot}>
