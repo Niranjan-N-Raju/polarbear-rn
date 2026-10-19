@@ -1,10 +1,11 @@
 import { useCallback, useEffect, useState } from 'react';
-import { ActivityIndicator, Modal, Pressable, ScrollView, Text, TextInput, useWindowDimensions, View } from 'react-native';
+import { ActivityIndicator, Pressable, ScrollView, Text, TextInput, useWindowDimensions, View } from 'react-native';
 import { apiRequest } from '../../api/auth';
 import { theme } from '../../config/theme';
 import { t, translateRole } from '../../i18n';
 import { adminStyles as styles } from '../../styles/adminStyles';
 import { getAdminLayout } from '../../utils/adminLayout';
+import { ResponsiveDrawerModal } from '../../components/ResponsiveDrawerModal';
 
 interface StoreOption {
   _id: string;
@@ -251,11 +252,10 @@ export function AdminUsersScreen() {
       </ScrollView>
       )}
 
-      <Modal visible={isFormOpen} transparent animationType="slide" onRequestClose={() => setIsFormOpen(false)}>
-        <View style={styles.modalBackdrop}>
-          <View style={styles.modal}>
-            <Text style={styles.modalTitle}>{t(editing ? 'adminEditUser' : 'adminAddUser')}</Text>
-            <ScrollView keyboardShouldPersistTaps="handled">
+      <ResponsiveDrawerModal visible={isFormOpen} closeLabel={t('adminCloseMenu')} onClose={() => setIsFormOpen(false)}>
+        <View style={styles.drawerContent}>
+          <Text style={styles.modalTitle}>{t(editing ? 'adminEditUser' : 'adminAddUser')}</Text>
+          <ScrollView style={styles.drawerFormScroll} keyboardShouldPersistTaps="handled">
               {formError ? <Text accessibilityRole="alert" style={[styles.formError, styles.stateError]}>{formError}</Text> : null}
               <Field label={t('adminFullName')} value={form.name} onChangeText={(name) => setForm((current) => ({ ...current, name }))} />
               <Field label={t('adminEmail')} value={form.email} editable={!editing} keyboardType="email-address" autoCapitalize="none" onChangeText={(email) => setForm((current) => ({ ...current, email }))} />
@@ -282,31 +282,28 @@ export function AdminUsersScreen() {
                   })}
                 </View>
               ) : null}
-            </ScrollView>
-            <View style={styles.modalActions}>
-              <Pressable onPress={() => setIsFormOpen(false)} style={styles.secondaryButton}><Text style={styles.secondaryButtonText}>{t('adminCancel')}</Text></Pressable>
-              <Pressable disabled={isSaving} onPress={() => void save()} style={styles.primaryButton}>
-                {isSaving ? <ActivityIndicator color={theme.colors.white} /> : <Text style={styles.primaryButtonText}>{t('adminSave')}</Text>}
-              </Pressable>
-            </View>
+          </ScrollView>
+          <View style={styles.modalActions}>
+            <Pressable onPress={() => setIsFormOpen(false)} style={styles.secondaryButton}><Text style={styles.secondaryButtonText}>{t('adminCancel')}</Text></Pressable>
+            <Pressable disabled={isSaving} onPress={() => void save()} style={styles.primaryButton}>
+              {isSaving ? <ActivityIndicator color={theme.colors.white} /> : <Text style={styles.primaryButtonText}>{t('adminSave')}</Text>}
+            </Pressable>
           </View>
         </View>
-      </Modal>
+      </ResponsiveDrawerModal>
 
-      <Modal visible={pendingDelete !== null} transparent animationType="fade" onRequestClose={() => setPendingDelete(null)}>
-        <View style={styles.modalBackdrop}>
-          <View style={styles.confirmModal}>
-            <Text style={styles.modalTitle}>{t('adminDeleteUser')}</Text>
-            <Text style={styles.screenDescription}>{t('adminConfirmDeleteUser', { name: pendingDelete?.name ?? '' })}</Text>
-            <View style={styles.modalActions}>
-              <Pressable onPress={() => setPendingDelete(null)} style={styles.secondaryButton}><Text style={styles.secondaryButtonText}>{t('adminCancel')}</Text></Pressable>
-              <Pressable disabled={isDeleting} onPress={() => void deleteUser()} style={styles.dangerButton}>
-                {isDeleting ? <ActivityIndicator color={theme.colors.white} /> : <Text style={styles.dangerButtonText}>{t('adminDelete')}</Text>}
-              </Pressable>
-            </View>
+      <ResponsiveDrawerModal visible={pendingDelete !== null} closeLabel={t('adminCloseMenu')} onClose={() => setPendingDelete(null)}>
+        <View style={styles.drawerConfirmContent}>
+          <Text style={styles.modalTitle}>{t('adminDeleteUser')}</Text>
+          <Text style={styles.screenDescription}>{t('adminConfirmDeleteUser', { name: pendingDelete?.name ?? '' })}</Text>
+          <View style={styles.modalActions}>
+            <Pressable onPress={() => setPendingDelete(null)} style={styles.secondaryButton}><Text style={styles.secondaryButtonText}>{t('adminCancel')}</Text></Pressable>
+            <Pressable disabled={isDeleting} onPress={() => void deleteUser()} style={styles.dangerButton}>
+              {isDeleting ? <ActivityIndicator color={theme.colors.white} /> : <Text style={styles.dangerButtonText}>{t('adminDelete')}</Text>}
+            </Pressable>
           </View>
         </View>
-      </Modal>
+      </ResponsiveDrawerModal>
     </View>
   );
 }

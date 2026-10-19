@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { ActivityIndicator, Modal, Pressable, Text, useWindowDimensions, View } from 'react-native';
+import { ActivityIndicator, Pressable, Text, useWindowDimensions, View } from 'react-native';
 import { ChevronsLeft, LayoutDashboard, LogOut, Menu, Store, UserRound, UsersRound, X } from 'lucide-react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { apiRequest, setAccessToken, type AuthenticatedUser } from '../../api/auth';
@@ -7,6 +7,7 @@ import { theme } from '../../config/theme';
 import { t, translateRole } from '../../i18n';
 import { adminStyles as styles, getAdminDrawerSafeAreaStyles, getAdminSafeAreaStyles } from '../../styles/adminStyles';
 import { getAdminLayout } from '../../utils/adminLayout';
+import { ResponsiveDrawerModal } from '../../components/ResponsiveDrawerModal';
 import { AdminDashboardScreen } from './AdminDashboardScreen';
 import { AdminProfileScreen } from './AdminProfileScreen';
 import { AdminStoresScreen } from './AdminStoresScreen';
@@ -148,15 +149,8 @@ export function AdminHomeScreen({ user: initialUser, onLogout }: AdminHomeScreen
 
       </View>
 
-      {!layout.hasSidebar ? <Modal
-        visible={isDrawerOpen}
-        transparent
-        animationType="fade"
-        statusBarTranslucent
-        onRequestClose={() => setIsDrawerOpen(false)}
-      >
-        <View style={styles.drawerRoot}>
-          <View style={[styles.drawerPanel, layout.isWeb && styles.drawerPanelWeb, drawerSafeAreaStyles.drawerTop]}>
+      {!layout.hasSidebar ? (
+        <ResponsiveDrawerModal visible={isDrawerOpen} closeLabel={t('adminCloseMenu')} onClose={() => setIsDrawerOpen(false)}>
             <View style={[styles.drawerHeader, layout.isWeb && styles.drawerHeaderWeb]}>
               <View style={styles.headerBrand}>
                 <View style={styles.headerMark}>
@@ -195,7 +189,7 @@ export function AdminHomeScreen({ user: initialUser, onLogout }: AdminHomeScreen
                       active && (layout.isWeb ? styles.webSidebarItemActive : styles.drawerItemActive),
                     ]}
                   >
-                    <Icon color={active ? (layout.isWeb ? theme.colors.teal : theme.colors.orange) : theme.colors.muted} size={layout.isWeb ? layout.sidebarIconSize : theme.layout.iconSize} />
+                    <Icon color={active ? theme.colors.teal : theme.colors.muted} size={layout.isWeb ? layout.sidebarIconSize : theme.layout.iconSize} />
                     <Text style={[
                       layout.isWeb ? styles.webSidebarItemText : styles.drawerItemText,
                       active && (layout.isWeb ? styles.webSidebarItemTextActive : styles.drawerItemTextActive),
@@ -215,13 +209,13 @@ export function AdminHomeScreen({ user: initialUser, onLogout }: AdminHomeScreen
                 }}
                 style={layout.isWeb ? styles.webSidebarProfile : styles.drawerItem}
               >
-                <UserRound color={activeTab === 'profile' ? (layout.isWeb ? theme.colors.teal : theme.colors.orange) : theme.colors.muted} size={layout.isWeb ? layout.sidebarIconSize : theme.layout.iconSize} />
+                <UserRound color={activeTab === 'profile' ? theme.colors.teal : theme.colors.muted} size={layout.isWeb ? layout.sidebarIconSize : theme.layout.iconSize} />
                 <Text style={[
                   layout.isWeb ? styles.webSidebarItemText : styles.drawerItemText,
                   activeTab === 'profile' && (layout.isWeb ? styles.webSidebarItemTextActive : styles.drawerItemTextActive),
                 ]}>{t('adminProfile')}</Text>
               </Pressable>
-              <View style={layout.isWeb ? styles.webSidebarLogoutContainer : undefined}>
+              <View style={layout.isWeb ? styles.webSidebarLogoutContainer : styles.drawerSignOutContainer}>
                 <Pressable
                   accessibilityRole="button"
                   accessibilityLabel={t('signOut')}
@@ -234,15 +228,8 @@ export function AdminHomeScreen({ user: initialUser, onLogout }: AdminHomeScreen
                 </Pressable>
               </View>
             </View>
-          </View>
-          <Pressable
-            accessibilityRole="button"
-            accessibilityLabel={t('adminCloseMenu')}
-            onPress={() => setIsDrawerOpen(false)}
-            style={styles.drawerScrim}
-          />
-        </View>
-      </Modal> : null}
+        </ResponsiveDrawerModal>
+      ) : null}
     </View>
   );
 }

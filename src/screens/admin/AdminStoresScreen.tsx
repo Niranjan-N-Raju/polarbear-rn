@@ -1,10 +1,12 @@
 import { useCallback, useEffect, useState } from 'react';
-import { ActivityIndicator, Modal, Pressable, ScrollView, Text, TextInput, useWindowDimensions, View } from 'react-native';
+import { ActivityIndicator, Pressable, ScrollView, Text, TextInput, useWindowDimensions, View } from 'react-native';
+import { MapPin, Pencil, Phone, Store as StoreIcon, Trash2 } from 'lucide-react-native';
 import { apiRequest } from '../../api/auth';
 import { theme } from '../../config/theme';
 import { t } from '../../i18n';
 import { adminStyles as styles } from '../../styles/adminStyles';
 import { getAdminLayout } from '../../utils/adminLayout';
+import { ResponsiveDrawerModal } from '../../components/ResponsiveDrawerModal';
 
 interface StoreRecord {
   _id: string;
@@ -205,25 +207,47 @@ export function AdminStoresScreen({ userId }: AdminStoresScreenProps) {
             <View
               key={store._id}
               style={[
-                layout.isWeb ? styles.storeCard : styles.row,
+                styles.storeCard,
                 layout.storeCardStyle && styles[layout.storeCardStyle],
               ]}
             >
-              <View style={styles.rowHeader}>
-                <View style={styles.rowMain}>
-                  <Text style={styles.rowTitle}>{store.name}</Text>
-                  <Text style={styles.rowSubtext}>{store.storeCode} · {store.storeType === 'company' ? t('adminCompanyStore') : t('adminFranchiseStore')}</Text>
+              <View style={styles.storeCardHeader}>
+                <View style={styles.storeIconTile}><StoreIcon color={theme.colors.orange} size={20} /></View>
+                <View style={styles.storeCardBody}>
+                  <View style={styles.storeTitleRow}>
+                    <Text numberOfLines={1} style={styles.storeTitle}>{store.name}</Text>
+                    {store.storeCode ? <View style={styles.storeCodeBadge}><Text style={styles.storeCodeText}>{store.storeCode}</Text></View> : null}
+                  </View>
+                  <View style={styles.storeBadgeRow}>
+                    <View style={[styles.storeTypeBadge, store.storeType === 'company' ? styles.storeCompanyBadge : styles.storeFranchiseBadge]}>
+                      <Text style={[styles.storeTypeBadgeText, store.storeType === 'company' ? styles.storeCompanyBadgeText : styles.storeFranchiseBadgeText]}>
+                        {store.storeType === 'company' ? t('adminCompanyStore') : t('adminFranchiseStore')}
+                      </Text>
+                    </View>
+                    <View style={[styles.storeStatusBadge, store.isActive ? styles.storeActiveBadge : styles.storeInactiveBadge]}>
+                      <Text style={store.isActive ? styles.storeActiveBadgeText : styles.storeInactiveBadgeText}>
+                        {store.isActive ? 'Active' : 'Inactive'}
+                      </Text>
+                    </View>
+                  </View>
                 </View>
-                <View style={[styles.statusDot, store.isActive ? styles.statusActive : styles.statusInactive]} />
               </View>
-              {store.address ? <Text style={styles.rowSubtext}>{store.address}</Text> : null}
+              {store.description ? <Text style={styles.storeDescription}>{store.description}</Text> : null}
+              {store.address || store.phone ? (
+                <View style={styles.storeContactBlock}>
+                  {store.address ? <View style={styles.storeContactRow}><MapPin color="#9CA3AF" size={14} /><Text style={styles.storeContactText}>{store.address}</Text></View> : null}
+                  {store.phone ? <View style={styles.storeContactRow}><Phone color="#9CA3AF" size={14} /><Text style={styles.storeContactText}>{store.phone}</Text></View> : null}
+                </View>
+              ) : null}
               {canManage ? (
-                <View style={styles.rowActions}>
-                  <Pressable accessibilityRole="button" onPress={() => openEdit(store)} style={styles.secondaryButton}>
-                    <Text style={styles.secondaryButtonText}>{t('adminEditStore')}</Text>
+                <View style={styles.storeCardActions}>
+                  <Pressable accessibilityRole="button" onPress={() => openEdit(store)} style={styles.storeCardAction}>
+                    <Pencil color={theme.colors.teal} size={14} />
+                    <Text style={styles.storeEditActionText}>Edit</Text>
                   </Pressable>
-                  <Pressable accessibilityRole="button" onPress={() => setPendingDelete(store)} style={styles.dangerButton}>
-                    <Text style={styles.dangerButtonText}>{t('adminDelete')}</Text>
+                  <Pressable accessibilityRole="button" onPress={() => setPendingDelete(store)} style={styles.storeCardAction}>
+                    <Trash2 color="#DC2626" size={14} />
+                    <Text style={styles.storeDeleteActionText}>{t('adminDelete')}</Text>
                   </Pressable>
                 </View>
               ) : null}
@@ -232,11 +256,10 @@ export function AdminStoresScreen({ userId }: AdminStoresScreenProps) {
         })}
       </ScrollView>
 
-      <Modal visible={isFormOpen} transparent animationType="slide" onRequestClose={() => setIsFormOpen(false)}>
-        <View style={styles.modalBackdrop}>
-          <View style={styles.modal}>
-            <Text style={styles.modalTitle}>{t(editingStore ? 'adminEditStore' : 'adminAddStore')}</Text>
-            <ScrollView keyboardShouldPersistTaps="handled">
+      <ResponsiveDrawerModal visible={isFormOpen} closeLabel={t('adminCloseMenu')} onClose={() => setIsFormOpen(false)}>
+        <View style={styles.drawerContent}>
+          <Text style={styles.modalTitle}>{t(editingStore ? 'adminEditStore' : 'adminAddStore')}</Text>
+          <ScrollView style={styles.drawerFormScroll} keyboardShouldPersistTaps="handled">
               {formError ? <Text accessibilityRole="alert" style={[styles.formError, styles.stateError]}>{formError}</Text> : null}
               <Text style={styles.fieldLabel}>{t('adminStoreType')}</Text>
               <View style={styles.typeOptions}>
@@ -260,37 +283,34 @@ export function AdminStoresScreen({ userId }: AdminStoresScreenProps) {
                   <Field label={t('adminOwnerEmail')} value={form.ownerEmail} onChangeText={(value) => updateField('ownerEmail', value)} keyboardType="email-address" autoCapitalize="none" />
                 </>
               ) : null}
-            </ScrollView>
-            <View style={styles.modalActions}>
-              <Pressable onPress={() => setIsFormOpen(false)} style={styles.secondaryButton}>
-                <Text style={styles.secondaryButtonText}>{t('adminCancel')}</Text>
-              </Pressable>
-              <Pressable disabled={isSaving} onPress={() => void saveStore()} style={styles.primaryButton}>
-                {isSaving ? <ActivityIndicator color={theme.colors.white} /> : <Text style={styles.primaryButtonText}>{t(editingStore ? 'adminSaveChanges' : 'adminCreateStore')}</Text>}
-              </Pressable>
-            </View>
+          </ScrollView>
+          <View style={styles.modalActions}>
+            <Pressable onPress={() => setIsFormOpen(false)} style={styles.secondaryButton}>
+              <Text style={styles.secondaryButtonText}>{t('adminCancel')}</Text>
+            </Pressable>
+            <Pressable disabled={isSaving} onPress={() => void saveStore()} style={styles.primaryButton}>
+              {isSaving ? <ActivityIndicator color={theme.colors.white} /> : <Text style={styles.primaryButtonText}>{t(editingStore ? 'adminSaveChanges' : 'adminCreateStore')}</Text>}
+            </Pressable>
           </View>
         </View>
-      </Modal>
+      </ResponsiveDrawerModal>
 
-      <Modal visible={pendingDelete !== null} transparent animationType="fade" onRequestClose={() => setPendingDelete(null)}>
-        <View style={styles.modalBackdrop}>
-          <View style={styles.confirmModal}>
-            <Text style={styles.modalTitle}>{t('adminDeleteStore')}</Text>
-            <Text style={styles.screenDescription}>
-              {t('adminConfirmDeleteStore', { name: pendingDelete?.name ?? '' })}
-            </Text>
-            <View style={styles.modalActions}>
-              <Pressable onPress={() => setPendingDelete(null)} style={styles.secondaryButton}>
-                <Text style={styles.secondaryButtonText}>{t('adminCancel')}</Text>
-              </Pressable>
-              <Pressable disabled={isDeleting} onPress={() => void deleteStore()} style={styles.dangerButton}>
-                {isDeleting ? <ActivityIndicator color={theme.colors.white} /> : <Text style={styles.dangerButtonText}>{t('adminDelete')}</Text>}
-              </Pressable>
-            </View>
+      <ResponsiveDrawerModal visible={pendingDelete !== null} closeLabel={t('adminCloseMenu')} onClose={() => setPendingDelete(null)}>
+        <View style={styles.drawerConfirmContent}>
+          <Text style={styles.modalTitle}>{t('adminDeleteStore')}</Text>
+          <Text style={styles.screenDescription}>
+            {t('adminConfirmDeleteStore', { name: pendingDelete?.name ?? '' })}
+          </Text>
+          <View style={styles.modalActions}>
+            <Pressable onPress={() => setPendingDelete(null)} style={styles.secondaryButton}>
+              <Text style={styles.secondaryButtonText}>{t('adminCancel')}</Text>
+            </Pressable>
+            <Pressable disabled={isDeleting} onPress={() => void deleteStore()} style={styles.dangerButton}>
+              {isDeleting ? <ActivityIndicator color={theme.colors.white} /> : <Text style={styles.dangerButtonText}>{t('adminDelete')}</Text>}
+            </Pressable>
           </View>
         </View>
-      </Modal>
+      </ResponsiveDrawerModal>
     </View>
   );
 }

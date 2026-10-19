@@ -142,25 +142,6 @@ const baseAdminStyles = StyleSheet.create({
     fontSize: typography.xs,
     fontWeight: theme.fontWeight.medium,
   },
-  drawerRoot: {
-    flex: 1,
-    flexDirection: 'row',
-    backgroundColor: 'rgba(0, 0, 0, 0.4)',
-  },
-  drawerScrim: {
-    flex: 1,
-  },
-  drawerPanel: {
-    width: '84%',
-    maxWidth: 320,
-    backgroundColor: colors.white,
-    borderRightWidth: theme.border.width,
-    borderRightColor: colors.beige,
-  },
-  drawerPanelWeb: {
-    width: 256,
-    maxWidth: '100%',
-  },
   drawerHeaderWeb: {
     minHeight: 56,
     paddingBottom: 0,
@@ -204,9 +185,9 @@ const baseAdminStyles = StyleSheet.create({
     paddingHorizontal: spacing.lg,
   },
   drawerItemActive: {
-    backgroundColor: colors.welcomeTint,
+    backgroundColor: 'rgba(0, 162, 192, 0.1)',
     borderLeftWidth: 3,
-    borderLeftColor: colors.orange,
+    borderLeftColor: colors.teal,
   },
   drawerItemText: {
     color: colors.muted,
@@ -214,7 +195,7 @@ const baseAdminStyles = StyleSheet.create({
     fontWeight: theme.fontWeight.medium,
   },
   drawerItemTextActive: {
-    color: colors.orange,
+    color: colors.teal,
     fontWeight: theme.fontWeight.bold,
   },
   drawerFooter: {
@@ -229,6 +210,12 @@ const baseAdminStyles = StyleSheet.create({
     alignItems: 'center',
     gap: spacing.lg,
     paddingHorizontal: spacing.lg,
+  },
+  drawerSignOutContainer: {
+    marginTop: spacing.sm,
+    paddingTop: spacing.md,
+    borderTopWidth: theme.border.width,
+    borderTopColor: colors.beige,
   },
   drawerSafeAreaTop: {
     paddingTop: spacing['2xl'],
@@ -569,9 +556,16 @@ const baseAdminStyles = StyleSheet.create({
     gap: spacing.md,
     paddingTop: spacing.lg,
   },
-  confirmModal: {
+  drawerContent: {
+    flex: 1,
+    minHeight: 0,
     padding: spacing['2xl'],
     backgroundColor: colors.white,
+  },
+  drawerConfirmContent: {
+    flex: 1,
+    justifyContent: 'center',
+    padding: spacing['2xl'],
   },
   formError: {
     marginBottom: spacing.lg,
@@ -579,16 +573,9 @@ const baseAdminStyles = StyleSheet.create({
     fontSize: typography.xs,
     lineHeight: typography.bodyLineHeight,
   },
-  modalBackdrop: {
-    ...StyleSheet.absoluteFill,
-    justifyContent: 'center',
-    padding: spacing['2xl'],
-    backgroundColor: 'rgba(0, 0, 0, 0.45)',
-  },
-  modal: {
-    maxHeight: '90%',
-    padding: spacing['2xl'],
-    backgroundColor: colors.white,
+  drawerFormScroll: {
+    flex: 1,
+    minHeight: 0,
   },
   modalTitle: {
     marginBottom: spacing['2xl'],
@@ -667,6 +654,151 @@ const baseAdminStyles = StyleSheet.create({
     fontSize: typography.xs,
     fontWeight: theme.fontWeight.medium,
   },
+  storeCard: {
+    width: '100%',
+    marginBottom: spacing.md,
+    padding: 20,
+    flexDirection: 'column',
+    gap: 12,
+    borderWidth: theme.border.width,
+    borderColor: colors.beige,
+    backgroundColor: colors.white,
+    shadowColor: '#1F292B',
+    shadowOffset: { width: 0, height: 2.5 },
+    shadowOpacity: 0.045,
+    shadowRadius: 8,
+    elevation: 1,
+  },
+  storeCardHeader: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: 12,
+  },
+  storeIconTile: {
+    width: 40,
+    height: 40,
+    flexShrink: 0,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#F7D1B1',
+  },
+  storeCardBody: {
+    flex: 1,
+    minWidth: 0,
+    gap: 4,
+  },
+  storeTitleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flexWrap: 'wrap',
+    gap: 8,
+  },
+  storeTitle: {
+    flexShrink: 1,
+    color: '#111827',
+    fontSize: 16,
+    fontWeight: theme.fontWeight.medium,
+  },
+  storeCodeBadge: {
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderWidth: theme.border.width,
+    borderColor: '#E5E7EB',
+    backgroundColor: '#F3F4F6',
+  },
+  storeCodeText: {
+    color: '#4B5563',
+    fontSize: 12,
+    fontFamily: 'monospace',
+    fontWeight: theme.fontWeight.medium,
+  },
+  storeBadgeRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 6,
+  },
+  storeTypeBadge: {
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderWidth: theme.border.width,
+  },
+  storeCompanyBadge: {
+    borderColor: 'rgba(0, 162, 192, 0.2)',
+    backgroundColor: 'rgba(0, 162, 192, 0.1)',
+  },
+  storeFranchiseBadge: {
+    borderColor: 'rgba(255, 212, 79, 0.4)',
+    backgroundColor: 'rgba(255, 212, 79, 0.2)',
+  },
+  storeTypeBadgeText: {
+    fontSize: 12,
+  },
+  storeCompanyBadgeText: {
+    color: colors.teal,
+  },
+  storeFranchiseBadgeText: {
+    color: colors.orange,
+  },
+  storeStatusBadge: {
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+  },
+  storeActiveBadge: {
+    backgroundColor: colors.beige,
+  },
+  storeInactiveBadge: {
+    backgroundColor: '#F3F4F6',
+  },
+  storeActiveBadgeText: {
+    color: colors.teal,
+    fontSize: 12,
+  },
+  storeInactiveBadgeText: {
+    color: '#6B7280',
+    fontSize: 12,
+  },
+  storeDescription: {
+    color: colors.muted,
+    fontSize: 14,
+    lineHeight: 20,
+  },
+  storeContactBlock: {
+    gap: 4,
+  },
+  storeContactRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  storeContactText: {
+    flex: 1,
+    color: colors.muted,
+    fontSize: 12,
+  },
+  storeCardActions: {
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    gap: 12,
+    paddingTop: 12,
+    borderTopWidth: theme.border.width,
+    borderTopColor: '#F3F4F6',
+  },
+  storeCardAction: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    paddingVertical: 4,
+  },
+  storeEditActionText: {
+    color: colors.teal,
+    fontSize: 12,
+    fontWeight: theme.fontWeight.medium,
+  },
+  storeDeleteActionText: {
+    color: '#DC2626',
+    fontSize: 12,
+    fontWeight: theme.fontWeight.medium,
+  },
 });
 
 const webAdminStyles = StyleSheet.create({
@@ -739,7 +871,7 @@ const webAdminStyles = StyleSheet.create({
     marginBottom: 6,
   },
   webSidebarGroupEnd: {
-    marginBottom: 20,
+    marginBottom: 8,
   },
   webSidebarItemCollapsed: {
     justifyContent: 'center',
@@ -766,6 +898,8 @@ const webAdminStyles = StyleSheet.create({
   },
   webSidebarItemActive: {
     ...baseAdminStyles.webSidebarItemActive,
+    borderLeftWidth: 3,
+    borderLeftColor: colors.teal,
     shadowColor: '#000000',
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.08,
@@ -918,15 +1052,8 @@ const webAdminStyles = StyleSheet.create({
     gap: 16,
   },
   storeCard: {
-    ...baseAdminStyles.row,
+    ...baseAdminStyles.storeCard,
     marginBottom: 0,
-    padding: 20,
-    borderColor: colors.beige,
-    shadowColor: '#1F292B',
-    shadowOffset: { width: 0, height: 2.5 },
-    shadowOpacity: 0.045,
-    shadowRadius: 8,
-    elevation: 1,
   },
   storeCardSingle: {
     width: '100%',
