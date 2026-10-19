@@ -36,6 +36,9 @@ interface StoreForm {
   ownerEmail: string;
 }
 
+type StoreStatusFilter = 'active' | 'archived' | 'all';
+type StoreTypeFilter = 'all' | 'company' | 'franchise';
+
 const emptyForm: StoreForm = {
   name: '', storeCode: '', address: '', phone: '', description: '',
   storeType: 'franchise', ownerName: '', ownerPhone: '', ownerEmail: '',
@@ -49,11 +52,15 @@ export function AdminStoresScreen({ userId }: AdminStoresScreenProps) {
   const { width } = useWindowDimensions();
   const layout = getAdminLayout(width);
   const [stores, setStores] = useState<StoreRecord[]>([]);
+  const [searchText, setSearchText] = useState('');
+  const [statusFilter, setStatusFilter] = useState<StoreStatusFilter>('active');
+  const [typeFilter, setTypeFilter] = useState<StoreTypeFilter>('all');
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingStore, setEditingStore] = useState<StoreRecord | null>(null);
   const [pendingArchive, setPendingArchive] = useState<StoreRecord | null>(null);
+  const [pendingArchiveValue, setPendingArchiveValue] = useState(true);
   const [form, setForm] = useState<StoreForm>(emptyForm);
   const [formError, setFormError] = useState('');
   const [isSaving, setIsSaving] = useState(false);
@@ -78,6 +85,15 @@ export function AdminStoresScreen({ userId }: AdminStoresScreenProps) {
   useEffect(() => {
     void loadStores();
   }, [loadStores]);
+
+  const normalizedSearch = searchText.trim().toLocaleLowerCase();
+  const visibleStores = stores.filter((store) => {
+    const archived = Boolean(store.archivedAt) || store.isActive === false;
+    const matchesStatus = statusFilter === 'all' || (statusFilter === 'archived' ? archived : !archived);
+    const matchesType = typeFilter === 'all' || store.storeType === typeFilter;
+    const matchesSearch = !normalizedSearch || `${store.name} ${store.storeCode}`.toLocaleLowerCase().includes(normalizedSearch);
+    return matchesStatus && matchesType && matchesSearch;
+  });
 
   function openCreate(): void {
     setEditingStore(null);
@@ -173,7 +189,7 @@ export function AdminStoresScreen({ userId }: AdminStoresScreenProps) {
         setError(data.message ?? t('adminSaveFailed'));
         return;
       }
-      if (archived) setIsArchiveDialogOpen(false);
+      setIsArchiveDialogOpen(false);
       await loadStores();
     } catch {
       setError(t('adminNetworkError'));
@@ -195,9 +211,40 @@ export function AdminStoresScreen({ userId }: AdminStoresScreenProps) {
         </Pressable>
       </View>
 
+      <View style={[styles.storeFilters, layout.isWeb && styles.storeFiltersWeb]}>
+        <TextInput
+          value={searchText}
+          onChangeText={setSearchText}
+          placeholder={t('adminSearchStores')}
+          style={[styles.fieldInput, styles.storeSearch, layout.isWeb && styles.storeSearchWeb]}
+          autoCapitalize="none"
+        />
+        <View style={styles.storeFilterGroup}>
+          <Text style={styles.storeFilterLabel}>{t('adminStatus')}</Text>
+          {(['active', 'archived', 'all'] as const).map((status) => (
+            <Pressable key={status} onPress={() => setStatusFilter(status)} style={[styles.filterChip, statusFilter === status && styles.filterChipActive]}>
+              <Text style={[styles.filterChipText, statusFilter === status && styles.filterChipTextActive]}>
+                {t(status === 'active' ? 'adminActive' : status === 'archived' ? 'adminArchived' : 'adminAllStores')}
+              </Text>
+            </Pressable>
+          ))}
+        </View>
+        <View style={styles.storeFilterGroup}>
+          <Text style={styles.storeFilterLabel}>{t('adminStoreType')}</Text>
+          {(['all', 'company', 'franchise'] as const).map((storeType) => (
+            <Pressable key={storeType} onPress={() => setTypeFilter(storeType)} style={[styles.filterChip, typeFilter === storeType && styles.filterChipActive]}>
+              <Text style={[styles.filterChipText, typeFilter === storeType && styles.filterChipTextActive]}>
+                {t(storeType === 'all' ? 'adminAllTypes' : storeType === 'company' ? 'adminCompanyStore' : 'adminFranchiseStore')}
+              </Text>
+            </Pressable>
+          ))}
+        </View>
+      </View>
+
       {isLoading ? <ActivityIndicator color={theme.colors.orange} size="large" /> : null}
       {error ? <Text accessibilityRole="alert" style={[styles.stateMessage, styles.stateError]}>{error}</Text> : null}
       {!isLoading && !error && stores.length === 0 ? <Text style={styles.stateMessage}>{t('adminNoStores')}</Text> : null}
+      {!isLoading && !error && stores.length > 0 && visibleStores.length === 0 ? <Text style={styles.stateMessage}>{t('adminNoMatchingStores')}</Text> : null}
 
       <ScrollView
         style={styles.list}
@@ -206,7 +253,7 @@ export function AdminStoresScreen({ userId }: AdminStoresScreenProps) {
           layout.isWeb && styles.storeGrid,
         ]}
       >
-        {stores.map((store) => {
+        {visibleStores.map((store) => {
           const canManage = store.createdBy === userId;
           return (
             <View
@@ -251,12 +298,12 @@ export function AdminStoresScreen({ userId }: AdminStoresScreenProps) {
                     <Text style={styles.storeEditActionText}>Edit</Text>
                   </Pressable>
                   {store.archivedAt ? (
-                    <Pressable accessibilityRole="button" disabled={updatingArchiveId === store._id} onPress={() => void updateStoreArchive(store, false)} style={styles.storeCardAction}>
+                    <Pressable accessibilityRole="button" disabled={updatingArchiveId === store._id} onPress={() => { setPendingArchive(store); setPendingArchiveValue(false); setIsArchiveDialogOpen(true); }} style={styles.storeCardAction}>
                       <RotateCcw color={theme.colors.orange} size={14} />
                       <Text style={styles.storeArchiveActionText}>{updatingArchiveId === store._id ? t('adminSaving') : t('adminRestore')}</Text>
                     </Pressable>
                   ) : (
-                    <Pressable accessibilityRole="button" onPress={() => { setPendingArchive(store); setIsArchiveDialogOpen(true); }} style={styles.storeCardAction}>
+                    <Pressable accessibilityRole="button" onPress={() => { setPendingArchive(store); setPendingArchiveValue(true); setIsArchiveDialogOpen(true); }} style={styles.storeCardAction}>
                       <Archive color={theme.colors.orange} size={14} />
                       <Text style={styles.storeArchiveActionText}>{t('adminArchive')}</Text>
                     </Pressable>
@@ -314,11 +361,11 @@ export function AdminStoresScreen({ userId }: AdminStoresScreenProps) {
       <ResponsiveDrawerModal visible={isArchiveDialogOpen && pendingArchive !== null} presentation="dialog" closeLabel={t('adminCloseMenu')} onClose={() => setIsArchiveDialogOpen(false)} onAfterClose={() => setPendingArchive(null)}>
         <View style={styles.confirmDialogContent}>
           <View style={styles.confirmDialogHeader}>
-            <Text style={[styles.modalTitle, styles.confirmDialogTitle]}>{t('adminArchiveStore')}</Text>
+            <Text style={[styles.modalTitle, styles.confirmDialogTitle]}>{t(pendingArchiveValue ? 'adminArchiveStore' : 'adminRestoreStore')}</Text>
           </View>
           <View style={styles.confirmDialogBody}>
             <Text style={styles.screenDescription}>
-              {t('adminConfirmArchiveStore', { name: pendingArchive?.name ?? '' })}
+              {t(pendingArchiveValue ? 'adminConfirmArchiveStore' : 'adminConfirmRestoreStore', { name: pendingArchive?.name ?? '' })}
             </Text>
           </View>
           <View style={styles.confirmDialogActions}>
@@ -328,8 +375,8 @@ export function AdminStoresScreen({ userId }: AdminStoresScreenProps) {
               </Pressable>
             </View>
             <View style={styles.confirmDialogActionSlot}>
-              <Pressable disabled={updatingArchiveId === pendingArchive?._id} onPress={() => pendingArchive && void updateStoreArchive(pendingArchive, true)} style={[styles.primaryButton, styles.confirmDialogActionButton]}>
-                {updatingArchiveId === pendingArchive?._id ? <ActivityIndicator color={theme.colors.white} /> : <Text style={styles.primaryButtonText}>{t('adminArchive')}</Text>}
+              <Pressable disabled={updatingArchiveId === pendingArchive?._id} onPress={() => pendingArchive && void updateStoreArchive(pendingArchive, pendingArchiveValue)} style={[styles.primaryButton, styles.confirmDialogActionButton]}>
+                {updatingArchiveId === pendingArchive?._id ? <ActivityIndicator color={theme.colors.white} /> : <Text style={styles.primaryButtonText}>{t(pendingArchiveValue ? 'adminArchive' : 'adminRestore')}</Text>}
               </Pressable>
             </View>
           </View>

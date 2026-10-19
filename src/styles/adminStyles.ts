@@ -726,6 +726,33 @@ const baseAdminStyles = StyleSheet.create({
     shadowRadius: 8,
     elevation: 1,
   },
+  storeFilters: {
+    gap: spacing.md,
+    marginBottom: spacing.lg,
+  },
+  storeFiltersWeb: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    alignItems: 'center',
+  },
+  storeSearch: {
+    width: '100%',
+  },
+  storeSearchWeb: {
+    flex: 1,
+    minWidth: 220,
+  },
+  storeFilterGroup: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    alignItems: 'center',
+    gap: spacing.sm,
+  },
+  storeFilterLabel: {
+    color: colors.muted,
+    fontSize: typography.xs,
+    fontWeight: theme.fontWeight.medium,
+  },
   storeCardHeader: {
     flexDirection: 'row',
     alignItems: 'flex-start',
