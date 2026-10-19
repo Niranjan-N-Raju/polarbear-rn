@@ -1,11 +1,12 @@
 import { useEffect, useState } from 'react';
-import { ActivityIndicator, Platform, Pressable, ScrollView, Text, TextInput, useWindowDimensions, View } from 'react-native';
+import { ActivityIndicator, Pressable, ScrollView, Text, TextInput, useWindowDimensions, View } from 'react-native';
 import { Eye, EyeOff } from 'lucide-react-native';
 import { apiRequest, setAccessToken } from '../../api/auth';
 import type { AuthenticatedUser } from '../../api/auth';
 import { theme } from '../../config/theme';
 import { t, translateRole } from '../../i18n';
 import { adminStyles as styles } from '../../styles/adminStyles';
+import { getAdminLayout } from '../../utils/adminLayout';
 
 interface AdminProfileScreenProps {
   user: AuthenticatedUser;
@@ -14,7 +15,7 @@ interface AdminProfileScreenProps {
 
 export function AdminProfileScreen({ user: initialUser, onUserUpdated }: AdminProfileScreenProps) {
   const { width } = useWindowDimensions();
-  const profileTwoColumn = Platform.OS === 'web' && width >= theme.layout.adminSidebarBreakpoint;
+  const layout = getAdminLayout(width);
   const [user, setUser] = useState(initialUser);
   const [isLoading, setIsLoading] = useState(true);
   const [name, setName] = useState(initialUser.name);
@@ -139,14 +140,14 @@ export function AdminProfileScreen({ user: initialUser, onUserUpdated }: AdminPr
   return (
     <ScrollView contentContainerStyle={styles.screen}>
       <View style={styles.screenHeader}>
-        {Platform.OS === 'web' && width >= 640 ? <Text style={[styles.screenEyebrow, styles.screenEyebrowTeal]}>Account settings</Text> : null}
+        {layout.desktopWeb ? <Text style={[styles.screenEyebrow, styles.screenEyebrowTeal]}>Account settings</Text> : null}
         <Text style={styles.screenTitle}>{t('adminProfileTitle')}</Text>
         <Text style={styles.screenDescription}>{t('adminManageAccount')}</Text>
       </View>
       {showCurrentError ? <Text accessibilityRole="alert" style={[styles.formError, styles.stateError]}>{showCurrentError}</Text> : null}
 
-      {Platform.OS === 'web' ? (
-        <View style={[styles.profileColumns, !profileTwoColumn && styles.profileColumnsStacked]}>
+      {layout.isWeb ? (
+        <View style={[styles.profileColumns, !layout.profileTwoColumn && styles.profileColumnsStacked]}>
           <View style={styles.profileColumn}>
             <View style={[styles.profileCard, styles.profileIdentity]}>
               <View style={styles.profileAvatar}>

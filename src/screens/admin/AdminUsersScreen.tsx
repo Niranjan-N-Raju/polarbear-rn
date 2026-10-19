@@ -1,9 +1,10 @@
 import { useCallback, useEffect, useState } from 'react';
-import { ActivityIndicator, Modal, Platform, Pressable, ScrollView, Text, TextInput, useWindowDimensions, View } from 'react-native';
+import { ActivityIndicator, Modal, Pressable, ScrollView, Text, TextInput, useWindowDimensions, View } from 'react-native';
 import { apiRequest } from '../../api/auth';
 import { theme } from '../../config/theme';
 import { t, translateRole } from '../../i18n';
 import { adminStyles as styles } from '../../styles/adminStyles';
+import { getAdminLayout } from '../../utils/adminLayout';
 
 interface StoreOption {
   _id: string;
@@ -30,6 +31,7 @@ const blankForm: UserForm = { name: '', email: '', password: '', role: 'sub_admi
 
 export function AdminUsersScreen() {
   const { width } = useWindowDimensions();
+  const layout = getAdminLayout(width);
   const [users, setUsers] = useState<AdminUser[]>([]);
   const [stores, setStores] = useState<StoreOption[]>([]);
   const [filterStore, setFilterStore] = useState('');
@@ -164,13 +166,13 @@ export function AdminUsersScreen() {
 
   return (
     <View style={styles.screen}>
-      <View style={[styles.screenHeader, Platform.OS === 'web' && width >= 640 && styles.screenHeaderInline, Platform.OS === 'web' && width < 640 && styles.screenHeaderStack]}>
-        <View style={Platform.OS === 'web' ? styles.screenHeaderCopy : undefined}>
-          {Platform.OS === 'web' && width >= 640 ? <Text style={[styles.screenEyebrow, styles.screenEyebrowTeal]}>Access management</Text> : null}
+      <View style={[styles.screenHeader, layout.desktopWeb && styles.screenHeaderInline, layout.compactWeb && styles.screenHeaderStack]}>
+        <View style={layout.isWeb ? styles.screenHeaderCopy : undefined}>
+          {layout.desktopWeb ? <Text style={[styles.screenEyebrow, styles.screenEyebrowTeal]}>Access management</Text> : null}
           <Text style={styles.screenTitle}>{t('adminUsers')}</Text>
           <Text style={styles.screenDescription}>{t('adminManageUsers')}</Text>
         </View>
-        <Pressable accessibilityRole="button" onPress={openCreate} style={[styles.primaryButton, Platform.OS === 'web' && width >= 640 && styles.screenHeaderAction, { marginTop: Platform.OS === 'web' && width >= 640 ? 0 : theme.spacing.lg }]}>
+        <Pressable accessibilityRole="button" onPress={openCreate} style={[styles.primaryButton, layout.desktopWeb && styles.screenHeaderAction, { marginTop: layout.desktopWeb ? 0 : theme.spacing.lg }]}>
           <Text style={styles.primaryButtonText}>{t('adminAddUser')}</Text>
         </Pressable>
       </View>
@@ -189,7 +191,7 @@ export function AdminUsersScreen() {
       {isLoading ? <ActivityIndicator color={theme.colors.orange} size="large" /> : null}
       {loadError ? <Text accessibilityRole="alert" style={[styles.stateMessage, styles.stateError]}>{loadError}</Text> : null}
       {!isLoading && !loadError && users.length === 0 ? <Text style={styles.stateMessage}>{t('adminNoUsers')}</Text> : null}
-      {Platform.OS === 'web' && width >= theme.layout.adminSidebarBreakpoint ? (
+      {layout.usersTable ? (
         <View style={styles.usersTable}>
           <View style={[styles.usersTableRow, styles.usersTableHeader]}>
             <Text style={[styles.usersTableCell, styles.usersTableHeaderText, styles.usersTableName]}>Name</Text>

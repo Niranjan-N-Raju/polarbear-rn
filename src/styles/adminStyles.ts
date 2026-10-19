@@ -846,7 +846,8 @@ const webAdminStyles = StyleSheet.create({
   },
   statCardWide: {
     ...baseAdminStyles.statCardWide,
-    width: '23%',
+    width: '22%',
+    flexGrow: 1,
   },
   statIconTile: {
     ...baseAdminStyles.statIconTile,

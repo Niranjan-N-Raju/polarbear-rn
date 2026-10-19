@@ -1,9 +1,10 @@
 import { useCallback, useEffect, useState } from 'react';
-import { ActivityIndicator, Modal, Platform, Pressable, ScrollView, Text, TextInput, useWindowDimensions, View } from 'react-native';
+import { ActivityIndicator, Modal, Pressable, ScrollView, Text, TextInput, useWindowDimensions, View } from 'react-native';
 import { apiRequest } from '../../api/auth';
 import { theme } from '../../config/theme';
 import { t } from '../../i18n';
 import { adminStyles as styles } from '../../styles/adminStyles';
+import { getAdminLayout } from '../../utils/adminLayout';
 
 interface StoreRecord {
   _id: string;
@@ -43,14 +44,7 @@ interface AdminStoresScreenProps {
 
 export function AdminStoresScreen({ userId }: AdminStoresScreenProps) {
   const { width } = useWindowDimensions();
-  const storeColumns = width >= 1280 ? 3 : width >= 640 ? 2 : 1;
-  const webHasSidebar = width >= theme.layout.adminSidebarBreakpoint;
-  const webContentWidth = Math.min(
-    theme.layout.adminWebContentMaxWidth,
-    width - (webHasSidebar ? theme.layout.adminSidebarWidth : 0),
-  );
-  const webContentPadding = webHasSidebar ? 64 : 32;
-  const webStoreCardWidth = (webContentWidth - webContentPadding - 16 * (storeColumns - 1)) / storeColumns;
+  const layout = getAdminLayout(width);
   const [stores, setStores] = useState<StoreRecord[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
@@ -183,13 +177,13 @@ export function AdminStoresScreen({ userId }: AdminStoresScreenProps) {
 
   return (
     <View style={styles.screen}>
-      <View style={[styles.screenHeader, Platform.OS === 'web' && width >= 640 && styles.screenHeaderInline]}>
-        <View style={Platform.OS === 'web' ? styles.screenHeaderCopy : undefined}>
-          {Platform.OS === 'web' && width >= 640 ? <Text style={[styles.screenEyebrow, styles.screenEyebrowTeal]}>Workspace setup</Text> : null}
+      <View style={[styles.screenHeader, layout.desktopWeb && styles.screenHeaderInline]}>
+        <View style={layout.isWeb ? styles.screenHeaderCopy : undefined}>
+          {layout.desktopWeb ? <Text style={[styles.screenEyebrow, styles.screenEyebrowTeal]}>Workspace setup</Text> : null}
           <Text style={styles.screenTitle}>{t('adminStores')}</Text>
           <Text style={styles.screenDescription}>{t('adminStoreCount', { count: stores.length })}</Text>
         </View>
-        <Pressable accessibilityRole="button" onPress={openCreate} style={[styles.primaryButton, Platform.OS === 'web' && width >= 640 && styles.screenHeaderAction, { marginTop: Platform.OS === 'web' && width >= 640 ? 0 : theme.spacing.lg }]}>
+        <Pressable accessibilityRole="button" onPress={openCreate} style={[styles.primaryButton, layout.desktopWeb && styles.screenHeaderAction, { marginTop: layout.desktopWeb ? 0 : theme.spacing.lg }]}>
           <Text style={styles.primaryButtonText}>{t('adminAddStore')}</Text>
         </Pressable>
       </View>
@@ -202,7 +196,7 @@ export function AdminStoresScreen({ userId }: AdminStoresScreenProps) {
         style={styles.list}
         contentContainerStyle={[
           styles.listContent,
-          Platform.OS === 'web' && styles.storeGrid,
+          layout.isWeb && styles.storeGrid,
         ]}
       >
         {stores.map((store) => {
@@ -211,8 +205,8 @@ export function AdminStoresScreen({ userId }: AdminStoresScreenProps) {
             <View
               key={store._id}
               style={[
-                Platform.OS === 'web' ? styles.storeCard : styles.row,
-                Platform.OS === 'web' && { width: webStoreCardWidth },
+                layout.isWeb ? styles.storeCard : styles.row,
+                layout.storeCardStyle && styles[layout.storeCardStyle],
               ]}
             >
               <View style={styles.rowHeader}>

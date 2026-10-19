@@ -1,11 +1,12 @@
 import { useState } from 'react';
-import { ActivityIndicator, Modal, Platform, Pressable, Text, useWindowDimensions, View } from 'react-native';
+import { ActivityIndicator, Modal, Pressable, Text, useWindowDimensions, View } from 'react-native';
 import { ChevronsLeft, LayoutDashboard, LogOut, Menu, Store, UserRound, UsersRound, X } from 'lucide-react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { apiRequest, setAccessToken, type AuthenticatedUser } from '../../api/auth';
 import { theme } from '../../config/theme';
 import { t, translateRole } from '../../i18n';
 import { adminStyles as styles, getAdminDrawerSafeAreaStyles, getAdminSafeAreaStyles } from '../../styles/adminStyles';
+import { getAdminLayout } from '../../utils/adminLayout';
 import { AdminDashboardScreen } from './AdminDashboardScreen';
 import { AdminProfileScreen } from './AdminProfileScreen';
 import { AdminStoresScreen } from './AdminStoresScreen';
@@ -21,7 +22,7 @@ interface AdminHomeScreenProps {
 export function AdminHomeScreen({ user: initialUser, onLogout }: AdminHomeScreenProps) {
   const insets = useSafeAreaInsets();
   const { width } = useWindowDimensions();
-  const hasWebSidebar = Platform.OS === 'web' && width >= theme.layout.adminSidebarBreakpoint;
+  const layout = getAdminLayout(width);
   const [user, setUser] = useState(initialUser);
   const [activeTab, setActiveTab] = useState<AdminTab>('dashboard');
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
@@ -52,8 +53,8 @@ export function AdminHomeScreen({ user: initialUser, onLogout }: AdminHomeScreen
   const webTabs = tabs.filter((tab) => tab.key !== 'profile');
 
   return (
-    <View style={[styles.root, safeAreaStyles.root, hasWebSidebar && styles.rootWeb]}>
-      {hasWebSidebar ? (
+    <View style={[styles.root, safeAreaStyles.root, layout.hasSidebar && styles.rootWeb]}>
+      {layout.hasSidebar ? (
         <View style={[styles.webSidebar, isSidebarCollapsed && styles.webSidebarCollapsed, drawerSafeAreaStyles.drawerTop]}>
           <View style={[styles.webSidebarBrand, isSidebarCollapsed && styles.webSidebarBrandCollapsed]}>
             {!isSidebarCollapsed ? (
@@ -86,7 +87,7 @@ export function AdminHomeScreen({ user: initialUser, onLogout }: AdminHomeScreen
                   accessibilityLabel={isSidebarCollapsed ? t(label) : undefined}
                   style={[styles.webSidebarItem, key === 'dashboard' && styles.webSidebarGroupEnd, isSidebarCollapsed && styles.webSidebarItemCollapsed, active && styles.webSidebarItemActive]}
                 >
-                  <Icon color={active ? theme.colors.teal : theme.colors.muted} size={20} />
+                  <Icon color={active ? theme.colors.teal : theme.colors.muted} size={layout.sidebarIconSize} />
                   {!isSidebarCollapsed ? <Text style={[styles.webSidebarItemText, active && styles.webSidebarItemTextActive]}>{t(label)}</Text> : null}
                 </Pressable>
               );
@@ -99,7 +100,7 @@ export function AdminHomeScreen({ user: initialUser, onLogout }: AdminHomeScreen
               onPress={() => setActiveTab('profile')}
               style={[styles.webSidebarProfile, isSidebarCollapsed && styles.webSidebarProfileCollapsed]}
             >
-              <UserRound color={activeTab === 'profile' ? theme.colors.teal : theme.colors.muted} size={20} />
+              <UserRound color={activeTab === 'profile' ? theme.colors.teal : theme.colors.muted} size={layout.sidebarIconSize} />
               {!isSidebarCollapsed ? <Text style={[styles.webSidebarItemText, activeTab === 'profile' && styles.webSidebarItemTextActive]}>{t('adminProfile')}</Text> : null}
             </Pressable>
             <View style={styles.webSidebarLogoutContainer}>
@@ -110,7 +111,7 @@ export function AdminHomeScreen({ user: initialUser, onLogout }: AdminHomeScreen
                 onPress={() => void logout()}
                 style={[styles.webSidebarLogout, isSidebarCollapsed && styles.webSidebarItemCollapsed]}
               >
-                {isLoggingOut ? <ActivityIndicator color={theme.colors.muted} /> : <LogOut color={theme.colors.muted} size={20} />}
+                {isLoggingOut ? <ActivityIndicator color={theme.colors.muted} /> : <LogOut color={theme.colors.muted} size={layout.sidebarIconSize} />}
                 {!isSidebarCollapsed ? <Text style={styles.logoutText}>{t('signOut')}</Text> : null}
               </Pressable>
             </View>
@@ -137,8 +138,8 @@ export function AdminHomeScreen({ user: initialUser, onLogout }: AdminHomeScreen
         </View>
       )}
 
-      <View style={[styles.mainPanel, hasWebSidebar && styles.mainPanelWeb]}>
-      <View style={[styles.content, Platform.OS === 'web' && width < theme.layout.adminSidebarBreakpoint && styles.contentCompact]}>
+      <View style={[styles.mainPanel, layout.hasSidebar && styles.mainPanelWeb]}>
+      <View style={[styles.content, layout.compactWeb && styles.contentCompact]}>
         {activeTab === 'dashboard' ? <AdminDashboardScreen /> : null}
         {activeTab === 'stores' ? <AdminStoresScreen userId={user.id} /> : null}
         {activeTab === 'users' ? <AdminUsersScreen /> : null}
@@ -147,7 +148,7 @@ export function AdminHomeScreen({ user: initialUser, onLogout }: AdminHomeScreen
 
       </View>
 
-      {!hasWebSidebar ? <Modal
+      {!layout.hasSidebar ? <Modal
         visible={isDrawerOpen}
         transparent
         animationType="fade"

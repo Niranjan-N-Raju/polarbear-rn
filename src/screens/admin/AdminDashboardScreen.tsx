@@ -1,10 +1,11 @@
 import { useCallback, useEffect, useState } from 'react';
-import { ActivityIndicator, Platform, ScrollView, Text, useWindowDimensions, View } from 'react-native';
+import { ActivityIndicator, ScrollView, Text, useWindowDimensions, View } from 'react-native';
 import { Building2, CircleCheck, Handshake, ShieldCheck, Store, UserRoundCog, UsersRound } from 'lucide-react-native';
 import { apiRequest } from '../../api/auth';
 import { theme } from '../../config/theme';
 import { t, type TranslationKey } from '../../i18n';
 import { adminStyles as styles } from '../../styles/adminStyles';
+import { getAdminLayout } from '../../utils/adminLayout';
 
 interface DashboardStats {
   totalStores: number;
@@ -31,6 +32,7 @@ const statCards: { key: keyof DashboardStats; label: TranslationKey; color: 'tea
 
 export function AdminDashboardScreen() {
   const { width } = useWindowDimensions();
+  const layout = getAdminLayout(width);
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [hasError, setHasError] = useState(false);
@@ -53,19 +55,10 @@ export function AdminDashboardScreen() {
     void loadStats();
   }, [loadStats]);
 
-  const webHasSidebar = width >= theme.layout.adminSidebarBreakpoint;
-  const webContentWidth = Math.min(
-    theme.layout.adminWebContentMaxWidth,
-    width - (webHasSidebar ? theme.layout.adminSidebarWidth : 0),
-  );
-  const webContentPadding = webHasSidebar ? 32 : 16;
-  const webCardWidth = (webContentWidth - webContentPadding * 2 - 12 * 3) / 4;
-  const cardsWide = width >= (Platform.OS === 'web' ? 640 : theme.layout.tabletBreakpoint);
-
   return (
     <ScrollView contentContainerStyle={styles.screen}>
       <View style={styles.screenHeader}>
-        {Platform.OS !== 'web' || width >= 640 ? <Text style={styles.screenEyebrow}>{t('adminOverview')}</Text> : null}
+        {layout.dashboardEyebrow ? <Text style={styles.screenEyebrow}>{t('adminOverview')}</Text> : null}
         <Text style={styles.screenTitle}>{t('adminDashboard')}</Text>
         <Text style={styles.screenDescription}>{t('adminOverviewDescription')}</Text>
       </View>
@@ -84,12 +77,11 @@ export function AdminDashboardScreen() {
               style={[
                 styles.statCard,
                 card.color === 'teal' ? styles.statCardTeal : styles.statCardOrange,
-                cardsWide && styles.statCardWide,
-                Platform.OS === 'web' && cardsWide && { width: webCardWidth },
+                layout.dashboardCardsWide && styles.statCardWide,
               ]}
             >
               <View style={[styles.statIconTile, card.color === 'teal' ? styles.statIconTeal : styles.statIconOrange]}>
-                <card.Icon color={card.color === 'teal' ? theme.colors.teal : theme.colors.orange} size={Platform.OS === 'web' ? 16 : theme.layout.iconSize} />
+                <card.Icon color={card.color === 'teal' ? theme.colors.teal : theme.colors.orange} size={layout.dashboardIconSize} />
               </View>
               <Text style={styles.statLabel}>{t(card.label)}</Text>
               <Text style={[styles.statValue, card.color === 'teal' ? styles.statValueTeal : styles.statValueOrange]}>
