@@ -33,6 +33,8 @@ export function AdminDashboardScreen() {
     void loadStats();
   }, [loadStats]);
 
+  if (isLoading) return <AppLoader variant="screen" />;
+
   return (
     <ScrollView contentContainerStyle={styles.screenScroll}>
       <View style={styles.screenHeader}>
@@ -41,9 +43,7 @@ export function AdminDashboardScreen() {
         <Text style={styles.screenDescription}>{t('adminOverviewDescription')}</Text>
       </View>
 
-      {isLoading ? (
-        <AppLoader variant="section" />
-      ) : hasError || !stats ? (
+      {hasError || !stats ? (
         <Text accessibilityRole="alert" style={[styles.stateMessage, styles.stateError]}>
           {t('adminLoadFailed')}
         </Text>

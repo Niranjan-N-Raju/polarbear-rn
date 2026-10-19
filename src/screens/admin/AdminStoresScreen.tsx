@@ -66,10 +66,12 @@ export function AdminStoresScreen({ userId, onToast }: AdminStoresScreenProps) {
   const [editingStore, setEditingStore] = useState<StoreRecord | null>(null);
   const [pendingArchive, setPendingArchive] = useState<StoreRecord | null>(null);
   const [pendingArchiveValue, setPendingArchiveValue] = useState(true);
+  const [pendingArchiveToast, setPendingArchiveToast] = useState('');
   const [form, setForm] = useState<StoreForm>(emptyForm);
   const [formIsArchived, setFormIsArchived] = useState(false);
   const [toastMessage, setToastMessage] = useState('');
   const [toastTone, setToastTone] = useState<'error' | 'success'>('error');
+  const [pendingSuccessMessage, setPendingSuccessMessage] = useState('');
   const [fieldErrors, setFieldErrors] = useState<Partial<Record<keyof StoreForm, string>>>({});
   const [isSaving, setIsSaving] = useState(false);
   const [updatingArchiveId, setUpdatingArchiveId] = useState<string | null>(null);
@@ -211,6 +213,7 @@ export function AdminStoresScreen({ userId, onToast }: AdminStoresScreenProps) {
         }
       }
       const successMessage = t(editingStore ? 'adminStoreUpdated' : 'adminStoreCreated');
+      setPendingSuccessMessage(successMessage);
       setIsFormOpen(false);
       setEditingStore(null);
       setForm(emptyForm);
@@ -238,6 +241,7 @@ export function AdminStoresScreen({ userId, onToast }: AdminStoresScreenProps) {
         setError(data.message ?? t('adminSaveFailed'));
         return;
       }
+      setPendingArchiveToast(data.message ?? t(archived ? 'adminStoreArchived' : 'adminStoreRestored'));
       setIsArchiveDialogOpen(false);
       await loadStores();
     } catch {
@@ -246,6 +250,8 @@ export function AdminStoresScreen({ userId, onToast }: AdminStoresScreenProps) {
       setUpdatingArchiveId(null);
     }
   }
+
+  if (isLoading) return <AppLoader variant="screen" />;
 
   return (
     <View style={styles.screen}>
@@ -302,7 +308,6 @@ export function AdminStoresScreen({ userId, onToast }: AdminStoresScreenProps) {
         </View>
       </View>
 
-      {isLoading ? <AppLoader variant="section" /> : null}
       {error ? <Text accessibilityRole="alert" style={[styles.stateMessage, styles.stateError]}>{error}</Text> : null}
       {!isLoading && !error && stores.length === 0 ? <Text style={styles.stateMessage}>{t('adminNoStores')}</Text> : null}
       {!isLoading && !error && stores.length > 0 && visibleStores.length === 0 ? <Text style={styles.stateMessage}>{t('adminNoMatchingStores')}</Text> : null}
@@ -402,6 +407,11 @@ export function AdminStoresScreen({ userId, onToast }: AdminStoresScreenProps) {
         visible={isFormOpen}
         closeLabel={t('adminCloseMenu')}
         onClose={() => setIsFormOpen(false)}
+        onAfterClose={() => {
+          if (!pendingSuccessMessage) return;
+          onToast(pendingSuccessMessage, 'success');
+          setPendingSuccessMessage('');
+        }}
         overlay={isFormOpen && toastMessage ? <AppToast message={toastMessage} tone={toastTone} onDismiss={dismissToast} /> : null}
       >
         <View style={styles.drawerContent}>
@@ -462,7 +472,18 @@ export function AdminStoresScreen({ userId, onToast }: AdminStoresScreenProps) {
 
       {!isFormOpen && toastMessage ? <AppToast message={toastMessage} tone={toastTone} onDismiss={dismissToast} /> : null}
 
-      <ResponsiveDrawerModal visible={isArchiveDialogOpen && pendingArchive !== null} presentation="dialog" closeLabel={t('adminCloseMenu')} onClose={() => setIsArchiveDialogOpen(false)} onAfterClose={() => setPendingArchive(null)}>
+      <ResponsiveDrawerModal
+        visible={isArchiveDialogOpen && pendingArchive !== null}
+        presentation="dialog"
+        closeLabel={t('adminCloseMenu')}
+        onClose={() => setIsArchiveDialogOpen(false)}
+        onAfterClose={() => {
+          setPendingArchive(null);
+          if (!pendingArchiveToast) return;
+          onToast(pendingArchiveToast, 'success');
+          setPendingArchiveToast('');
+        }}
+      >
         <View style={styles.confirmDialogContent}>
           <View style={styles.confirmDialogHeader}>
             <Text style={[styles.modalTitle, styles.confirmDialogTitle]}>{t(pendingArchiveValue ? 'adminArchiveStore' : 'adminRestoreStore')}</Text>

@@ -187,6 +187,8 @@ export function AdminUsersScreen() {
     }
   }
 
+  if (isLoading) return <AppLoader variant="screen" />;
+
   return (
     <View style={styles.screen}>
       <View style={[styles.screenHeader, layout.desktopWeb && styles.screenHeaderInline, layout.compactWeb && styles.screenHeaderStack]}>
@@ -211,7 +213,6 @@ export function AdminUsersScreen() {
         ))}
       </ScrollView>
 
-      {isLoading ? <AppLoader variant="section" /> : null}
       {loadError ? <Text accessibilityRole="alert" style={[styles.stateMessage, styles.stateError]}>{loadError}</Text> : null}
       {!isLoading && !loadError && users.length === 0 ? <Text style={styles.stateMessage}>{t('adminNoUsers')}</Text> : null}
       {!isLoading && !loadError && users.length > 0 ? (layout.usersTable ? (

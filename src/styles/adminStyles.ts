@@ -612,7 +612,7 @@ const baseAdminStyles = StyleSheet.create({
     borderTopColor: colors.beige,
   },
   confirmDialogActionSlot: {
-    width: '25%',
+    width: '35%',
   },
   confirmDialogActionButton: {
     width: '100%',

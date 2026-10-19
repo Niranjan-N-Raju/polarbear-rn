@@ -1,8 +1,8 @@
-import { ActivityIndicator, StyleSheet, Text, View, type ColorValue } from 'react-native';
+import { ActivityIndicator, Modal, StyleSheet, Text, View, type ColorValue } from 'react-native';
 import { theme } from '../config/theme';
 import { t } from '../i18n';
 
-type AppLoaderVariant = 'section' | 'screen' | 'inline';
+type AppLoaderVariant = 'screen' | 'inline';
 
 interface AppLoaderProps {
   variant?: AppLoaderVariant;
@@ -10,23 +10,22 @@ interface AppLoaderProps {
 }
 
 const styles = StyleSheet.create({
-  section: {
+  screen: {
+    flex: 1,
+    width: '100%',
     minHeight: 180,
     alignItems: 'center',
     justifyContent: 'center',
     gap: theme.spacing.md,
-  },
-  screen: {
-    flex: 1,
-    minHeight: 180,
+    backgroundColor: 'rgba(0, 0, 0, 0.45)',
   },
   label: {
-    color: theme.colors.muted,
+    color: theme.colors.white,
     fontSize: theme.typography.sm,
   },
 });
 
-export function AppLoader({ variant = 'section', color = theme.colors.orange }: AppLoaderProps) {
+export function AppLoader({ variant = 'screen', color = theme.colors.orange }: AppLoaderProps) {
   const label = t('adminLoading');
   const indicator = (
     <ActivityIndicator
@@ -39,9 +38,11 @@ export function AppLoader({ variant = 'section', color = theme.colors.orange }: 
   if (variant === 'inline') return indicator;
 
   return (
-    <View style={[styles.section, variant === 'screen' && styles.screen]}>
-      {indicator}
-      <Text>{label}</Text>
-    </View>
+    <Modal visible transparent animationType="fade" statusBarTranslucent onRequestClose={() => {}}>
+      <View style={styles.screen}>
+        {indicator}
+        <Text style={styles.label}>{label}</Text>
+      </View>
+    </Modal>
   );
 }
