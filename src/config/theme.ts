@@ -84,7 +84,7 @@ export const theme = {
     heroCopyMaxWidth: 390,
     desktopBreakpoint: 1024,
     tabletBreakpoint: 600,
-    adminSidebarBreakpoint: 768,
+    adminSidebarBreakpoint: 1200,
     adminSidebarWidth: 240,
     adminWebContentMaxWidth: 1440,
     compactFormMaxWidth: 520,

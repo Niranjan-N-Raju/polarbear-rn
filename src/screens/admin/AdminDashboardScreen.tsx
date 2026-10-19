@@ -80,6 +80,7 @@ export function AdminDashboardScreen() {
                 style={[
                   styles.statCard,
                   isTeal ? styles.statCardTeal : styles.statCardOrange,
+                  layout.dashboardCardsTablet && styles.statCardTablet,
                   layout.dashboardCardsWide && styles.statCardWide,
                 ]}
               >

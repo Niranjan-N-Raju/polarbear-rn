@@ -64,7 +64,9 @@ export function AdminStoresScreen({ userId }: AdminStoresScreenProps) {
   const [pendingArchive, setPendingArchive] = useState<StoreRecord | null>(null);
   const [pendingArchiveValue, setPendingArchiveValue] = useState(true);
   const [form, setForm] = useState<StoreForm>(emptyForm);
+  const [formIsArchived, setFormIsArchived] = useState(false);
   const [formError, setFormError] = useState('');
+  const [fieldErrors, setFieldErrors] = useState<Partial<Record<keyof StoreForm, string>>>({});
   const [isSaving, setIsSaving] = useState(false);
   const [updatingArchiveId, setUpdatingArchiveId] = useState<string | null>(null);
   const [isArchiveDialogOpen, setIsArchiveDialogOpen] = useState(false);
@@ -100,12 +102,15 @@ export function AdminStoresScreen({ userId }: AdminStoresScreenProps) {
   function openCreate(): void {
     setEditingStore(null);
     setForm(emptyForm);
+    setFormIsArchived(false);
     setFormError('');
+    setFieldErrors({});
     setIsFormOpen(true);
   }
 
   function openEdit(store: StoreRecord): void {
     setEditingStore(store);
+    setFormIsArchived(Boolean(store.archivedAt) || store.isActive === false);
     setForm({
       name: store.name,
       storeCode: store.storeCode,
@@ -118,31 +123,47 @@ export function AdminStoresScreen({ userId }: AdminStoresScreenProps) {
       ownerEmail: store.ownerEmail ?? '',
     });
     setFormError('');
+    setFieldErrors({});
     setIsFormOpen(true);
   }
 
   function updateField<Key extends keyof StoreForm>(key: Key, value: StoreForm[Key]): void {
     setForm((current) => ({ ...current, [key]: value }));
     setFormError('');
+    setFieldErrors((current) => {
+      const next = { ...current };
+      delete next[key];
+      return next;
+    });
   }
 
-  function validate(): string | null {
-    if (!form.name.trim()) return t('adminStoreNameRequired');
-    if (!form.storeCode.trim()) return t('adminStoreCodeRequired');
-    if (form.phone && !/^\d{10}$/.test(form.phone)) return t('adminPhoneInvalid');
+  function validate(): Partial<Record<keyof StoreForm, string>> {
+    const errors: Partial<Record<keyof StoreForm, string>> = {};
+    if (!form.name.trim()) errors.name = t('adminStoreNameRequired');
+    if (!form.storeCode.trim()) errors.storeCode = t('adminStoreCodeRequired');
+    if (form.phone && !/^\d{10}$/.test(form.phone)) errors.phone = t('adminPhoneInvalid');
     if (form.storeType === 'franchise' && form.ownerPhone && !/^\d{10}$/.test(form.ownerPhone)) {
-      return t('adminOwnerPhoneInvalid');
+      errors.ownerPhone = t('adminOwnerPhoneInvalid');
     }
-    if (form.ownerEmail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.ownerEmail)) {
-      return t('adminOwnerEmailInvalid');
+    if (form.storeType === 'franchise' && form.ownerEmail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.ownerEmail)) {
+      errors.ownerEmail = t('adminOwnerEmailInvalid');
     }
-    return null;
+    return errors;
   }
 
-  async function saveStore(): Promise<void> {
-    const validationError = validate();
-    if (validationError) {
-      setFormError(validationError);
+  async function saveStore(confirmedStatusChange = false): Promise<void> {
+    const validationErrors = validate();
+    setFieldErrors(validationErrors);
+    if (Object.keys(validationErrors).length > 0) {
+      setFormError('');
+      return;
+    }
+    const statusChanged = editingStore !== null
+      && formIsArchived !== (Boolean(editingStore.archivedAt) || editingStore.isActive === false);
+    if (statusChanged && !confirmedStatusChange && editingStore) {
+      setPendingArchive(editingStore);
+      setPendingArchiveValue(formIsArchived);
+      setIsArchiveDialogOpen(true);
       return;
     }
     setIsSaving(true);
@@ -167,9 +188,23 @@ export function AdminStoresScreen({ userId }: AdminStoresScreenProps) {
         setFormError(data.message ?? t('adminSaveFailed'));
         return;
       }
+      if (statusChanged && editingStore) {
+        const archiveResponse = await apiRequest(`/stores/archive?id=${encodeURIComponent(editingStore._id)}`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ archived: formIsArchived }),
+        });
+        const archiveData = await archiveResponse.json() as { message?: string };
+        if (!archiveResponse.ok) {
+          setFormError(archiveData.message ?? t('adminSaveFailed'));
+          return;
+        }
+      }
       setIsFormOpen(false);
       setEditingStore(null);
       setForm(emptyForm);
+      setFormIsArchived(false);
+      setFieldErrors({});
       await loadStores();
     } catch {
       setFormError(t('adminNetworkError'));
@@ -219,15 +254,15 @@ export function AdminStoresScreen({ userId }: AdminStoresScreenProps) {
         <Pressable accessibilityRole="button" accessibilityLabel={t('adminCloseFilters')} onPress={() => setOpenMobileFilter(null)} style={styles.storeFiltersDismissLayer} />
       ) : null}
 
-      <View style={[styles.storeFilters, layout.isWeb && styles.storeFiltersWeb, layout.hasSidebar && styles.storeFiltersWebDesktop, openMobileFilter && styles.storeFiltersOpen]}>
+      <View style={[styles.storeFilters, layout.isWeb && styles.storeFiltersWeb, layout.storeFiltersInline && styles.storeFiltersWebInline, openMobileFilter && styles.storeFiltersOpen]}>
         <TextInput
           value={searchText}
           onChangeText={setSearchText}
           placeholder={t('adminSearchStores')}
-          style={[styles.fieldInput, styles.storeSearch, layout.isWeb && styles.storeSearchWeb, layout.hasSidebar && styles.storeSearchWebDesktop]}
+          style={[styles.fieldInput, styles.storeSearch, layout.isWeb && styles.storeSearchWeb, layout.storeFiltersInline && styles.storeSearchWebInline]}
           autoCapitalize="none"
         />
-        <View style={[styles.storeMobileFilterRow, layout.isWeb && styles.storeFilterDropdownRowWeb, layout.hasSidebar && styles.storeFilterDropdownRowWebDesktop]}>
+        <View style={[styles.storeMobileFilterRow, layout.isWeb && styles.storeFilterDropdownRowWeb, layout.storeFiltersInline && styles.storeFilterDropdownRowWebInline]}>
           <StoreFilterDropdown
             label={t('adminStatus')}
             value={statusFilter}
@@ -360,24 +395,37 @@ export function AdminStoresScreen({ userId }: AdminStoresScreenProps) {
             {formError ? <Text accessibilityRole="alert" style={[styles.formError, styles.stateError]}>{formError}</Text> : null}
             <Text style={styles.fieldLabel}>{t('adminStoreType')}</Text>
             <View style={styles.typeOptions}>
-              <Pressable onPress={() => updateField('storeType', 'company')} style={[styles.secondaryButton, styles.typeOption, form.storeType === 'company' && styles.typeOptionSelected]}>
+              <Pressable onPress={() => updateField('storeType', 'company')} style={[styles.secondaryButton, styles.typeOption, form.storeType === 'company' && styles.storeOptionSelected]}>
                 <Text style={styles.secondaryButtonText}>{t('adminCompanyStore')}</Text>
               </Pressable>
-              <Pressable onPress={() => updateField('storeType', 'franchise')} style={[styles.secondaryButton, styles.typeOption, form.storeType === 'franchise' && styles.typeOptionSelected]}>
+              <Pressable onPress={() => updateField('storeType', 'franchise')} style={[styles.secondaryButton, styles.typeOption, form.storeType === 'franchise' && styles.storeOptionSelected]}>
                 <Text style={styles.secondaryButtonText}>{t('adminFranchiseStore')}</Text>
               </Pressable>
             </View>
-            <Field label={t('adminStoreName')} value={form.name} onChangeText={(value) => updateField('name', value)} />
-            <Field label={t('adminStoreCode')} value={form.storeCode} onChangeText={(value) => updateField('storeCode', value.toUpperCase())} autoCapitalize="characters" />
-            <Field label={t('adminPhone')} value={form.phone} onChangeText={(value) => updateField('phone', value.replace(/\D/g, '').slice(0, 10))} keyboardType="phone-pad" />
-            <Field label={t('adminAddress')} value={form.address} onChangeText={(value) => updateField('address', value)} />
-            <Field label={t('adminDescription')} value={form.description} onChangeText={(value) => updateField('description', value)} multiline />
+            {editingStore ? (
+              <>
+                <Text style={styles.fieldLabel}>{t('adminStatus')}</Text>
+                <View style={styles.typeOptions}>
+                  <Pressable onPress={() => setFormIsArchived(false)} style={[styles.secondaryButton, styles.typeOption, !formIsArchived && styles.storeOptionSelected]}>
+                    <Text style={styles.secondaryButtonText}>{t('adminActive')}</Text>
+                  </Pressable>
+                  <Pressable onPress={() => setFormIsArchived(true)} style={[styles.secondaryButton, styles.typeOption, formIsArchived && styles.storeOptionSelected]}>
+                    <Text style={styles.secondaryButtonText}>{t('adminArchived')}</Text>
+                  </Pressable>
+                </View>
+              </>
+            ) : null}
+            <Field label={t('adminStoreName')} placeholder={t('adminStoreNamePlaceholder')} value={form.name} onChangeText={(value) => updateField('name', value)} error={fieldErrors.name} />
+            <Field label={t('adminStoreCode')} placeholder={t('adminStoreCodePlaceholder')} value={form.storeCode} onChangeText={(value) => updateField('storeCode', value.toUpperCase())} autoCapitalize="characters" error={fieldErrors.storeCode} />
+            <Field label={t('adminPhone')} placeholder={t('adminPhonePlaceholder')} value={form.phone} onChangeText={(value) => updateField('phone', value.replace(/\D/g, '').slice(0, 10))} keyboardType="phone-pad" phonePrefix="+91" error={fieldErrors.phone} />
+            <Field label={t('adminAddress')} placeholder={t('adminAddressPlaceholder')} value={form.address} onChangeText={(value) => updateField('address', value)} />
+            <Field label={t('adminDescription')} placeholder={t('adminDescriptionPlaceholder')} value={form.description} onChangeText={(value) => updateField('description', value)} multiline />
             {form.storeType === 'franchise' ? (
               <>
                 <Text style={styles.sectionLabel}>{t('adminOwnerDetails')}</Text>
-                <Field label={t('adminOwnerName')} value={form.ownerName} onChangeText={(value) => updateField('ownerName', value)} />
-                <Field label={t('adminOwnerPhone')} value={form.ownerPhone} onChangeText={(value) => updateField('ownerPhone', value.replace(/\D/g, '').slice(0, 10))} keyboardType="phone-pad" />
-                <Field label={t('adminOwnerEmail')} value={form.ownerEmail} onChangeText={(value) => updateField('ownerEmail', value)} keyboardType="email-address" autoCapitalize="none" />
+                <Field label={t('adminOwnerName')} placeholder={t('adminOwnerNamePlaceholder')} value={form.ownerName} onChangeText={(value) => updateField('ownerName', value)} />
+                <Field label={t('adminOwnerPhone')} placeholder={t('adminOwnerPhonePlaceholder')} value={form.ownerPhone} onChangeText={(value) => updateField('ownerPhone', value.replace(/\D/g, '').slice(0, 10))} keyboardType="phone-pad" phonePrefix="+91" error={fieldErrors.ownerPhone} />
+                <Field label={t('adminOwnerEmail')} placeholder={t('adminOwnerEmailPlaceholder')} value={form.ownerEmail} onChangeText={(value) => updateField('ownerEmail', value)} keyboardType="email-address" autoCapitalize="none" error={fieldErrors.ownerEmail} />
               </>
             ) : null}
           </ScrollView>
@@ -413,7 +461,15 @@ export function AdminStoresScreen({ userId }: AdminStoresScreenProps) {
               </Pressable>
             </View>
             <View style={styles.confirmDialogActionSlot}>
-              <Pressable disabled={updatingArchiveId === pendingArchive?._id} onPress={() => pendingArchive && void updateStoreArchive(pendingArchive, pendingArchiveValue)} style={[styles.primaryButton, styles.confirmDialogActionButton]}>
+              <Pressable disabled={updatingArchiveId === pendingArchive?._id || isSaving} onPress={() => {
+                if (!pendingArchive) return;
+                if (isFormOpen) {
+                  setIsArchiveDialogOpen(false);
+                  void saveStore(true);
+                  return;
+                }
+                void updateStoreArchive(pendingArchive, pendingArchiveValue);
+              }} style={[styles.primaryButton, styles.confirmDialogActionButton]}>
                 {updatingArchiveId === pendingArchive?._id ? <ActivityIndicator color={theme.colors.white} /> : <Text style={styles.primaryButtonText}>{t(pendingArchiveValue ? 'adminArchive' : 'adminRestore')}</Text>}
               </Pressable>
             </View>
@@ -426,25 +482,41 @@ export function AdminStoresScreen({ userId }: AdminStoresScreenProps) {
 
 interface FieldProps {
   label: string;
+  placeholder: string;
   value: string;
   onChangeText: (value: string) => void;
   keyboardType?: 'default' | 'phone-pad' | 'email-address';
   autoCapitalize?: 'none' | 'characters';
   multiline?: boolean;
+  error?: string;
+  phonePrefix?: string;
 }
 
-function Field({ label, value, onChangeText, keyboardType = 'default', autoCapitalize, multiline }: FieldProps) {
+function Field({ label, placeholder, value, onChangeText, keyboardType = 'default', autoCapitalize, multiline, error, phonePrefix }: FieldProps) {
+  const input = (
+    <TextInput
+      value={value}
+      placeholder={placeholder}
+      onChangeText={onChangeText}
+      keyboardType={keyboardType}
+      autoCapitalize={autoCapitalize}
+      multiline={multiline}
+      style={[styles.fieldInput, multiline && styles.multilineField, phonePrefix && styles.phoneFieldInput, !phonePrefix && error && styles.inputError]}
+    />
+  );
+
   return (
     <View style={styles.field}>
       <Text style={styles.fieldLabel}>{label}</Text>
-      <TextInput
-        value={value}
-        onChangeText={onChangeText}
-        keyboardType={keyboardType}
-        autoCapitalize={autoCapitalize}
-        multiline={multiline}
-        style={[styles.fieldInput, multiline && styles.multilineField]}
-      />
+      {phonePrefix ? (
+        <View style={[styles.phoneInputWrap, error && styles.phoneInputWrapError]}>
+          <View style={styles.phoneInputCode}>
+            <Text style={styles.phoneInputPrefix}>{phonePrefix}</Text>
+          </View>
+          {input}
+        </View>
+      ) : input}
+      {error ? <Text accessibilityRole="alert" style={styles.fieldError}>{error}</Text> : null}
     </View>
   );
 }

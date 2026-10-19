@@ -193,6 +193,7 @@ const baseAdminStyles = StyleSheet.create({
   },
   drawerList: {
     flex: 1,
+    minHeight: 0,
     paddingHorizontal: spacing.lg,
     paddingTop: spacing['2xl'],
   },
@@ -219,6 +220,7 @@ const baseAdminStyles = StyleSheet.create({
     fontWeight: theme.fontWeight.bold,
   },
   drawerFooter: {
+    flexShrink: 0,
     paddingHorizontal: spacing.lg,
     paddingTop: spacing.lg,
     borderTopWidth: theme.border.width,
@@ -295,6 +297,7 @@ const baseAdminStyles = StyleSheet.create({
   },
   statCard: {
     width: '48%',
+    flexGrow: 1,
     minHeight: 96,
     justifyContent: 'space-between',
     padding: spacing.lg,
@@ -305,6 +308,10 @@ const baseAdminStyles = StyleSheet.create({
   },
   statCardWide: {
     width: '22.5%',
+  },
+  statCardTablet: {
+    width: '31%',
+    flexGrow: 1,
   },
   statCardTeal: {
     borderTopWidth: 3,
@@ -486,6 +493,10 @@ const baseAdminStyles = StyleSheet.create({
     borderColor: colors.orange,
     backgroundColor: colors.welcomeTint,
   },
+  storeOptionSelected: {
+    borderColor: colors.teal,
+    backgroundColor: colors.ice,
+  },
   sectionLabel: {
     marginTop: spacing.md,
     marginBottom: spacing.lg,
@@ -514,8 +525,45 @@ const baseAdminStyles = StyleSheet.create({
   inputWrap: {
     position: 'relative',
   },
+  phoneInputWrap: {
+    minHeight: 46,
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderWidth: theme.border.width,
+    borderColor: colors.inputBorder,
+    backgroundColor: colors.inputBackground,
+  },
+  phoneInputWrapError: {
+    borderColor: colors.errorBorder,
+    backgroundColor: colors.errorBackground,
+  },
+  phoneInputCode: {
+    minHeight: 44,
+    justifyContent: 'center',
+    paddingHorizontal: spacing.lg,
+    borderRightWidth: theme.border.width,
+    borderRightColor: colors.inputBorder,
+  },
+  phoneInputPrefix: {
+    color: colors.muted,
+    fontSize: typography.sm,
+  },
+  phoneFieldInput: {
+    flex: 1,
+    minWidth: 0,
+    minHeight: 44,
+    paddingHorizontal: spacing.lg,
+    borderWidth: 0,
+    backgroundColor: 'transparent',
+  },
   inputError: {
-    borderColor: colors.error,
+    borderColor: colors.errorBorder,
+    backgroundColor: colors.errorBackground,
+  },
+  fieldError: {
+    marginTop: spacing.xs,
+    color: colors.error,
+    fontSize: typography.xs,
   },
   visibilityButton: {
     position: 'absolute',
@@ -758,7 +806,7 @@ const baseAdminStyles = StyleSheet.create({
     flexWrap: 'wrap',
     alignItems: 'center',
   },
-  storeFiltersWebDesktop: {
+  storeFiltersWebInline: {
     flexWrap: 'nowrap',
   },
   storeSearch: {
@@ -770,7 +818,7 @@ const baseAdminStyles = StyleSheet.create({
     flex: 1,
     minWidth: 220,
   },
-  storeSearchWebDesktop: {
+  storeSearchWebInline: {
     flex: 3,
     width: 'auto',
     minWidth: 0,
@@ -790,7 +838,7 @@ const baseAdminStyles = StyleSheet.create({
     flexDirection: 'row',
     width: '100%',
   },
-  storeFilterDropdownRowWebDesktop: {
+  storeFilterDropdownRowWebInline: {
     flex: 2,
     minWidth: 0,
     width: 'auto',
@@ -1098,6 +1146,7 @@ const webAdminStyles = StyleSheet.create({
     paddingHorizontal: 12,
   },
   webSidebarFooter: {
+    flexShrink: 0,
     paddingHorizontal: 0,
     paddingTop: 8,
     borderTopWidth: theme.border.width,
@@ -1242,7 +1291,7 @@ const webAdminStyles = StyleSheet.create({
   },
   statLabel: {
     ...baseAdminStyles.statLabel,
-    maxWidth: '100%',
+    maxWidth: '72%',
     fontSize: 12,
     letterSpacing: 1.2,
   },
@@ -1286,9 +1335,11 @@ const webAdminStyles = StyleSheet.create({
   },
   storeCardDouble: {
     width: '48%',
+    flexGrow: 1,
   },
   storeCardTriple: {
     width: '32%',
+    flexGrow: 1,
   },
   usersTable: {
     width: '100%',

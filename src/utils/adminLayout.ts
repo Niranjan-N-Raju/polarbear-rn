@@ -12,7 +12,7 @@ export function getDashboardCardColor(index: number, nativeColor: DashboardCardC
 export function getAdminLayout(width: number) {
   const isWeb = Platform.OS === 'web';
   const hasSidebar = isWeb && width >= theme.layout.adminSidebarBreakpoint;
-  const desktopWeb = isWeb && width >= 640;
+  const desktopWeb = hasSidebar;
 
   let storeCardStyle: StoreCardStyleKey | null = null;
   if (isWeb) {
@@ -24,7 +24,9 @@ export function getAdminLayout(width: number) {
     hasSidebar,
     compactWeb: isWeb && !hasSidebar,
     desktopWeb,
-    dashboardCardsWide: width >= (isWeb ? 640 : theme.layout.tabletBreakpoint),
+    storeFiltersInline: isWeb && width >= 768,
+    dashboardCardsTablet: width >= 768 && width < theme.layout.adminSidebarBreakpoint,
+    dashboardCardsWide: hasSidebar,
     dashboardEyebrow: !isWeb || desktopWeb,
     dashboardIconSize: isWeb ? 16 : theme.layout.iconSize,
     sidebarIconSize: isWeb ? 20 : theme.layout.iconSize,
