@@ -1,5 +1,4 @@
 import {
-  ActivityIndicator,
   KeyboardAvoidingView,
   Platform,
   Pressable,
@@ -13,6 +12,7 @@ import {
 import { useRef, type ComponentRef } from 'react';
 import { ChevronRight, Eye, EyeOff, LockKeyhole, Mail } from 'lucide-react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { AppLoader } from '../components/AppLoader';
 import { theme } from '../config/theme';
 import { useLogin } from '../hooks/useLogin';
 import { t, translateRole } from '../i18n';
@@ -226,7 +226,7 @@ export function LoginScreen() {
                     style={getSignInButtonStyle(loginState.isPending)}
                   >
                     {loginState.isPending ? (
-                      <ActivityIndicator color={theme.colors.white} />
+                      <AppLoader variant="inline" color={theme.colors.white} />
                     ) : (
                       <>
                         <Text style={styles.signInText}>{t('signIn')}</Text>

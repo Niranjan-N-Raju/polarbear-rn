@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useState } from 'react';
-import { ActivityIndicator, Pressable, ScrollView, Text, TextInput, useWindowDimensions, View } from 'react-native';
+import { Pressable, ScrollView, Text, TextInput, useWindowDimensions, View } from 'react-native';
 import { Archive, ChevronDown, MapPin, Pencil, Phone, Plus, RotateCcw, Store as StoreIcon } from 'lucide-react-native';
+import { AppToast } from '../../components/AppToast';
+import { AppLoader } from '../../components/AppLoader';
 import { apiRequest } from '../../api/auth';
 import { theme } from '../../config/theme';
 import { t } from '../../i18n';
@@ -47,9 +49,10 @@ const emptyForm: StoreForm = {
 
 interface AdminStoresScreenProps {
   userId: string;
+  onToast: (message: string, tone: 'success' | 'error') => void;
 }
 
-export function AdminStoresScreen({ userId }: AdminStoresScreenProps) {
+export function AdminStoresScreen({ userId, onToast }: AdminStoresScreenProps) {
   const { width } = useWindowDimensions();
   const layout = getAdminLayout(width);
   const [stores, setStores] = useState<StoreRecord[]>([]);
@@ -65,11 +68,18 @@ export function AdminStoresScreen({ userId }: AdminStoresScreenProps) {
   const [pendingArchiveValue, setPendingArchiveValue] = useState(true);
   const [form, setForm] = useState<StoreForm>(emptyForm);
   const [formIsArchived, setFormIsArchived] = useState(false);
-  const [formError, setFormError] = useState('');
+  const [toastMessage, setToastMessage] = useState('');
+  const [toastTone, setToastTone] = useState<'error' | 'success'>('error');
   const [fieldErrors, setFieldErrors] = useState<Partial<Record<keyof StoreForm, string>>>({});
   const [isSaving, setIsSaving] = useState(false);
   const [updatingArchiveId, setUpdatingArchiveId] = useState<string | null>(null);
   const [isArchiveDialogOpen, setIsArchiveDialogOpen] = useState(false);
+  const dismissToast = useCallback(() => setToastMessage(''), []);
+
+  function showErrorToast(message: string): void {
+    setToastTone('error');
+    setToastMessage(message);
+  }
 
   const loadStores = useCallback(async () => {
     setIsLoading(true);
@@ -103,7 +113,7 @@ export function AdminStoresScreen({ userId }: AdminStoresScreenProps) {
     setEditingStore(null);
     setForm(emptyForm);
     setFormIsArchived(false);
-    setFormError('');
+    setToastMessage('');
     setFieldErrors({});
     setIsFormOpen(true);
   }
@@ -122,14 +132,14 @@ export function AdminStoresScreen({ userId }: AdminStoresScreenProps) {
       ownerPhone: store.ownerPhone ?? '',
       ownerEmail: store.ownerEmail ?? '',
     });
-    setFormError('');
+    setToastMessage('');
     setFieldErrors({});
     setIsFormOpen(true);
   }
 
   function updateField<Key extends keyof StoreForm>(key: Key, value: StoreForm[Key]): void {
     setForm((current) => ({ ...current, [key]: value }));
-    setFormError('');
+    setToastMessage('');
     setFieldErrors((current) => {
       const next = { ...current };
       delete next[key];
@@ -155,7 +165,7 @@ export function AdminStoresScreen({ userId }: AdminStoresScreenProps) {
     const validationErrors = validate();
     setFieldErrors(validationErrors);
     if (Object.keys(validationErrors).length > 0) {
-      setFormError('');
+      setToastMessage('');
       return;
     }
     const statusChanged = editingStore !== null
@@ -167,7 +177,7 @@ export function AdminStoresScreen({ userId }: AdminStoresScreenProps) {
       return;
     }
     setIsSaving(true);
-    setFormError('');
+    setToastMessage('');
     try {
       const response = await apiRequest(
         editingStore ? `/stores?id=${encodeURIComponent(editingStore._id)}` : '/stores',
@@ -185,7 +195,7 @@ export function AdminStoresScreen({ userId }: AdminStoresScreenProps) {
       );
       const data = await response.json() as { message?: string };
       if (!response.ok) {
-        setFormError(data.message ?? t('adminSaveFailed'));
+        showErrorToast(data.message ?? t('adminSaveFailed'));
         return;
       }
       if (statusChanged && editingStore) {
@@ -196,18 +206,20 @@ export function AdminStoresScreen({ userId }: AdminStoresScreenProps) {
         });
         const archiveData = await archiveResponse.json() as { message?: string };
         if (!archiveResponse.ok) {
-          setFormError(archiveData.message ?? t('adminSaveFailed'));
+          showErrorToast(archiveData.message ?? t('adminSaveFailed'));
           return;
         }
       }
+      const successMessage = t(editingStore ? 'adminStoreUpdated' : 'adminStoreCreated');
       setIsFormOpen(false);
       setEditingStore(null);
       setForm(emptyForm);
       setFormIsArchived(false);
       setFieldErrors({});
+      onToast(successMessage, 'success');
       await loadStores();
     } catch {
-      setFormError(t('adminNetworkError'));
+      showErrorToast(t('adminNetworkError'));
     } finally {
       setIsSaving(false);
     }
@@ -290,7 +302,7 @@ export function AdminStoresScreen({ userId }: AdminStoresScreenProps) {
         </View>
       </View>
 
-      {isLoading ? <ActivityIndicator color={theme.colors.orange} size="large" /> : null}
+      {isLoading ? <AppLoader variant="section" /> : null}
       {error ? <Text accessibilityRole="alert" style={[styles.stateMessage, styles.stateError]}>{error}</Text> : null}
       {!isLoading && !error && stores.length === 0 ? <Text style={styles.stateMessage}>{t('adminNoStores')}</Text> : null}
       {!isLoading && !error && stores.length > 0 && visibleStores.length === 0 ? <Text style={styles.stateMessage}>{t('adminNoMatchingStores')}</Text> : null}
@@ -333,7 +345,7 @@ export function AdminStoresScreen({ userId }: AdminStoresScreenProps) {
                     </View>
                   </View>
                 </View>
-                {canManage && !layout.desktopWeb ? (
+                {canManage && !layout.storeCardActionsAtBottom ? (
                   <View style={styles.storeCardHeaderActions}>
                     <Pressable accessibilityRole="button" accessibilityLabel={`${t('adminEditStore')} ${store.name}`} onPress={() => openEdit(store)} style={styles.storeCardHeaderAction}>
                       <Pencil color={theme.colors.teal} size={16} />
@@ -363,7 +375,7 @@ export function AdminStoresScreen({ userId }: AdminStoresScreenProps) {
                   {store.phone ? <View style={styles.storeContactRow}><Phone color="#9CA3AF" size={14} /><Text style={styles.storeContactText}>{store.phone}</Text></View> : null}
                 </View>
               ) : null}
-              {canManage && layout.desktopWeb ? (
+              {canManage && layout.storeCardActionsAtBottom ? (
                 <View style={styles.storeCardActions}>
                   <Pressable accessibilityRole="button" onPress={() => openEdit(store)} style={styles.storeCardAction}>
                     <Pencil color={theme.colors.teal} size={14} />
@@ -386,35 +398,26 @@ export function AdminStoresScreen({ userId }: AdminStoresScreenProps) {
         </Pressable>
       ) : null}
 
-      <ResponsiveDrawerModal visible={isFormOpen} closeLabel={t('adminCloseMenu')} onClose={() => setIsFormOpen(false)}>
+      <ResponsiveDrawerModal
+        visible={isFormOpen}
+        closeLabel={t('adminCloseMenu')}
+        onClose={() => setIsFormOpen(false)}
+        overlay={isFormOpen && toastMessage ? <AppToast message={toastMessage} tone={toastTone} onDismiss={dismissToast} /> : null}
+      >
         <View style={styles.drawerContent}>
           <View style={styles.drawerHeading}>
             <Text style={[styles.modalTitle, styles.drawerHeadingTitle]}>{t(editingStore ? 'adminEditStore' : 'adminAddStore')}</Text>
           </View>
           <ScrollView style={styles.drawerFormScroll} keyboardShouldPersistTaps="handled">
-            {formError ? <Text accessibilityRole="alert" style={[styles.formError, styles.stateError]}>{formError}</Text> : null}
             <Text style={styles.fieldLabel}>{t('adminStoreType')}</Text>
             <View style={styles.typeOptions}>
-              <Pressable onPress={() => updateField('storeType', 'company')} style={[styles.secondaryButton, styles.typeOption, form.storeType === 'company' && styles.storeOptionSelected]}>
+              <Pressable onPress={() => updateField('storeType', 'company')} style={[styles.secondaryButton, styles.typeOption, styles.storeChoiceOption, form.storeType === 'company' && styles.storeOptionSelected]}>
                 <Text style={styles.secondaryButtonText}>{t('adminCompanyStore')}</Text>
               </Pressable>
-              <Pressable onPress={() => updateField('storeType', 'franchise')} style={[styles.secondaryButton, styles.typeOption, form.storeType === 'franchise' && styles.storeOptionSelected]}>
+              <Pressable onPress={() => updateField('storeType', 'franchise')} style={[styles.secondaryButton, styles.typeOption, styles.storeChoiceOption, form.storeType === 'franchise' && styles.storeOptionSelected]}>
                 <Text style={styles.secondaryButtonText}>{t('adminFranchiseStore')}</Text>
               </Pressable>
             </View>
-            {editingStore ? (
-              <>
-                <Text style={styles.fieldLabel}>{t('adminStatus')}</Text>
-                <View style={styles.typeOptions}>
-                  <Pressable onPress={() => setFormIsArchived(false)} style={[styles.secondaryButton, styles.typeOption, !formIsArchived && styles.storeOptionSelected]}>
-                    <Text style={styles.secondaryButtonText}>{t('adminActive')}</Text>
-                  </Pressable>
-                  <Pressable onPress={() => setFormIsArchived(true)} style={[styles.secondaryButton, styles.typeOption, formIsArchived && styles.storeOptionSelected]}>
-                    <Text style={styles.secondaryButtonText}>{t('adminArchived')}</Text>
-                  </Pressable>
-                </View>
-              </>
-            ) : null}
             <Field label={t('adminStoreName')} placeholder={t('adminStoreNamePlaceholder')} value={form.name} onChangeText={(value) => updateField('name', value)} error={fieldErrors.name} />
             <Field label={t('adminStoreCode')} placeholder={t('adminStoreCodePlaceholder')} value={form.storeCode} onChangeText={(value) => updateField('storeCode', value.toUpperCase())} autoCapitalize="characters" error={fieldErrors.storeCode} />
             <Field label={t('adminPhone')} placeholder={t('adminPhonePlaceholder')} value={form.phone} onChangeText={(value) => updateField('phone', value.replace(/\D/g, '').slice(0, 10))} keyboardType="phone-pad" phonePrefix="+91" error={fieldErrors.phone} />
@@ -428,6 +431,19 @@ export function AdminStoresScreen({ userId }: AdminStoresScreenProps) {
                 <Field label={t('adminOwnerEmail')} placeholder={t('adminOwnerEmailPlaceholder')} value={form.ownerEmail} onChangeText={(value) => updateField('ownerEmail', value)} keyboardType="email-address" autoCapitalize="none" error={fieldErrors.ownerEmail} />
               </>
             ) : null}
+            {editingStore ? (
+              <>
+                <Text style={styles.fieldLabel}>{t('adminStatus')}</Text>
+                <View style={styles.typeOptions}>
+                  <Pressable onPress={() => setFormIsArchived(false)} style={[styles.secondaryButton, styles.typeOption, styles.storeChoiceOption, !formIsArchived && styles.storeOptionSelected]}>
+                    <Text style={styles.secondaryButtonText}>{t('adminActive')}</Text>
+                  </Pressable>
+                  <Pressable onPress={() => setFormIsArchived(true)} style={[styles.secondaryButton, styles.typeOption, styles.storeChoiceOption, formIsArchived && styles.storeOptionSelected]}>
+                    <Text style={styles.secondaryButtonText}>{t('adminArchived')}</Text>
+                  </Pressable>
+                </View>
+              </>
+            ) : null}
           </ScrollView>
           <View style={styles.modalActions}>
             <View style={styles.drawerActionSlot}>
@@ -437,12 +453,14 @@ export function AdminStoresScreen({ userId }: AdminStoresScreenProps) {
             </View>
             <View style={styles.drawerActionSlot}>
               <Pressable disabled={isSaving} onPress={() => void saveStore()} style={[styles.primaryButton, styles.drawerActionButton]}>
-                {isSaving ? <ActivityIndicator color={theme.colors.white} /> : <Text style={styles.primaryButtonText}>{t(editingStore ? 'adminSaveChanges' : 'adminCreateStore')}</Text>}
+                {isSaving ? <AppLoader variant="inline" color={theme.colors.white} /> : <Text style={styles.primaryButtonText}>{t(editingStore ? 'adminSaveChanges' : 'adminCreateStore')}</Text>}
               </Pressable>
             </View>
           </View>
         </View>
       </ResponsiveDrawerModal>
+
+      {!isFormOpen && toastMessage ? <AppToast message={toastMessage} tone={toastTone} onDismiss={dismissToast} /> : null}
 
       <ResponsiveDrawerModal visible={isArchiveDialogOpen && pendingArchive !== null} presentation="dialog" closeLabel={t('adminCloseMenu')} onClose={() => setIsArchiveDialogOpen(false)} onAfterClose={() => setPendingArchive(null)}>
         <View style={styles.confirmDialogContent}>
@@ -470,7 +488,7 @@ export function AdminStoresScreen({ userId }: AdminStoresScreenProps) {
                 }
                 void updateStoreArchive(pendingArchive, pendingArchiveValue);
               }} style={[styles.primaryButton, styles.confirmDialogActionButton]}>
-                {updatingArchiveId === pendingArchive?._id ? <ActivityIndicator color={theme.colors.white} /> : <Text style={styles.primaryButtonText}>{t(pendingArchiveValue ? 'adminArchive' : 'adminRestore')}</Text>}
+                {updatingArchiveId === pendingArchive?._id ? <AppLoader variant="inline" color={theme.colors.white} /> : <Text style={styles.primaryButtonText}>{t(pendingArchiveValue ? 'adminArchive' : 'adminRestore')}</Text>}
               </Pressable>
             </View>
           </View>

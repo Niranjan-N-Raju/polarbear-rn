@@ -10,7 +10,7 @@ export function getAdminLayout(width: number) {
 
   let storeCardStyle: StoreCardStyleKey | null = null;
   if (isWeb) {
-    storeCardStyle = width >= 1280 ? 'storeCardTriple' : width >= 640 ? 'storeCardDouble' : 'storeCardSingle';
+    storeCardStyle = width >= 960 ? 'storeCardTriple' : width >= 640 ? 'storeCardDouble' : 'storeCardSingle';
   }
 
   return {
@@ -19,6 +19,7 @@ export function getAdminLayout(width: number) {
     compactWeb: isWeb && !hasSidebar,
     desktopWeb,
     storeFiltersInline: isWeb && width >= 768,
+    storeCardActionsAtBottom: width >= 768,
     sidebarIconSize: isWeb ? 20 : theme.layout.iconSize,
     storeCardStyle,
     usersTable: hasSidebar,

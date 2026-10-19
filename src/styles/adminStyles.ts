@@ -295,11 +295,6 @@ const baseAdminStyles = StyleSheet.create({
     fontSize: typography.sm,
     textAlign: 'center',
   },
-  loadingScreen: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
   stateError: {
     color: colors.error,
   },
@@ -420,6 +415,10 @@ const baseAdminStyles = StyleSheet.create({
   },
   typeOption: {
     flex: 1,
+  },
+  storeChoiceOption: {
+    flex: 1,
+    paddingHorizontal: spacing.md,
   },
   typeOptionSelected: {
     borderColor: colors.orange,

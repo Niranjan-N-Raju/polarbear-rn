@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
-import { ActivityIndicator, Pressable, ScrollView, Text, TextInput, useWindowDimensions, View } from 'react-native';
+import { Pressable, ScrollView, Text, TextInput, useWindowDimensions, View } from 'react-native';
+import { AppLoader } from '../../components/AppLoader';
 import { apiRequest } from '../../api/auth';
 import { theme } from '../../config/theme';
 import { t, translateRole } from '../../i18n';
@@ -37,6 +38,8 @@ export function AdminUsersScreen() {
   const [stores, setStores] = useState<StoreOption[]>([]);
   const [filterStore, setFilterStore] = useState('');
   const [isLoading, setIsLoading] = useState(true);
+  const [isLoadingStores, setIsLoadingStores] = useState(false);
+  const [hasLoadedStores, setHasLoadedStores] = useState(false);
   const [loadError, setLoadError] = useState('');
   const [form, setForm] = useState<UserForm>(blankForm);
   const [editing, setEditing] = useState<AdminUser | null>(null);
@@ -53,16 +56,16 @@ export function AdminUsersScreen() {
     try {
       const query = new URLSearchParams({ excludeEmployees: 'true', limit: '500' });
       if (filterStore) query.set('franchiseId', filterStore);
-      const [usersResponse, storesResponse] = await Promise.all([
-        apiRequest(`/users?${query.toString()}`),
-        apiRequest('/stores?limit=100'),
-      ]);
+      const usersResponse = await apiRequest(`/users?${query.toString()}`);
       const usersData = await usersResponse.json() as { users?: AdminUser[]; message?: string };
-      const storesData = await storesResponse.json() as { franchises?: StoreOption[] };
       if (!usersResponse.ok) throw new Error(usersData.message ?? t('adminLoadFailed'));
-      if (!storesResponse.ok) throw new Error(t('adminLoadFailed'));
-      setUsers(usersData.users ?? []);
-      setStores(storesData.franchises ?? []);
+      const loadedUsers = usersData.users ?? [];
+      setUsers(loadedUsers);
+      setStores((current) => {
+        const options = new Map(current.map((store) => [store._id, store]));
+        loadedUsers.forEach((user) => user.franchises.forEach((store) => options.set(store._id, store)));
+        return [...options.values()];
+      });
     } catch (error) {
       setLoadError(error instanceof Error ? error.message : t('adminLoadFailed'));
     } finally {
@@ -74,11 +77,28 @@ export function AdminUsersScreen() {
     void load();
   }, [load]);
 
+  const loadStores = useCallback(async () => {
+    if (hasLoadedStores || isLoadingStores) return;
+    setIsLoadingStores(true);
+    try {
+      const response = await apiRequest('/stores?limit=100');
+      const data = await response.json() as { franchises?: StoreOption[]; message?: string };
+      if (!response.ok) throw new Error(data.message ?? t('adminLoadFailed'));
+      setStores(data.franchises ?? []);
+      setHasLoadedStores(true);
+    } catch (error) {
+      setFormError(error instanceof Error ? error.message : t('adminLoadFailed'));
+    } finally {
+      setIsLoadingStores(false);
+    }
+  }, [hasLoadedStores, isLoadingStores]);
+
   function openCreate(): void {
     setEditing(null);
     setForm(blankForm);
     setFormError('');
     setIsFormOpen(true);
+    void loadStores();
   }
 
   function openEdit(user: AdminUser): void {
@@ -92,6 +112,7 @@ export function AdminUsersScreen() {
     });
     setFormError('');
     setIsFormOpen(true);
+    void loadStores();
   }
 
   function toggleStore(id: string): void {
@@ -190,10 +211,10 @@ export function AdminUsersScreen() {
         ))}
       </ScrollView>
 
-      {isLoading ? <ActivityIndicator color={theme.colors.orange} size="large" /> : null}
+      {isLoading ? <AppLoader variant="section" /> : null}
       {loadError ? <Text accessibilityRole="alert" style={[styles.stateMessage, styles.stateError]}>{loadError}</Text> : null}
       {!isLoading && !loadError && users.length === 0 ? <Text style={styles.stateMessage}>{t('adminNoUsers')}</Text> : null}
-      {layout.usersTable ? (
+      {!isLoading && !loadError && users.length > 0 ? (layout.usersTable ? (
         <View style={styles.usersTable}>
           <View style={[styles.usersTableRow, styles.usersTableHeader]}>
             <Text style={[styles.usersTableCell, styles.usersTableHeaderText, styles.usersTableName]}>Name</Text>
@@ -251,7 +272,7 @@ export function AdminUsersScreen() {
           </View>
         ))}
       </ScrollView>
-      )}
+      )) : null}
 
       <ResponsiveDrawerModal visible={isFormOpen} closeLabel={t('adminCloseMenu')} onClose={() => setIsFormOpen(false)}>
         <View style={styles.drawerContent}>
@@ -292,7 +313,7 @@ export function AdminUsersScreen() {
             </View>
             <View style={styles.drawerActionSlot}>
               <Pressable disabled={isSaving} onPress={() => void save()} style={[styles.primaryButton, styles.drawerActionButton]}>
-                {isSaving ? <ActivityIndicator color={theme.colors.white} /> : <Text style={styles.primaryButtonText}>{t('adminSave')}</Text>}
+                {isSaving ? <AppLoader variant="inline" color={theme.colors.white} /> : <Text style={styles.primaryButtonText}>{t('adminSave')}</Text>}
               </Pressable>
             </View>
           </View>
@@ -313,7 +334,7 @@ export function AdminUsersScreen() {
             </View>
             <View style={styles.confirmDialogActionSlot}>
               <Pressable disabled={isDeleting} onPress={() => void deleteUser()} style={[styles.dangerButton, styles.confirmDialogActionButton]}>
-                {isDeleting ? <ActivityIndicator color={theme.colors.white} /> : <Text style={styles.dangerButtonText}>{t('adminDelete')}</Text>}
+                {isDeleting ? <AppLoader variant="inline" color={theme.colors.white} /> : <Text style={styles.dangerButtonText}>{t('adminDelete')}</Text>}
               </Pressable>
             </View>
           </View>

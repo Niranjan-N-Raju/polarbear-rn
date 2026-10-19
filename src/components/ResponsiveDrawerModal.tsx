@@ -10,12 +10,13 @@ interface ResponsiveDrawerModalProps {
   closeLabel: string;
   onClose: () => void;
   onAfterClose?: () => void;
+  overlay?: ReactNode;
   children: ReactNode;
   presentation?: 'drawer' | 'dialog';
   panelStyle?: StyleProp<ViewStyle>;
 }
 
-export function ResponsiveDrawerModal({ visible, closeLabel, onClose, onAfterClose, children, presentation = 'drawer', panelStyle }: ResponsiveDrawerModalProps) {
+export function ResponsiveDrawerModal({ visible, closeLabel, onClose, onAfterClose, overlay, children, presentation = 'drawer', panelStyle }: ResponsiveDrawerModalProps) {
   const insets = useSafeAreaInsets();
   const { width, height } = useWindowDimensions();
   const drawerLayout = getResponsiveDrawerLayout(width, height, presentation);
@@ -113,6 +114,7 @@ export function ResponsiveDrawerModal({ visible, closeLabel, onClose, onAfterClo
         >
           {children}
         </View>
+        {overlay}
       </View>
     </Modal>
   );

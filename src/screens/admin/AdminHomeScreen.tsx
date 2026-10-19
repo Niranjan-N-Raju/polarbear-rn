@@ -1,7 +1,9 @@
-import { useState } from 'react';
-import { ActivityIndicator, Modal, Pressable, Text, useWindowDimensions, View } from 'react-native';
+import { useCallback, useState } from 'react';
+import { Modal, Pressable, Text, useWindowDimensions, View } from 'react-native';
 import { ChevronsLeft, LayoutDashboard, LogOut, Menu, Store, UserRound, UsersRound, X } from 'lucide-react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { AppToast } from '../../components/AppToast';
+import { AppLoader } from '../../components/AppLoader';
 import { apiRequest, setAccessToken, type AuthenticatedUser } from '../../api/auth';
 import { theme } from '../../config/theme';
 import { t, translateRole } from '../../i18n';
@@ -28,8 +30,10 @@ export function AdminHomeScreen({ user: initialUser, onLogout }: AdminHomeScreen
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
+  const [appToast, setAppToast] = useState<{ message: string; tone: 'success' | 'error' } | null>(null);
   const safeAreaStyles = getAdminSafeAreaStyles(insets.top, insets.bottom);
   const drawerSafeAreaStyles = getAdminDrawerSafeAreaStyles(insets.top, insets.bottom);
+  const dismissAppToast = useCallback(() => setAppToast(null), []);
 
   async function logout(): Promise<void> {
     setIsLoggingOut(true);
@@ -111,7 +115,7 @@ export function AdminHomeScreen({ user: initialUser, onLogout }: AdminHomeScreen
                 onPress={() => void logout()}
                 style={[styles.webSidebarLogout, isSidebarCollapsed && styles.webSidebarItemCollapsed]}
               >
-                {isLoggingOut ? <ActivityIndicator color={theme.colors.muted} /> : <LogOut color={theme.colors.muted} size={layout.sidebarIconSize} />}
+                {isLoggingOut ? <AppLoader variant="inline" color={theme.colors.muted} /> : <LogOut color={theme.colors.muted} size={layout.sidebarIconSize} />}
                 {!isSidebarCollapsed ? <Text style={styles.logoutText}>{t('signOut')}</Text> : null}
               </Pressable>
             </View>
@@ -141,12 +145,14 @@ export function AdminHomeScreen({ user: initialUser, onLogout }: AdminHomeScreen
       <View style={[styles.mainPanel, layout.hasSidebar && styles.mainPanelWeb]}>
       <View style={[styles.content, layout.compactWeb && styles.contentCompact]}>
         {activeTab === 'dashboard' ? <AdminDashboardScreen /> : null}
-        {activeTab === 'stores' ? <AdminStoresScreen userId={user.id} /> : null}
+        {activeTab === 'stores' ? <AdminStoresScreen userId={user.id} onToast={(message, tone) => setAppToast({ message, tone })} /> : null}
         {activeTab === 'users' ? <AdminUsersScreen /> : null}
         {activeTab === 'profile' ? <AdminProfileScreen user={user} onUserUpdated={setUser} /> : null}
       </View>
 
       </View>
+
+      {appToast ? <AppToast message={appToast.message} tone={appToast.tone} onDismiss={dismissAppToast} /> : null}
 
       {!layout.hasSidebar ? (
         <Modal
@@ -230,7 +236,7 @@ export function AdminHomeScreen({ user: initialUser, onLogout }: AdminHomeScreen
                   onPress={() => void logout()}
                   style={layout.isWeb ? styles.webSidebarLogout : styles.drawerLogout}
                 >
-                  {isLoggingOut ? <ActivityIndicator color={theme.colors.muted} /> : <LogOut color={theme.colors.muted} size={layout.isWeb ? layout.sidebarIconSize : theme.layout.iconSize} />}
+                  {isLoggingOut ? <AppLoader variant="inline" color={theme.colors.muted} /> : <LogOut color={theme.colors.muted} size={layout.isWeb ? layout.sidebarIconSize : theme.layout.iconSize} />}
                   <Text style={styles.logoutText}>{t('signOut')}</Text>
                 </Pressable>
               </View>

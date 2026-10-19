@@ -47,6 +47,7 @@ export const en = {
   adminProfile: 'Profile',
   adminOpenMenu: 'Open navigation menu',
   adminCloseMenu: 'Close navigation menu',
+  adminDismissToast: 'Dismiss notification',
   adminOverview: 'Operations overview',
   adminOverviewDescription: 'A clear view of the work happening across your stores.',
   adminManageUsers: 'Manage staff accounts and store access.',

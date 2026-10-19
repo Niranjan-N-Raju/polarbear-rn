@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react';
-import { ActivityIndicator, Pressable, ScrollView, Text, TextInput, useWindowDimensions, View } from 'react-native';
+import { Pressable, ScrollView, Text, TextInput, useWindowDimensions, View } from 'react-native';
 import { Eye, EyeOff } from 'lucide-react-native';
 import { apiRequest, setAccessToken } from '../../api/auth';
 import type { AuthenticatedUser } from '../../api/auth';
+import { AppLoader } from '../../components/AppLoader';
 import { theme } from '../../config/theme';
 import { t, translateRole } from '../../i18n';
 import { adminStyles as styles } from '../../styles/adminStyles';
@@ -136,11 +137,7 @@ export function AdminProfileScreen({ user: initialUser, onUserUpdated }: AdminPr
   }
 
   if (isLoading) {
-    return (
-      <View style={styles.loadingScreen}>
-        <ActivityIndicator color={theme.colors.orange} size="large" />
-      </View>
-    );
+    return <AppLoader variant="screen" />;
   }
 
   return (
@@ -170,7 +167,7 @@ export function AdminProfileScreen({ user: initialUser, onUserUpdated }: AdminPr
               <Text style={styles.sectionLabel}>{t('adminUpdateName')}</Text>
               <Field label={t('adminFullName')} value={name} onChangeText={(value) => { setName(value); setNameError(''); }} error={nameError} />
               <Pressable disabled={isSavingName} onPress={() => void saveName()} style={styles.primaryButton}>
-                {isSavingName ? <ActivityIndicator color={theme.colors.white} /> : <Text style={styles.primaryButtonText}>{t('adminSaveName')}</Text>}
+                {isSavingName ? <AppLoader variant="inline" color={theme.colors.white} /> : <Text style={styles.primaryButtonText}>{t('adminSaveName')}</Text>}
               </Pressable>
             </View>
           </View>
@@ -183,7 +180,7 @@ export function AdminProfileScreen({ user: initialUser, onUserUpdated }: AdminPr
               <Field label={t('adminConfirmPassword')} value={confirmPassword} onChangeText={(value) => { setConfirmPassword(value); setConfirmPasswordError(''); }} error={confirmPasswordError} secureTextEntry={!showConfirm} onToggleVisibility={() => setShowConfirm((value) => !value)} visible={showConfirm} />
               {passwordError ? <Text accessibilityRole="alert" style={[styles.formError, styles.stateError]}>{passwordError}</Text> : null}
               <Pressable disabled={isSavingPassword} onPress={() => void changePassword()} style={styles.primaryButton}>
-                {isSavingPassword ? <ActivityIndicator color={theme.colors.white} /> : <Text style={styles.primaryButtonText}>{t('adminUpdatePassword')}</Text>}
+                {isSavingPassword ? <AppLoader variant="inline" color={theme.colors.white} /> : <Text style={styles.primaryButtonText}>{t('adminUpdatePassword')}</Text>}
               </Pressable>
             </View>
           </View>
@@ -199,7 +196,7 @@ export function AdminProfileScreen({ user: initialUser, onUserUpdated }: AdminPr
             <Text style={styles.sectionLabel}>{t('adminUpdateName')}</Text>
             <Field label={t('adminFullName')} value={name} onChangeText={(value) => { setName(value); setNameError(''); }} error={nameError} />
             <Pressable disabled={isSavingName} onPress={() => void saveName()} style={styles.primaryButton}>
-              {isSavingName ? <ActivityIndicator color={theme.colors.white} /> : <Text style={styles.primaryButtonText}>{t('adminSaveName')}</Text>}
+              {isSavingName ? <AppLoader variant="inline" color={theme.colors.white} /> : <Text style={styles.primaryButtonText}>{t('adminSaveName')}</Text>}
             </Pressable>
           </View>
           <View style={styles.profileCard}>
@@ -209,7 +206,7 @@ export function AdminProfileScreen({ user: initialUser, onUserUpdated }: AdminPr
             <Field label={t('adminConfirmPassword')} value={confirmPassword} onChangeText={(value) => { setConfirmPassword(value); setConfirmPasswordError(''); }} error={confirmPasswordError} secureTextEntry={!showConfirm} onToggleVisibility={() => setShowConfirm((value) => !value)} visible={showConfirm} />
             {passwordError ? <Text accessibilityRole="alert" style={[styles.formError, styles.stateError]}>{passwordError}</Text> : null}
             <Pressable disabled={isSavingPassword} onPress={() => void changePassword()} style={styles.primaryButton}>
-              {isSavingPassword ? <ActivityIndicator color={theme.colors.white} /> : <Text style={styles.primaryButtonText}>{t('adminUpdatePassword')}</Text>}
+              {isSavingPassword ? <AppLoader variant="inline" color={theme.colors.white} /> : <Text style={styles.primaryButtonText}>{t('adminUpdatePassword')}</Text>}
             </Pressable>
           </View>
         </>

@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
-import { ActivityIndicator, ScrollView, Text, useWindowDimensions, View } from 'react-native';
+import { ScrollView, Text, useWindowDimensions, View } from 'react-native';
+import { AppLoader } from '../../components/AppLoader';
 import { apiRequest } from '../../api/auth';
 import { theme } from '../../config/theme';
 import { t } from '../../i18n';
@@ -41,7 +42,7 @@ export function AdminDashboardScreen() {
       </View>
 
       {isLoading ? (
-        <ActivityIndicator color={theme.colors.orange} size="large" />
+        <AppLoader variant="section" />
       ) : hasError || !stats ? (
         <Text accessibilityRole="alert" style={[styles.stateMessage, styles.stateError]}>
           {t('adminLoadFailed')}
