@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { Pressable, ScrollView, Text, TextInput, useWindowDimensions, View } from 'react-native';
 import { Archive, ChevronDown, MapPin, Pencil, Phone, Plus, RotateCcw, Store as StoreIcon } from 'lucide-react-native';
+import { AppErrorState } from '../../components/AppErrorState';
 import { AppToast } from '../../components/AppToast';
 import { AppLoader } from '../../components/AppLoader';
 import { apiRequest } from '../../api/auth';
@@ -238,20 +239,21 @@ export function AdminStoresScreen({ userId, onToast }: AdminStoresScreenProps) {
       });
       const data = await response.json() as { message?: string };
       if (!response.ok) {
-        setError(data.message ?? t('adminSaveFailed'));
+        showErrorToast(data.message ?? t('adminSaveFailed'));
         return;
       }
       setPendingArchiveToast(data.message ?? t(archived ? 'adminStoreArchived' : 'adminStoreRestored'));
       setIsArchiveDialogOpen(false);
       await loadStores();
     } catch {
-      setError(t('adminNetworkError'));
+      showErrorToast(t('adminNetworkError'));
     } finally {
       setUpdatingArchiveId(null);
     }
   }
 
   if (isLoading) return <AppLoader variant="screen" />;
+  if (error) return <AppErrorState message={error} onRetry={() => void loadStores()} />;
 
   return (
     <View style={styles.screen}>
@@ -308,9 +310,8 @@ export function AdminStoresScreen({ userId, onToast }: AdminStoresScreenProps) {
         </View>
       </View>
 
-      {error ? <Text accessibilityRole="alert" style={[styles.stateMessage, styles.stateError]}>{error}</Text> : null}
-      {!isLoading && !error && stores.length === 0 ? <Text style={styles.stateMessage}>{t('adminNoStores')}</Text> : null}
-      {!isLoading && !error && stores.length > 0 && visibleStores.length === 0 ? <Text style={styles.stateMessage}>{t('adminNoMatchingStores')}</Text> : null}
+      {stores.length === 0 ? <Text style={styles.stateMessage}>{t('adminNoStores')}</Text> : null}
+      {stores.length > 0 && visibleStores.length === 0 ? <Text style={styles.stateMessage}>{t('adminNoMatchingStores')}</Text> : null}
 
       <ScrollView
         style={[styles.list, !layout.desktopWeb && styles.storeListFabViewport]}

@@ -2,15 +2,28 @@ import { apiBaseUrl } from '../config/apiBaseUrl';
 import { t } from '../i18n';
 
 let accessToken: string | null = null;
+let unauthorizedHandler: (() => void) | null = null;
+let hasHandledUnauthorized = false;
+
+export function setUnauthorizedHandler(handler: (() => void) | null): void {
+  unauthorizedHandler = handler;
+}
 
 export function setAccessToken(token: string | null): void {
   accessToken = token;
+  if (token) hasHandledUnauthorized = false;
 }
 
 export async function apiRequest(path: string, init: RequestInit = {}): Promise<Response> {
   const headers = new Headers(init.headers);
   if (accessToken) headers.set('Authorization', `Bearer ${accessToken}`);
-  return fetch(`${apiBaseUrl}${path}`, { ...init, headers });
+  const response = await fetch(`${apiBaseUrl}${path}`, { ...init, headers });
+  if (response.status === 401 && accessToken && path !== '/auth/logout' && !hasHandledUnauthorized) {
+    hasHandledUnauthorized = true;
+    accessToken = null;
+    unauthorizedHandler?.();
+  }
+  return response;
 }
 
 export interface AuthenticatedUser {

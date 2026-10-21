@@ -307,6 +307,12 @@ const baseAdminStyles = StyleSheet.create({
     gap: spacing.sm,
     paddingRight: spacing['2xl'],
   },
+  usersSearch: {
+    width: '100%',
+    height: 42,
+    minHeight: 42,
+    marginBottom: spacing.md,
+  },
   filterChip: {
     minHeight: 36,
     justifyContent: 'center',
@@ -377,12 +383,6 @@ const baseAdminStyles = StyleSheet.create({
     fontSize: typography.md,
     fontWeight: theme.fontWeight.bold,
   },
-  rowRole: {
-    marginTop: spacing.sm,
-    color: colors.orange,
-    fontSize: typography.xs,
-    fontWeight: theme.fontWeight.medium,
-  },
   storePills: {
     flexDirection: 'row',
     flexWrap: 'wrap',
@@ -407,6 +407,16 @@ const baseAdminStyles = StyleSheet.create({
     flexDirection: 'row',
     gap: spacing.sm,
     marginTop: spacing.lg,
+  },
+  userCardActions: {
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    gap: spacing.sm,
+    flexShrink: 0,
+  },
+  userCardTitle: {
+    flex: 1,
+    minWidth: 0,
   },
   typeOptions: {
     flexDirection: 'row',
@@ -490,6 +500,12 @@ const baseAdminStyles = StyleSheet.create({
   inputError: {
     borderColor: colors.errorBorder,
     backgroundColor: colors.errorBackground,
+  },
+  userAssignmentError: {
+    borderWidth: theme.border.width,
+    borderColor: colors.errorBorder,
+    backgroundColor: colors.errorBackground,
+    padding: spacing.md,
   },
   fieldError: {
     marginTop: spacing.xs,
@@ -1281,21 +1297,25 @@ const webAdminStyles = StyleSheet.create({
   usersTableEmail: {
     flex: 1.4,
   },
-  usersTableRole: {
-    flex: 0.9,
-  },
   usersTableStores: {
-    flex: 1.2,
+    flex: 1.5,
     flexDirection: 'row',
     flexWrap: 'wrap',
     gap: 6,
   },
   usersTableActions: {
-    width: 112,
+    width: 100,
     flexDirection: 'row',
+    alignItems: 'center',
     justifyContent: 'flex-end',
-    gap: 8,
-    paddingRight: 20,
+    gap: spacing.xs,
+    paddingRight: spacing.md,
+  },
+  userIconAction: {
+    width: 36,
+    height: 36,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   userAvatar: {
     width: 32,
@@ -1314,14 +1334,6 @@ const webAdminStyles = StyleSheet.create({
     color: colors.ink,
     fontSize: 14,
     fontWeight: theme.fontWeight.medium,
-  },
-  userTableRole: {
-    alignSelf: 'flex-start',
-    paddingHorizontal: 8,
-    paddingVertical: 2,
-    backgroundColor: 'rgba(244, 117, 33, 0.1)',
-    color: colors.orange,
-    fontSize: 12,
   },
   userTableStore: {
     paddingHorizontal: 8,

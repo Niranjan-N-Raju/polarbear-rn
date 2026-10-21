@@ -146,7 +146,7 @@ export function AdminHomeScreen({ user: initialUser, onLogout }: AdminHomeScreen
       <View style={[styles.content, layout.compactWeb && styles.contentCompact]}>
         {activeTab === 'dashboard' ? <AdminDashboardScreen /> : null}
         {activeTab === 'stores' ? <AdminStoresScreen userId={user.id} onToast={(message, tone) => setAppToast({ message, tone })} /> : null}
-        {activeTab === 'users' ? <AdminUsersScreen /> : null}
+        {activeTab === 'users' ? <AdminUsersScreen onToast={(message, tone) => setAppToast({ message, tone })} /> : null}
         {activeTab === 'profile' ? <AdminProfileScreen user={user} onUserUpdated={setUser} /> : null}
       </View>
 

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 import { Keyboard } from 'react-native';
 import { login, setAccessToken } from '../api/auth';
 import { defaultLoginCredentials } from '../config/testLoginCredentials';
@@ -55,10 +55,10 @@ export function useLogin() {
     setFormError('');
   }
 
-  function signOut(): void {
+  const signOut = useCallback((): void => {
     setAccessToken(null);
     setSession(null);
-  }
+  }, []);
 
   return {
     email,

@@ -1,5 +1,8 @@
 import { useCallback, useEffect, useState } from 'react';
 import { Pressable, ScrollView, Text, TextInput, useWindowDimensions, View } from 'react-native';
+import { Pencil, Plus, Trash2 } from 'lucide-react-native';
+import { AppErrorState } from '../../components/AppErrorState';
+import { AppToast } from '../../components/AppToast';
 import { AppLoader } from '../../components/AppLoader';
 import { apiRequest } from '../../api/auth';
 import { theme } from '../../config/theme';
@@ -29,14 +32,21 @@ interface UserForm {
   franchiseIds: string[];
 }
 
+type UserFieldErrors = Partial<Record<'name' | 'email' | 'password' | 'franchiseIds', string>>;
+
 const blankForm: UserForm = { name: '', email: '', password: '', role: 'sub_admin', franchiseIds: [] };
 
-export function AdminUsersScreen() {
+interface AdminUsersScreenProps {
+  onToast: (message: string, tone: 'success' | 'error') => void;
+}
+
+export function AdminUsersScreen({ onToast }: AdminUsersScreenProps) {
   const { width } = useWindowDimensions();
   const layout = getAdminLayout(width);
   const [users, setUsers] = useState<AdminUser[]>([]);
   const [stores, setStores] = useState<StoreOption[]>([]);
   const [filterStore, setFilterStore] = useState('');
+  const [searchText, setSearchText] = useState('');
   const [isLoading, setIsLoading] = useState(true);
   const [isLoadingStores, setIsLoadingStores] = useState(false);
   const [hasLoadedStores, setHasLoadedStores] = useState(false);
@@ -45,10 +55,15 @@ export function AdminUsersScreen() {
   const [editing, setEditing] = useState<AdminUser | null>(null);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [pendingDelete, setPendingDelete] = useState<AdminUser | null>(null);
-  const [formError, setFormError] = useState('');
+  const [fieldErrors, setFieldErrors] = useState<UserFieldErrors>({});
+  const [toastMessage, setToastMessage] = useState('');
+  const [pendingFormSuccess, setPendingFormSuccess] = useState('');
+  const [pendingDeleteSuccess, setPendingDeleteSuccess] = useState('');
   const [isSaving, setIsSaving] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const dismissToast = useCallback(() => setToastMessage(''), []);
+  const showErrorToast = useCallback((message: string) => setToastMessage(message), []);
 
   const load = useCallback(async () => {
     setIsLoading(true);
@@ -77,6 +92,13 @@ export function AdminUsersScreen() {
     void load();
   }, [load]);
 
+  const normalizedSearch = searchText.trim().toLocaleLowerCase();
+  const visibleUsers = users.filter((user) =>
+    `${user.name} ${user.email} ${translateRole(user.role)} ${user.franchises.map((store) => store.name).join(' ')}`
+      .toLocaleLowerCase()
+      .includes(normalizedSearch),
+  );
+
   const loadStores = useCallback(async () => {
     if (hasLoadedStores || isLoadingStores) return;
     setIsLoadingStores(true);
@@ -87,16 +109,17 @@ export function AdminUsersScreen() {
       setStores(data.franchises ?? []);
       setHasLoadedStores(true);
     } catch (error) {
-      setFormError(error instanceof Error ? error.message : t('adminLoadFailed'));
+      showErrorToast(error instanceof Error ? error.message : t('adminLoadFailed'));
     } finally {
       setIsLoadingStores(false);
     }
-  }, [hasLoadedStores, isLoadingStores]);
+  }, [hasLoadedStores, isLoadingStores, showErrorToast]);
 
   function openCreate(): void {
     setEditing(null);
     setForm(blankForm);
-    setFormError('');
+    setFieldErrors({});
+    setToastMessage('');
     setIsFormOpen(true);
     void loadStores();
   }
@@ -110,44 +133,53 @@ export function AdminUsersScreen() {
       role: user.role === 'franchise_admin' ? 'franchise_admin' : 'sub_admin',
       franchiseIds: user.franchises.map((store) => store._id),
     });
-    setFormError('');
+    setFieldErrors({});
+    setToastMessage('');
     setIsFormOpen(true);
     void loadStores();
   }
 
-  function toggleStore(id: string): void {
-    setForm((current) => ({
-      ...current,
-      franchiseIds: current.franchiseIds.includes(id)
-        ? current.franchiseIds.filter((storeId) => storeId !== id)
-        : [...current.franchiseIds, id],
-    }));
+  function updateField<Key extends keyof UserForm>(key: Key, value: UserForm[Key]): void {
+    setForm((current) => ({ ...current, [key]: value }));
+    setFieldErrors((current) => {
+      const next = { ...current };
+      if (key === 'name' || key === 'email' || key === 'password' || key === 'franchiseIds') delete next[key];
+      return next;
+    });
   }
 
-  function validate(): string | null {
-    if (!form.name.trim()) return t('adminUserNameRequired');
-    if (!form.email.trim()) return t('adminUserEmailRequired');
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) return t('adminUserEmailInvalid');
+  function toggleStore(id: string): void {
+    updateField('franchiseIds', form.franchiseIds.includes(id)
+      ? form.franchiseIds.filter((storeId) => storeId !== id)
+      : [...form.franchiseIds, id]);
+  }
+
+  function validate(): UserFieldErrors {
+    const errors: UserFieldErrors = {};
+    if (!form.name.trim()) errors.name = t('adminUserNameRequired');
+    if (!form.email.trim()) errors.email = t('adminUserEmailRequired');
+    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) errors.email = t('adminUserEmailInvalid');
     if (!editing) {
-      if (!form.password) return t('adminUserPasswordRequired');
-      if (form.password.length < 12) return t('adminPasswordLength');
-      if (!/[A-Z]/.test(form.password)) return t('adminPasswordUppercase');
-      if (!/[a-z]/.test(form.password)) return t('adminPasswordLowercase');
-      if (!/\d/.test(form.password)) return t('adminPasswordNumber');
-      if (!/[^A-Za-z0-9]/.test(form.password)) return t('adminPasswordSpecial');
+      if (!form.password) errors.password = t('adminUserPasswordRequired');
+      else if (form.password.length < 12) errors.password = t('adminPasswordLength');
+      else if (!/[A-Z]/.test(form.password)) errors.password = t('adminPasswordUppercase');
+      else if (!/[a-z]/.test(form.password)) errors.password = t('adminPasswordLowercase');
+      else if (!/\d/.test(form.password)) errors.password = t('adminPasswordNumber');
+      else if (!/[^A-Za-z0-9]/.test(form.password)) errors.password = t('adminPasswordSpecial');
     }
-    if (form.role === 'franchise_admin' && form.franchiseIds.length === 0) return t('adminUserStoreRequired');
-    return null;
+    if (form.role === 'franchise_admin' && form.franchiseIds.length === 0) errors.franchiseIds = t('adminUserStoreRequired');
+    return errors;
   }
 
   async function save(): Promise<void> {
-    const validation = validate();
-    if (validation) {
-      setFormError(validation);
+    const validationErrors = validate();
+    setFieldErrors(validationErrors);
+    if (Object.keys(validationErrors).length > 0) {
       return;
     }
     setIsSaving(true);
-    setFormError('');
+    setFieldErrors({});
+    setToastMessage('');
     try {
       const response = await apiRequest(
         editing ? `/users/${encodeURIComponent(editing._id)}` : '/users',
@@ -160,12 +192,15 @@ export function AdminUsersScreen() {
         },
       );
       const data = await response.json() as { message?: string };
-      if (!response.ok) throw new Error(data.message ?? t('adminSaveFailed'));
+      if (!response.ok) {
+        showErrorToast(data.message ?? t('adminSaveFailed'));
+        return;
+      }
+      setPendingFormSuccess(t('adminUserSaved'));
       setIsFormOpen(false);
       setEditing(null);
-      await load();
     } catch (error) {
-      setFormError(error instanceof Error ? error.message : t('adminSaveFailed'));
+      showErrorToast(error instanceof Error ? error.message : t('adminSaveFailed'));
     } finally {
       setIsSaving(false);
     }
@@ -177,17 +212,21 @@ export function AdminUsersScreen() {
     try {
       const response = await apiRequest(`/users/${encodeURIComponent(pendingDelete._id)}`, { method: 'DELETE' });
       const data = await response.json() as { message?: string };
-      if (!response.ok) throw new Error(data.message ?? t('adminSaveFailed'));
+      if (!response.ok) {
+        showErrorToast(data.message ?? t('adminSaveFailed'));
+        return;
+      }
+      setPendingDeleteSuccess(t('adminUserDeleted'));
       setIsDeleteDialogOpen(false);
-      await load();
     } catch (error) {
-      setLoadError(error instanceof Error ? error.message : t('adminNetworkError'));
+      showErrorToast(error instanceof Error ? error.message : t('adminNetworkError'));
     } finally {
       setIsDeleting(false);
     }
   }
 
   if (isLoading) return <AppLoader variant="screen" />;
+  if (loadError) return <AppErrorState message={loadError} onRetry={() => void load()} />;
 
   return (
     <View style={styles.screen}>
@@ -197,10 +236,20 @@ export function AdminUsersScreen() {
           <Text style={styles.screenTitle}>{t('adminUsers')}</Text>
           <Text style={styles.screenDescription}>{t('adminManageUsers')}</Text>
         </View>
-        <Pressable accessibilityRole="button" onPress={openCreate} style={[styles.primaryButton, layout.desktopWeb && styles.screenHeaderAction, { marginTop: layout.desktopWeb ? 0 : theme.spacing.lg }]}>
-          <Text style={styles.primaryButtonText}>{t('adminAddUser')}</Text>
-        </Pressable>
+        {layout.desktopWeb ? (
+          <Pressable accessibilityRole="button" onPress={openCreate} style={[styles.primaryButton, styles.screenHeaderAction]}>
+            <Text style={styles.primaryButtonText}>{t('adminAddUser')}</Text>
+          </Pressable>
+        ) : null}
       </View>
+
+      <TextInput
+        value={searchText}
+        onChangeText={setSearchText}
+        placeholder={t('adminSearchUsers')}
+        style={styles.usersSearch}
+        autoCapitalize="none"
+      />
 
       <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.filterScroll} contentContainerStyle={styles.filterOptions}>
         <Pressable onPress={() => setFilterStore('')} style={[styles.filterChip, !filterStore && styles.filterChipActive]}>
@@ -213,37 +262,34 @@ export function AdminUsersScreen() {
         ))}
       </ScrollView>
 
-      {loadError ? <Text accessibilityRole="alert" style={[styles.stateMessage, styles.stateError]}>{loadError}</Text> : null}
-      {!isLoading && !loadError && users.length === 0 ? <Text style={styles.stateMessage}>{t('adminNoUsers')}</Text> : null}
-      {!isLoading && !loadError && users.length > 0 ? (layout.usersTable ? (
+      {visibleUsers.length === 0 ? <Text style={styles.stateMessage}>{users.length === 0 ? t('adminNoUsers') : t('adminNoMatchingUsers')}</Text> : null}
+      {visibleUsers.length > 0 ? (layout.usersTable ? (
         <View style={styles.usersTable}>
           <View style={[styles.usersTableRow, styles.usersTableHeader]}>
             <Text style={[styles.usersTableCell, styles.usersTableHeaderText, styles.usersTableName]}>Name</Text>
             <Text style={[styles.usersTableCell, styles.usersTableHeaderText, styles.usersTableEmail]}>Email</Text>
-            <Text style={[styles.usersTableCell, styles.usersTableHeaderText, styles.usersTableRole]}>Role</Text>
             <Text style={[styles.usersTableCell, styles.usersTableHeaderText, styles.usersTableStores]}>Stores</Text>
             <View style={styles.usersTableActions} />
           </View>
           <ScrollView style={styles.list} contentContainerStyle={styles.listContent}>
-            {users.map((user) => (
+            {visibleUsers.map((user) => (
               <View key={user._id} style={styles.usersTableRow}>
                 <View style={[styles.usersTableCell, styles.usersTableName]}>
                   <View style={styles.userAvatar}><Text style={styles.userAvatarText}>{user.name.charAt(0).toUpperCase()}</Text></View>
-                  <Text numberOfLines={1} style={styles.userTableNameText}>{user.name}</Text>
+                  <Text numberOfLines={1} style={styles.userTableNameText}>{user.name} ({translateRole(user.role)})</Text>
                 </View>
                 <Text numberOfLines={1} style={[styles.usersTableCell, styles.usersTableEmail]}>{user.email}</Text>
-                <View style={[styles.usersTableCell, styles.usersTableRole]}><Text style={styles.userTableRole}>{translateRole(user.role)}</Text></View>
                 <View style={[styles.usersTableCell, styles.usersTableStores]}>
                   {user.franchises.length === 0
                     ? <Text style={styles.rowSubtext}>{t('adminNoStore')}</Text>
                     : user.franchises.map((store) => <Text key={store._id} style={styles.userTableStore}>{store.name}</Text>)}
                 </View>
                 <View style={styles.usersTableActions}>
-                  <Pressable accessibilityRole="button" onPress={() => openEdit(user)} style={styles.secondaryButton}>
-                    <Text style={styles.secondaryButtonText}>{t('adminEditUser')}</Text>
+                  <Pressable accessibilityRole="button" accessibilityLabel={`${t('adminEditUser')} ${user.name}`} onPress={() => openEdit(user)} style={styles.userIconAction}>
+                    <Pencil color={theme.colors.teal} size={16} />
                   </Pressable>
-                  <Pressable accessibilityRole="button" onPress={() => { setPendingDelete(user); setIsDeleteDialogOpen(true); }} style={styles.dangerButton}>
-                    <Text style={styles.dangerButtonText}>{t('adminDelete')}</Text>
+                  <Pressable accessibilityRole="button" accessibilityLabel={`${t('adminDelete')} ${user.name}`} onPress={() => { setPendingDelete(user); setIsDeleteDialogOpen(true); }} style={styles.userIconAction}>
+                    <Trash2 color={theme.colors.error} size={16} />
                   </Pressable>
                 </View>
               </View>
@@ -251,50 +297,70 @@ export function AdminUsersScreen() {
           </ScrollView>
         </View>
       ) : (
-      <ScrollView style={styles.list} contentContainerStyle={styles.listContent}>
-        {users.map((user) => (
+      <ScrollView style={[styles.list, !layout.desktopWeb && { marginBottom: 72 }]} contentContainerStyle={[styles.listContent, !layout.desktopWeb && { paddingBottom: 88 }]}>
+        {visibleUsers.map((user) => (
           <View key={user._id} style={styles.row}>
-            <Text style={styles.rowTitle}>{user.name}</Text>
+            <View style={styles.rowHeader}>
+              <Text numberOfLines={1} style={[styles.rowTitle, styles.userCardTitle]}>{user.name} ({translateRole(user.role)})</Text>
+              <View style={styles.userCardActions}>
+                <Pressable accessibilityRole="button" accessibilityLabel={`${t('adminEditUser')} ${user.name}`} onPress={() => openEdit(user)} style={styles.userIconAction}>
+                  <Pencil color={theme.colors.teal} size={16} />
+                </Pressable>
+                <Pressable accessibilityRole="button" accessibilityLabel={`${t('adminDelete')} ${user.name}`} onPress={() => { setPendingDelete(user); setIsDeleteDialogOpen(true); }} style={styles.userIconAction}>
+                  <Trash2 color={theme.colors.error} size={16} />
+                </Pressable>
+              </View>
+            </View>
             <Text style={styles.rowSubtext}>{user.email}</Text>
-            <Text style={styles.rowRole}>{translateRole(user.role)}</Text>
             <View style={styles.storePills}>
               {user.franchises.length === 0 ? <Text style={styles.rowSubtext}>{t('adminNoStore')}</Text> : user.franchises.map((store) => (
                 <View key={store._id} style={styles.storePill}><Text style={styles.storePillText}>{store.name}</Text></View>
               ))}
-            </View>
-            <View style={styles.rowActions}>
-              <Pressable accessibilityRole="button" onPress={() => openEdit(user)} style={styles.secondaryButton}>
-                <Text style={styles.secondaryButtonText}>{t('adminEditUser')}</Text>
-              </Pressable>
-              <Pressable accessibilityRole="button" onPress={() => { setPendingDelete(user); setIsDeleteDialogOpen(true); }} style={styles.dangerButton}>
-                <Text style={styles.dangerButtonText}>{t('adminDelete')}</Text>
-              </Pressable>
             </View>
           </View>
         ))}
       </ScrollView>
       )) : null}
 
-      <ResponsiveDrawerModal visible={isFormOpen} closeLabel={t('adminCloseMenu')} onClose={() => setIsFormOpen(false)}>
+      {!layout.desktopWeb ? (
+        <Pressable accessibilityRole="button" accessibilityLabel={t('adminAddUser')} onPress={openCreate} style={styles.fab}>
+          <Plus color={theme.colors.white} size={24} />
+        </Pressable>
+      ) : null}
+
+      <ResponsiveDrawerModal
+        visible={isFormOpen}
+        closeLabel={t('adminCloseMenu')}
+        onClose={() => setIsFormOpen(false)}
+        onAfterClose={() => {
+          if (!pendingFormSuccess) return;
+          onToast(pendingFormSuccess, 'success');
+          setPendingFormSuccess('');
+          void load();
+        }}
+        overlay={toastMessage ? <AppToast message={toastMessage} onDismiss={dismissToast} /> : null}
+      >
         <View style={styles.drawerContent}>
           <View style={styles.drawerHeading}>
             <Text style={[styles.modalTitle, styles.drawerHeadingTitle]}>{t(editing ? 'adminEditUser' : 'adminAddUser')}</Text>
           </View>
           <ScrollView style={styles.drawerFormScroll} keyboardShouldPersistTaps="handled">
-              {formError ? <Text accessibilityRole="alert" style={[styles.formError, styles.stateError]}>{formError}</Text> : null}
-              <Field label={t('adminFullName')} value={form.name} onChangeText={(name) => setForm((current) => ({ ...current, name }))} />
-              <Field label={t('adminEmail')} value={form.email} editable={!editing} keyboardType="email-address" autoCapitalize="none" onChangeText={(email) => setForm((current) => ({ ...current, email }))} />
-              {!editing ? <Field label={t('adminPassword')} value={form.password} secureTextEntry keyboardType="default" onChangeText={(password) => setForm((current) => ({ ...current, password }))} /> : null}
+              <Field label={t('adminFullName')} placeholder={t('adminFullNamePlaceholder')} value={form.name} onChangeText={(name) => updateField('name', name)} error={fieldErrors.name} />
+              <Field label={t('adminEmail')} placeholder={t('adminUserEmailPlaceholder')} value={form.email} editable={!editing} keyboardType="email-address" autoCapitalize="none" onChangeText={(email) => updateField('email', email)} error={fieldErrors.email} />
+              {!editing ? <Field label={t('adminPassword')} placeholder={t('adminUserPasswordPlaceholder')} value={form.password} secureTextEntry keyboardType="default" onChangeText={(password) => updateField('password', password)} error={fieldErrors.password} /> : null}
               <Text style={styles.fieldLabel}>{t('adminRole')}</Text>
               <View style={styles.typeOptions}>
                 {(['sub_admin', 'franchise_admin'] as const).map((role) => (
-                  <Pressable key={role} onPress={() => setForm((current) => ({ ...current, role, franchiseIds: role === 'sub_admin' ? [] : current.franchiseIds }))} style={[styles.secondaryButton, styles.typeOption, form.role === role && styles.typeOptionSelected]}>
+                  <Pressable key={role} onPress={() => {
+                    setForm((current) => ({ ...current, role, franchiseIds: role === 'sub_admin' ? [] : current.franchiseIds }));
+                    if (role === 'sub_admin') setFieldErrors((current) => ({ ...current, franchiseIds: undefined }));
+                  }} style={[styles.secondaryButton, styles.typeOption, form.role === role && styles.typeOptionSelected]}>
                     <Text style={styles.secondaryButtonText}>{t(role === 'sub_admin' ? 'adminSubAdmin' : 'adminFranchiseAdmin')}</Text>
                   </Pressable>
                 ))}
               </View>
               {form.role === 'franchise_admin' ? (
-                <View style={styles.field}>
+                <View style={[styles.field, fieldErrors.franchiseIds && styles.userAssignmentError]}>
                   <Text style={styles.fieldLabel}>{t('adminAssignStores')}</Text>
                   {stores.map((store) => {
                     const selected = form.franchiseIds.includes(store._id);
@@ -305,6 +371,7 @@ export function AdminUsersScreen() {
                       </Pressable>
                     );
                   })}
+                  {fieldErrors.franchiseIds ? <Text accessibilityRole="alert" style={styles.fieldError}>{fieldErrors.franchiseIds}</Text> : null}
                 </View>
               ) : null}
           </ScrollView>
@@ -321,7 +388,20 @@ export function AdminUsersScreen() {
         </View>
       </ResponsiveDrawerModal>
 
-      <ResponsiveDrawerModal visible={isDeleteDialogOpen && pendingDelete !== null} presentation="dialog" closeLabel={t('adminCloseMenu')} onClose={() => setIsDeleteDialogOpen(false)} onAfterClose={() => setPendingDelete(null)}>
+      <ResponsiveDrawerModal
+        visible={isDeleteDialogOpen && pendingDelete !== null}
+        presentation="dialog"
+        closeLabel={t('adminCloseMenu')}
+        onClose={() => setIsDeleteDialogOpen(false)}
+        onAfterClose={() => {
+          setPendingDelete(null);
+          if (!pendingDeleteSuccess) return;
+          onToast(pendingDeleteSuccess, 'success');
+          setPendingDeleteSuccess('');
+          void load();
+        }}
+        overlay={toastMessage ? <AppToast message={toastMessage} onDismiss={dismissToast} /> : null}
+      >
         <View style={styles.confirmDialogContent}>
           <View style={styles.confirmDialogHeader}>
             <Text style={[styles.modalTitle, styles.confirmDialogTitle]}>{t('adminDeleteUser')}</Text>
@@ -347,28 +427,32 @@ export function AdminUsersScreen() {
 
 interface FieldProps {
   label: string;
+  placeholder: string;
   value: string;
   onChangeText: (value: string) => void;
   editable?: boolean;
   secureTextEntry?: boolean;
   keyboardType?: 'default' | 'email-address';
   autoCapitalize?: 'none' | 'sentences';
+  error?: string;
 }
 
-function Field({ label, value, onChangeText, editable = true, secureTextEntry, keyboardType = 'default', autoCapitalize }: FieldProps) {
+function Field({ label, placeholder, value, onChangeText, editable = true, secureTextEntry, keyboardType = 'default', autoCapitalize, error }: FieldProps) {
   return (
     <View style={styles.field}>
       <Text style={styles.fieldLabel}>{label}</Text>
       <TextInput
         value={value}
+        placeholder={placeholder}
         onChangeText={onChangeText}
         editable={editable}
         secureTextEntry={secureTextEntry}
         keyboardType={keyboardType}
         autoCapitalize={autoCapitalize}
         autoCorrect={false}
-        style={[styles.fieldInput, !editable && styles.fieldInputDisabled]}
+        style={[styles.fieldInput, error && styles.inputError, !editable && styles.fieldInputDisabled]}
       />
+      {error ? <Text accessibilityRole="alert" style={styles.fieldError}>{error}</Text> : null}
     </View>
   );
 }

@@ -9,10 +9,12 @@ import {
   useWindowDimensions,
   View,
 } from 'react-native';
-import { useRef, type ComponentRef } from 'react';
+import { useCallback, useEffect, useRef, useState, type ComponentRef } from 'react';
 import { ChevronRight, Eye, EyeOff, LockKeyhole, Mail } from 'lucide-react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { AppToast } from '../components/AppToast';
 import { AppLoader } from '../components/AppLoader';
+import { setUnauthorizedHandler } from '../api/auth';
 import { theme } from '../config/theme';
 import { useLogin } from '../hooks/useLogin';
 import { t, translateRole } from '../i18n';
@@ -31,7 +33,18 @@ export function LoginScreen() {
   const isWebTablet =
     Platform.OS === 'web' && width >= theme.layout.tabletBreakpoint && !isWide;
   const loginState = useLogin();
+  const [authToastMessage, setAuthToastMessage] = useState('');
   const passwordInputRef = useRef<ComponentRef<typeof TextInput>>(null);
+  const dismissAuthToast = useCallback(() => setAuthToastMessage(''), []);
+  const handleUnauthorized = useCallback(() => {
+    loginState.signOut();
+    setAuthToastMessage(t('sessionExpired'));
+  }, [loginState.signOut]);
+
+  useEffect(() => {
+    setUnauthorizedHandler(handleUnauthorized);
+    return () => setUnauthorizedHandler(null);
+  }, [handleUnauthorized]);
   const safeAreaStyles = getLoginSafeAreaStyles(
     safeAreaInsets.top,
     safeAreaInsets.bottom,
@@ -40,10 +53,10 @@ export function LoginScreen() {
 
   if (loginState.session) {
     return (
-      <AdminHomeScreen
-        user={loginState.session.user}
-        onLogout={loginState.signOut}
-      />
+      <>
+        <AdminHomeScreen user={loginState.session.user} onLogout={loginState.signOut} />
+        {authToastMessage ? <AppToast message={authToastMessage} onDismiss={dismissAuthToast} /> : null}
+      </>
     );
   }
 
@@ -241,6 +254,7 @@ export function LoginScreen() {
           </ScrollView>
         </KeyboardAvoidingView>
       </View>
+      {authToastMessage ? <AppToast message={authToastMessage} onDismiss={dismissAuthToast} /> : null}
     </View>
   );
 }
