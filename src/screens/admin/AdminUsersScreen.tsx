@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Pressable, ScrollView, Text, TextInput, useWindowDimensions, View } from 'react-native';
 import type { StyleProp, ViewStyle } from 'react-native';
-import { ChevronDown, Filter, Pencil, Plus, Trash2, X } from 'lucide-react-native';
+import { Check, ChevronDown, Filter, Pencil, Plus, Trash2, X } from 'lucide-react-native';
 import { AppErrorState } from '../../components/AppErrorState';
 import { AppToast } from '../../components/AppToast';
 import { AppLoader } from '../../components/AppLoader';
@@ -595,8 +595,16 @@ export function AdminUsersScreen({ onToast }: AdminUsersScreenProps) {
                   {stores.map((store) => {
                     const selected = form.franchiseIds.includes(store._id);
                     return (
-                      <Pressable key={store._id} onPress={() => toggleStore(store._id)} style={[styles.checkboxRow, selected && styles.checkboxRowSelected]}>
-                        <View style={[styles.checkbox, selected && styles.checkboxSelected]} />
+                      <Pressable
+                        key={store._id}
+                        accessibilityRole="checkbox"
+                        accessibilityState={{ checked: selected }}
+                        onPress={() => toggleStore(store._id)}
+                        style={[styles.checkboxRow, selected && styles.checkboxRowSelected]}
+                      >
+                        <View style={[styles.checkbox, selected && styles.checkboxSelected]}>
+                          {selected ? <Check color={theme.colors.white} size={14} strokeWidth={3} /> : null}
+                        </View>
                         <Text style={styles.checkboxText}>{store.name}</Text>
                       </Pressable>
                     );
