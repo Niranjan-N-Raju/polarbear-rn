@@ -17,7 +17,7 @@ import { AppLoader } from '../components/AppLoader';
 import { setUnauthorizedHandler } from '../api/auth';
 import { theme } from '../config/theme';
 import { useLogin } from '../hooks/useLogin';
-import { t, translateRole } from '../i18n';
+import { t } from '../i18n';
 import { AdminHomeScreen } from './admin/AdminHomeScreen';
 import {
   getLoginSafeAreaStyles,
@@ -33,13 +33,14 @@ export function LoginScreen() {
   const isWebTablet =
     Platform.OS === 'web' && width >= theme.layout.tabletBreakpoint && !isWide;
   const loginState = useLogin();
+  const signOut = loginState.signOut;
   const [authToastMessage, setAuthToastMessage] = useState('');
   const passwordInputRef = useRef<ComponentRef<typeof TextInput>>(null);
   const dismissAuthToast = useCallback(() => setAuthToastMessage(''), []);
   const handleUnauthorized = useCallback(() => {
-    loginState.signOut();
+    signOut();
     setAuthToastMessage(t('sessionExpired'));
-  }, [loginState.signOut]);
+  }, [signOut]);
 
   useEffect(() => {
     setUnauthorizedHandler(handleUnauthorized);

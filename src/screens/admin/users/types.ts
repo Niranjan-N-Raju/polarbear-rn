@@ -94,17 +94,10 @@ export interface UserFormDrawerProps {
   onSave: () => void;
 }
 
-export const blankForm: UserForm = {
-  name: '',
-  email: '',
-  password: '',
-  role: 'sub_admin',
-  franchiseIds: [],
-};
-
-export const defaultUserFilters: UserListFilters = {
-  search: '',
-  franchiseId: '',
-  status: 'all',
-  role: 'all',
-};
+export interface UserListProps {
+  users: AdminUser[];
+  isTable: boolean;
+  isDesktopWeb: boolean;
+  onEdit: (user: AdminUser) => void;
+  onDelete: (user: AdminUser) => void;
+}

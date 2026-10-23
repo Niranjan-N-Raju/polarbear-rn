@@ -1,4 +1,5 @@
 export type { PageInfo } from '../../../common/types';
+import type { StoreCardStyleKey } from '../../../utils/types';
 
 export interface StoreRecord {
   _id: string;
@@ -81,20 +82,12 @@ export interface StoreFormDrawerProps {
   onSave: () => void;
 }
 
-export const emptyForm: StoreForm = {
-  name: '',
-  storeCode: '',
-  address: '',
-  phone: '',
-  description: '',
-  storeType: 'company',
-  ownerName: '',
-  ownerPhone: '',
-  ownerEmail: '',
-};
-
-export const defaultStoreFilters: StoreListFilters = {
-  search: '',
-  status: 'active',
-  type: 'all',
-};
+export interface StoreCardProps {
+  store: StoreRecord;
+  userId: string;
+  storeCardStyle: StoreCardStyleKey | null;
+  actionsAtBottom: boolean;
+  isUpdatingArchive: boolean;
+  onEdit: (store: StoreRecord) => void;
+  onArchive: (store: StoreRecord) => void;
+}

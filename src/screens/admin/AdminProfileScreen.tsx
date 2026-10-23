@@ -5,9 +5,10 @@ import type { AuthenticatedUser } from '../../api/types';
 import { AdminFormField } from '../../components/AdminFormField';
 import { AppLoader } from '../../components/AppLoader';
 import { theme } from '../../config/theme';
-import { t, translateRole } from '../../i18n';
+import { t } from '../../i18n';
 import { adminStyles as styles } from '../../styles/adminStyles';
 import { getAdminLayout } from '../../utils/adminLayout';
+import { ProfileIdentityCard } from './ProfileIdentityCard';
 import type { AdminProfileScreenProps } from './types';
 
 export function AdminProfileScreen({ user: initialUser, onUserUpdated }: AdminProfileScreenProps) {
@@ -148,16 +149,7 @@ export function AdminProfileScreen({ user: initialUser, onUserUpdated }: AdminPr
       {layout.isWeb ? (
         <View style={[styles.profileColumns, !layout.profileTwoColumn && styles.profileColumnsStacked]}>
           <View style={styles.profileColumn}>
-            <View style={[styles.profileCard, styles.profileIdentity]}>
-              <View style={styles.profileAvatar}>
-                <Text style={styles.profileAvatarText}>{user.name.charAt(0).toUpperCase()}</Text>
-              </View>
-              <View style={styles.rowMain}>
-                <Text style={styles.rowTitle}>{user.name}</Text>
-                <Text style={styles.rowSubtext}>{user.email}</Text>
-                <View style={styles.profileRoleBadge}><Text style={styles.profileRoleText}>{translateRole(user.role)}</Text></View>
-              </View>
-            </View>
+            <ProfileIdentityCard user={user} showAvatar />
 
             <View style={styles.profileCard}>
               <Text style={styles.sectionLabel}>{t('adminUpdateName')}</Text>
@@ -183,11 +175,7 @@ export function AdminProfileScreen({ user: initialUser, onUserUpdated }: AdminPr
         </View>
       ) : (
         <>
-          <View style={styles.profileCard}>
-            <Text style={styles.rowTitle}>{user.name}</Text>
-            <Text style={styles.rowSubtext}>{user.email}</Text>
-            <Text style={styles.rowRole}>{translateRole(user.role)}</Text>
-          </View>
+          <ProfileIdentityCard user={user} showAvatar={false} />
           <View style={styles.profileCard}>
             <Text style={styles.sectionLabel}>{t('adminUpdateName')}</Text>
             <AdminFormField label={t('adminFullName')} value={name} onChangeText={(value) => { setName(value); setNameError(''); }} error={nameError} errorTextStyle={[styles.formError, styles.stateError]} />

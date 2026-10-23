@@ -11,3 +11,8 @@ export interface AdminProfileScreenProps {
   user: AuthenticatedUser;
   onUserUpdated: (user: AuthenticatedUser) => void;
 }
+
+export interface ProfileIdentityCardProps {
+  user: Pick<AuthenticatedUser, 'name' | 'email' | 'role'>;
+  showAvatar: boolean;
+}

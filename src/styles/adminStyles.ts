@@ -380,6 +380,12 @@ const baseAdminStyles = StyleSheet.create({
   listContent: {
     paddingBottom: spacing['5xl'],
   },
+  userListWithFab: {
+    marginBottom: 72,
+  },
+  userListContentWithFab: {
+    paddingBottom: 88,
+  },
   rowHeader: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -421,6 +427,11 @@ const baseAdminStyles = StyleSheet.create({
     fontSize: typography.xs,
   },
   rowSubtext: {
+    marginTop: spacing.xs,
+    color: colors.muted,
+    fontSize: typography.xs,
+  },
+  rowRole: {
     marginTop: spacing.xs,
     color: colors.muted,
     fontSize: typography.xs,
