@@ -8,7 +8,8 @@
     "web": "vite --config vite.config.ts",
     "lint": "eslint .",
     "start": "react-native start",
-    "test": "jest"
+    "test": "jest",
+    "test:coverage": "jest --coverage --runInBand && open coverage/lcov-report/index.html"
   },
   "dependencies": {
     "@react-native/new-app-screen": "0.88.0",
