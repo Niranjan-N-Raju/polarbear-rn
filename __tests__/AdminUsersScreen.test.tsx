@@ -31,6 +31,7 @@ describe('AdminUsersScreen', () => {
       const renderer = renderSafeArea(<AdminUsersScreen onToast={onToast} />);
       await flushEffects();
       expect(apiRequest).toHaveBeenCalledWith(expect.stringContaining('/users?'));
+      expect(apiRequest).toHaveBeenCalledWith(expect.stringContaining('limit=9'));
       expect(renderer.root.findAllByProps({ children: 'Alex Admin' }).length).toBeGreaterThan(0);
   
       act(() => buttonByLabel(renderer, t('adminAddUser')).props.onPress());

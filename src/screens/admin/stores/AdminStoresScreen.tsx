@@ -60,7 +60,7 @@ export function AdminStoresScreen({ userId, onToast }: AdminStoresScreenProps) {
     try {
       const query = new URLSearchParams({
         page: String(page),
-        limit: '10',
+        limit: '9',
         status: filters.status,
         type: filters.type,
       });

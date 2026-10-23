@@ -30,6 +30,7 @@ describe('AdminStoresScreen', () => {
       const onToast = jest.fn();
       const renderer = renderSafeArea(<AdminStoresScreen userId="admin-1" onToast={onToast} />);
       await flushEffects();
+      expect(apiRequest).toHaveBeenCalledWith(expect.stringContaining('limit=9'));
       expect(renderer.root.findAllByProps({ children: 'Central' }).length).toBeGreaterThan(0);
   
       act(() => buttonByLabel(renderer, t('adminAddStore')).props.onPress());

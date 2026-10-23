@@ -70,7 +70,7 @@ export function AdminUsersScreen({ onToast }: AdminUsersScreenProps) {
         excludeEmployees: 'true',
         includeArchived: 'true',
         page: String(page),
-        limit: '10',
+        limit: '9',
         status: filters.status,
       });
       if (filters.search.trim()) query.set('search', filters.search.trim());
