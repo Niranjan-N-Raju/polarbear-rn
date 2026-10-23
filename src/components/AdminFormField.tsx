@@ -1,28 +1,9 @@
 import { Pressable, Text, TextInput, View } from 'react-native';
-import type { StyleProp, TextInputProps, TextStyle, ViewStyle } from 'react-native';
 import { Eye, EyeOff } from '../icons';
 import { theme } from '../config/theme';
 import { t } from '../i18n';
 import { adminStyles as styles } from '../styles/adminStyles';
-
-interface AdminFormFieldProps {
-  label: string;
-  value: string;
-  onChangeText: (value: string) => void;
-  placeholder?: string;
-  error?: string;
-  errorTextStyle?: StyleProp<TextStyle>;
-  phonePrefix?: string;
-  containerStyle?: StyleProp<ViewStyle>;
-  onToggleVisibility?: () => void;
-  visible?: boolean;
-  editable?: boolean;
-  secureTextEntry?: boolean;
-  keyboardType?: TextInputProps['keyboardType'];
-  autoCapitalize?: TextInputProps['autoCapitalize'];
-  autoCorrect?: TextInputProps['autoCorrect'];
-  multiline?: boolean;
-}
+import type { AdminFormFieldProps } from './types';
 
 export function AdminFormField({
   label,

@@ -1,19 +1,8 @@
 import { Pressable, Text, View } from 'react-native';
-import type { StyleProp, ViewStyle } from 'react-native';
 import { ChevronDown } from '../icons';
 import { theme } from '../config/theme';
 import { adminStyles as styles } from '../styles/adminStyles';
-
-interface AdminFilterDropdownProps<Value extends string> {
-  label: string;
-  value: Value;
-  expanded: boolean;
-  options: { value: Value; label: string }[];
-  onToggle: () => void;
-  onSelect: (value: Value) => void;
-  optionsPlacement?: 'above' | 'below';
-  containerStyle?: StyleProp<ViewStyle>;
-}
+import type { AdminFilterDropdownProps } from './types';
 
 export function AdminFilterDropdown<Value extends string>({
   label,

@@ -2,11 +2,7 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { RefreshCw } from '../icons';
 import { theme } from '../config/theme';
 import { t } from '../i18n';
-
-interface AppErrorStateProps {
-  message: string;
-  onRetry: () => void;
-}
+import type { AppErrorStateProps } from './types';
 
 const styles = StyleSheet.create({
   container: {

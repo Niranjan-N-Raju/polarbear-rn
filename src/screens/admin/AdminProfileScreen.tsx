@@ -1,18 +1,14 @@
 import { useEffect, useState } from 'react';
 import { Pressable, ScrollView, Text, useWindowDimensions, View } from 'react-native';
 import { apiRequest, setAccessToken } from '../../api/auth';
-import type { AuthenticatedUser } from '../../api/auth';
+import type { AuthenticatedUser } from '../../api/types';
 import { AdminFormField } from '../../components/AdminFormField';
 import { AppLoader } from '../../components/AppLoader';
 import { theme } from '../../config/theme';
 import { t, translateRole } from '../../i18n';
 import { adminStyles as styles } from '../../styles/adminStyles';
 import { getAdminLayout } from '../../utils/adminLayout';
-
-interface AdminProfileScreenProps {
-  user: AuthenticatedUser;
-  onUserUpdated: (user: AuthenticatedUser) => void;
-}
+import type { AdminProfileScreenProps } from './types';
 
 export function AdminProfileScreen({ user: initialUser, onUserUpdated }: AdminProfileScreenProps) {
   const { width } = useWindowDimensions();

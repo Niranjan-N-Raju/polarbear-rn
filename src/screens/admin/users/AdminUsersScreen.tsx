@@ -1,63 +1,29 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { Pressable, ScrollView, Text, TextInput, useWindowDimensions, View } from 'react-native';
-import type { StyleProp, ViewStyle } from 'react-native';
-import { Check, Filter, Pencil, Plus, Trash2, X } from '../../icons';
-import { AppErrorState } from '../../components/AppErrorState';
-import { AdminFilterDropdown } from '../../components/AdminFilterDropdown';
-import { AdminFormField } from '../../components/AdminFormField';
-import { AppToast } from '../../components/AppToast';
-import { AppLoader } from '../../components/AppLoader';
-import { apiRequest } from '../../api/auth';
-import { theme } from '../../config/theme';
-import { t, translateRole } from '../../i18n';
-import { adminStyles as styles } from '../../styles/adminStyles';
-import { getAdminLayout } from '../../utils/adminLayout';
-import { ResponsiveDrawerModal } from '../../components/ResponsiveDrawerModal';
-
-interface StoreOption {
-  _id: string;
-  name: string;
-}
-
-interface AdminUser {
-  _id: string;
-  name: string;
-  email: string;
-  phone?: string;
-  role: string;
-  isActive?: boolean;
-  franchises: StoreOption[];
-}
-
-interface UserForm {
-  name: string;
-  email: string;
-  password: string;
-  role: 'sub_admin' | 'franchise_admin';
-  franchiseIds: string[];
-}
-
-type UserFieldErrors = Partial<Record<'name' | 'email' | 'password' | 'franchiseIds', string>>;
-type UserStatusFilter = 'all' | 'active' | 'inactive';
-type OpenUserFilter = 'store' | 'status' | 'type' | null;
-interface UserListFilters {
-  search: string;
-  franchiseId: string;
-  status: UserStatusFilter;
-  role: string;
-}
-interface PageInfo {
-  page: number;
-  totalPages: number;
-  total: number;
-}
-
-const blankForm: UserForm = { name: '', email: '', password: '', role: 'sub_admin', franchiseIds: [] };
-const defaultUserFilters: UserListFilters = { search: '', franchiseId: '', status: 'all', role: 'all' };
-
-interface AdminUsersScreenProps {
-  onToast: (message: string, tone: 'success' | 'error') => void;
-}
+import { Pressable, ScrollView, Text, useWindowDimensions, View } from 'react-native';
+import { Filter, Pencil, Plus, Trash2 } from '../../../icons';
+import { AppErrorState } from '../../../components/AppErrorState';
+import { AppToast } from '../../../components/AppToast';
+import { AppLoader } from '../../../components/AppLoader';
+import { apiRequest } from '../../../api/auth';
+import { theme } from '../../../config/theme';
+import { t, translateRole } from '../../../i18n';
+import { adminStyles as styles } from '../../../styles/adminStyles';
+import { getAdminLayout } from '../../../utils/adminLayout';
+import { ResponsiveDrawerModal } from '../../../components/ResponsiveDrawerModal';
+import { UserFiltersDrawer } from './UserFiltersDrawer';
+import { UserFormDrawer } from './UserFormDrawer';
+import { blankForm, defaultUserFilters } from './types';
+import type {
+  AdminUsersScreenProps,
+  AdminUser,
+  OpenUserFilter,
+  PageInfo,
+  StoreOption,
+  UserFieldErrors,
+  UserForm,
+  UserListFilters,
+  UserStatusFilter,
+} from './types';
 
 export function AdminUsersScreen({ onToast }: AdminUsersScreenProps) {
   const { width, height } = useWindowDimensions();
@@ -262,6 +228,11 @@ export function AdminUsersScreen({ onToast }: AdminUsersScreenProps) {
       : [...form.franchiseIds, id]);
   }
 
+  function updateRole(role: UserForm['role']): void {
+    setForm((current) => ({ ...current, role, franchiseIds: role === 'sub_admin' ? [] : current.franchiseIds }));
+    if (role === 'sub_admin') setFieldErrors((current) => ({ ...current, franchiseIds: undefined }));
+  }
+
   function validate(): UserFieldErrors {
     const errors: UserFieldErrors = {};
     if (!form.name.trim()) errors.name = t('adminUserNameRequired');
@@ -454,116 +425,54 @@ export function AdminUsersScreen({ onToast }: AdminUsersScreenProps) {
         </Pressable>
       ) : null}
 
-      <ResponsiveDrawerModal
+      <UserFiltersDrawer
         visible={isFilterDrawerOpen}
-        closeLabel={t('adminCloseMenu')}
+        height={height}
+        isWeb={layout.isWeb}
+        searchText={searchText}
+        storeSearchText={storeSearchText}
+        filterStatus={filterStatus}
+        filterRole={filterRole}
+        stores={stores}
+        openFilter={openFilter}
+        hasDraftFilters={hasDraftFilters}
+        userRoleOptions={userRoleOptions}
         onClose={() => setIsFilterDrawerOpen(false)}
         onAfterClose={() => setOpenFilter(null)}
-        panelStyle={!layout.isWeb ? { height: Math.min(height * 0.8, 470) } : undefined}
-      >
-        <View style={styles.drawerContent}>
-          <View style={styles.drawerHeading}>
-            <Text style={[styles.modalTitle, styles.drawerHeadingTitle]}>{t('adminFilterUsers')}</Text>
-            <Pressable accessibilityRole="button" accessibilityLabel={t('adminCloseMenu')} onPress={() => setIsFilterDrawerOpen(false)} style={styles.userIconAction}>
-              <X color={theme.colors.muted} size={18} />
-            </Pressable>
-          </View>
-          <ScrollView style={styles.drawerFormScroll} contentContainerStyle={styles.filterDrawerFields} keyboardShouldPersistTaps="handled">
-            <AdminFormField
-              label={t('adminSearchUsers')}
-              placeholder={t('adminSearchUsers')}
-              value={searchText}
-              onChangeText={setSearchText}
-              autoCorrect={false}
-              containerStyle={styles.filterDrawerField}
-            />
-            <StoreAutocomplete
-              stores={stores}
-              value={storeSearchText}
-              expanded={openFilter === 'store'}
-              containerStyle={styles.filterDrawerDropdown}
-              onFocus={() => setOpenFilter('store')}
-              onChangeText={(value) => {
-                setStoreSearchText(value);
-                setFilterStore('');
-                setOpenFilter('store');
-              }}
-              onSelect={(store) => {
-                setStoreSearchText(store.name);
-                setFilterStore(store._id);
-                setOpenFilter(null);
-              }}
-            />
-            <AdminFilterDropdown
-              label={t('adminStatus')}
-              value={filterStatus}
-              expanded={openFilter === 'status'}
-              containerStyle={[styles.userFilterDropdown, styles.filterDrawerDropdown]}
-              onToggle={() => setOpenFilter((current) => current === 'status' ? null : 'status')}
-              onSelect={(value) => {
-                setFilterStatus(value);
-                setOpenFilter(null);
-              }}
-              options={[
-                { value: 'all', label: t('adminAllUsers') },
-                { value: 'active', label: t('adminActive') },
-                { value: 'inactive', label: t('adminInactive') },
-              ]}
-            />
-            <AdminFilterDropdown
-              label={t('adminUserTypeFilter')}
-              value={filterRole}
-              expanded={openFilter === 'type'}
-              containerStyle={[styles.userFilterDropdown, styles.filterDrawerDropdown]}
-              optionsPlacement="above"
-              onToggle={() => setOpenFilter((current) => current === 'type' ? null : 'type')}
-              onSelect={(value) => {
-                setFilterRole(value);
-                setOpenFilter(null);
-              }}
-              options={[
-                { value: 'all', label: t('adminAllUserTypes') },
-                ...userRoleOptions,
-              ]}
-            />
-            {openFilter ? (
-              <Pressable
-                testID="user-filter-dropdown-dismiss"
-                accessibilityRole="button"
-                accessibilityLabel={t('adminCloseMenu')}
-                onPress={() => setOpenFilter(null)}
-                style={styles.filterDropdownDismissOverlay}
-              />
-            ) : null}
-          </ScrollView>
-          <View style={styles.modalActions}>
-            <View style={styles.drawerActionSlot}>
-              <Pressable
-                accessibilityRole="button"
-                accessibilityState={{ disabled: !hasDraftFilters }}
-                disabled={!hasDraftFilters}
-                onPress={clearFilters}
-                style={[
-                  styles.secondaryButton,
-                  styles.drawerActionButton,
-                  !hasDraftFilters && styles.filterDrawerDisabledButton,
-                ]}
-              >
-                <Text style={styles.secondaryButtonText}>{t('adminClearFilters')}</Text>
-              </Pressable>
-            </View>
-            <View style={styles.drawerActionSlot}>
-              <Pressable onPress={applyFilters} style={[styles.primaryButton, styles.drawerActionButton]}>
-                <Text style={styles.primaryButtonText}>{t('adminApplyFilters')}</Text>
-              </Pressable>
-            </View>
-          </View>
-        </View>
-      </ResponsiveDrawerModal>
+        onSearchChange={setSearchText}
+        onStoreSearchChange={(value) => {
+          setStoreSearchText(value);
+          setFilterStore('');
+          setOpenFilter('store');
+        }}
+        onStoreSelect={(store) => {
+          setStoreSearchText(store.name);
+          setFilterStore(store._id);
+          setOpenFilter(null);
+        }}
+        onFilterStatusChange={(value) => {
+          setFilterStatus(value);
+          setOpenFilter(null);
+        }}
+        onFilterRoleChange={(value) => {
+          setFilterRole(value);
+          setOpenFilter(null);
+        }}
+        onToggleFilter={(filter) => setOpenFilter((current) => current === filter ? null : filter)}
+        onOpenStoreFilter={() => setOpenFilter('store')}
+        onDismissDropdown={() => setOpenFilter(null)}
+        onClearFilters={clearFilters}
+        onApplyFilters={applyFilters}
+      />
 
-      <ResponsiveDrawerModal
+      <UserFormDrawer
         visible={isFormOpen}
-        closeLabel={t('adminCloseMenu')}
+        editing={editing}
+        form={form}
+        stores={stores}
+        fieldErrors={fieldErrors}
+        isSaving={isSaving}
+        toastMessage={toastMessage}
         onClose={() => setIsFormOpen(false)}
         onAfterClose={() => {
           if (!pendingFormSuccess) return;
@@ -571,63 +480,14 @@ export function AdminUsersScreen({ onToast }: AdminUsersScreenProps) {
           setPendingFormSuccess('');
           void load(1, appliedFilters);
         }}
-        overlay={toastMessage ? <AppToast message={toastMessage} onDismiss={dismissToast} /> : null}
-      >
-        <View style={styles.drawerContent}>
-          <View style={styles.drawerHeading}>
-            <Text style={[styles.modalTitle, styles.drawerHeadingTitle]}>{t(editing ? 'adminEditUser' : 'adminAddUser')}</Text>
-          </View>
-          <ScrollView style={styles.drawerFormScroll} keyboardShouldPersistTaps="handled">
-              <AdminFormField label={t('adminFullName')} placeholder={t('adminFullNamePlaceholder')} value={form.name} onChangeText={(name) => updateField('name', name)} error={fieldErrors.name} autoCorrect={false} />
-              <AdminFormField label={t('adminEmail')} placeholder={t('adminUserEmailPlaceholder')} value={form.email} editable={!editing} keyboardType="email-address" autoCapitalize="none" onChangeText={(email) => updateField('email', email)} error={fieldErrors.email} autoCorrect={false} />
-              {!editing ? <AdminFormField label={t('adminPassword')} placeholder={t('adminUserPasswordPlaceholder')} value={form.password} secureTextEntry onChangeText={(password) => updateField('password', password)} error={fieldErrors.password} autoCorrect={false} /> : null}
-              <Text style={styles.fieldLabel}>{t('adminRole')}</Text>
-              <View style={styles.typeOptions}>
-                {(['sub_admin', 'franchise_admin'] as const).map((role) => (
-                  <Pressable key={role} onPress={() => {
-                    setForm((current) => ({ ...current, role, franchiseIds: role === 'sub_admin' ? [] : current.franchiseIds }));
-                    if (role === 'sub_admin') setFieldErrors((current) => ({ ...current, franchiseIds: undefined }));
-                  }} style={[styles.secondaryButton, styles.typeOption, form.role === role && styles.typeOptionSelected]}>
-                    <Text style={styles.secondaryButtonText}>{t(role === 'sub_admin' ? 'adminSubAdmin' : 'adminFranchiseAdmin')}</Text>
-                  </Pressable>
-                ))}
-              </View>
-              {form.role === 'franchise_admin' ? (
-                <View style={[styles.field, fieldErrors.franchiseIds && styles.userAssignmentError]}>
-                  <Text style={styles.fieldLabel}>{t('adminAssignStores')}</Text>
-                  {stores.map((store) => {
-                    const selected = form.franchiseIds.includes(store._id);
-                    return (
-                      <Pressable
-                        key={store._id}
-                        accessibilityRole="checkbox"
-                        accessibilityState={{ checked: selected }}
-                        onPress={() => toggleStore(store._id)}
-                        style={[styles.checkboxRow, selected && styles.checkboxRowSelected]}
-                      >
-                        <View style={[styles.checkbox, selected && styles.checkboxSelected]}>
-                          {selected ? <Check color={theme.colors.white} size={14} strokeWidth={3} /> : null}
-                        </View>
-                        <Text style={styles.checkboxText}>{store.name}</Text>
-                      </Pressable>
-                    );
-                  })}
-                  {fieldErrors.franchiseIds ? <Text accessibilityRole="alert" style={styles.fieldError}>{fieldErrors.franchiseIds}</Text> : null}
-                </View>
-              ) : null}
-          </ScrollView>
-          <View style={styles.modalActions}>
-            <View style={styles.drawerActionSlot}>
-              <Pressable onPress={() => setIsFormOpen(false)} style={[styles.secondaryButton, styles.drawerActionButton]}><Text style={styles.secondaryButtonText}>{t('adminCancel')}</Text></Pressable>
-            </View>
-            <View style={styles.drawerActionSlot}>
-              <Pressable disabled={isSaving} onPress={() => void save()} style={[styles.primaryButton, styles.drawerActionButton]}>
-                {isSaving ? <AppLoader variant="inline" color={theme.colors.white} /> : <Text style={styles.primaryButtonText}>{t('adminSave')}</Text>}
-              </Pressable>
-            </View>
-          </View>
-        </View>
-      </ResponsiveDrawerModal>
+        onDismissToast={dismissToast}
+        onNameChange={(value) => updateField('name', value)}
+        onEmailChange={(value) => updateField('email', value)}
+        onPasswordChange={(value) => updateField('password', value)}
+        onRoleChange={updateRole}
+        onToggleStore={toggleStore}
+        onSave={() => void save()}
+      />
 
       <ResponsiveDrawerModal
         visible={isDeleteDialogOpen && pendingDelete !== null}
@@ -662,51 +522,6 @@ export function AdminUsersScreen({ onToast }: AdminUsersScreenProps) {
           </View>
         </View>
       </ResponsiveDrawerModal>
-    </View>
-  );
-}
-
-interface StoreAutocompleteProps {
-  stores: StoreOption[];
-  value: string;
-  expanded: boolean;
-  containerStyle?: StyleProp<ViewStyle>;
-  onFocus: () => void;
-  onChangeText: (value: string) => void;
-  onSelect: (store: StoreOption) => void;
-}
-
-function StoreAutocomplete({ stores, value, expanded, containerStyle, onFocus, onChangeText, onSelect }: StoreAutocompleteProps) {
-  const normalizedSearch = value.trim().toLocaleLowerCase();
-  const matches = stores
-    .filter((store) => store.name.toLocaleLowerCase().includes(normalizedSearch))
-    .slice(0, 8);
-
-  return (
-    <View style={[styles.storeFilterDropdown, styles.userStoreAutocomplete, expanded && styles.storeFilterDropdownOpen, containerStyle]}>
-      <TextInput
-        value={value}
-        placeholder={t('adminSearchStores')}
-        onFocus={onFocus}
-        onChangeText={onChangeText}
-        autoCapitalize="none"
-        autoCorrect={false}
-        style={[styles.fieldInput, styles.storeSearch, styles.userFilterInput]}
-      />
-      {expanded && matches.length > 0 ? (
-        <View style={[styles.storeFilterDropdownOptions, styles.userStoreAutocompleteOptions]}>
-          {matches.map((store) => (
-            <Pressable
-              key={store._id}
-              accessibilityRole="button"
-              onPress={() => onSelect(store)}
-              style={styles.storeFilterDropdownOption}
-            >
-              <Text style={styles.storeFilterDropdownOptionText}>{store.name}</Text>
-            </Pressable>
-          ))}
-        </View>
-      ) : null}
     </View>
   );
 }

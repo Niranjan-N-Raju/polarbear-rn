@@ -4,13 +4,7 @@ import { X } from '../icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { theme } from '../config/theme';
 import { t } from '../i18n';
-
-interface AppToastProps {
-  message: string;
-  tone?: 'error' | 'success';
-  onDismiss: () => void;
-  durationMs?: number;
-}
+import type { AppToastProps } from './types';
 
 const styles = StyleSheet.create({
   viewport: {

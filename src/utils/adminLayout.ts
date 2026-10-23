@@ -1,7 +1,8 @@
 import { Platform } from 'react-native';
 import { theme } from '../config/theme';
+import type { StoreCardStyleKey } from './types';
 
-export type StoreCardStyleKey = 'storeCardSingle' | 'storeCardDouble' | 'storeCardTriple';
+export type { StoreCardStyleKey } from './types';
 
 export function getAdminLayout(width: number) {
   const isWeb = Platform.OS === 'web';

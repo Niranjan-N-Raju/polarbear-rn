@@ -1,11 +1,11 @@
 import { en } from './locales/en';
+import type { TranslationKey, TranslationParams } from './types';
+
+export type { TranslationKey, TranslationParams } from './types';
 
 export const defaultLanguage = 'en' as const;
 
 const locales = { en } as const;
-
-export type TranslationKey = keyof typeof en;
-export type TranslationParams = Record<string, string | number>;
 
 const roleTranslationKeys: Record<string, TranslationKey> = {
   admin: 'roleAdmin',

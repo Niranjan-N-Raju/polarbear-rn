@@ -1,21 +1,10 @@
 import { Building2, CircleCheck, Handshake, ShieldCheck, Store, UserRoundCog, UsersRound } from '../icons';
 import { theme } from '../config/theme';
-import type { TranslationKey } from '../i18n';
+import type { TranslationKey } from '../i18n/types';
 import { getAdminLayout } from './adminLayout';
+import type { DashboardCardColor, DashboardStats } from './types';
 
-export interface DashboardStats {
-  totalStores: number;
-  activeStores: number;
-  inactiveStores: number;
-  franchiseStores: number;
-  companyStores: number;
-  totalUsers: number;
-  storeAdmins: number;
-  subAdmins: number;
-  employees: number;
-}
-
-export type DashboardCardColor = 'teal' | 'orange';
+export type { DashboardCardColor, DashboardStats } from './types';
 
 export const dashboardStatCards: {
   key: keyof DashboardStats;

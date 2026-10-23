@@ -6,7 +6,8 @@ import { theme } from '../../config/theme';
 import { t } from '../../i18n';
 import { adminStyles as styles } from '../../styles/adminStyles';
 import { dashboardStyles as cardStyles } from '../../styles/dashboardStyles';
-import { dashboardStatCards, getDashboardCardColor, getDashboardLayout, type DashboardStats } from '../../utils/dashboardConfig';
+import { dashboardStatCards, getDashboardCardColor, getDashboardLayout } from '../../utils/dashboardConfig';
+import type { DashboardStats } from '../../utils/types';
 
 export function AdminDashboardScreen() {
   const { width } = useWindowDimensions();

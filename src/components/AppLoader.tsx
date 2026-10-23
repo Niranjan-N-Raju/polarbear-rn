@@ -1,13 +1,9 @@
-import { ActivityIndicator, StyleSheet, Text, View, type ColorValue } from 'react-native';
+import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
 import { theme } from '../config/theme';
 import { t } from '../i18n';
+import type { AppLoaderProps } from './types';
 
-type AppLoaderVariant = 'screen' | 'inline';
-
-interface AppLoaderProps {
-  variant?: AppLoaderVariant;
-  color?: ColorValue;
-}
+export type { AppLoaderVariant } from './types';
 
 const styles = StyleSheet.create({
   screen: {

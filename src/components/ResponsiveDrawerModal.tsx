@@ -1,20 +1,10 @@
-import type { ReactNode } from 'react';
-import { Modal, Platform, Pressable, StyleProp, useWindowDimensions, View, ViewStyle } from 'react-native';
+import { Modal, Pressable, useWindowDimensions, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useEffect, useRef, useState } from 'react';
 import { responsiveDrawerStyles as styles } from '../styles/responsiveDrawerStyles';
 import { getResponsiveDrawerLayout } from '../utils/adminLayout';
 
-interface ResponsiveDrawerModalProps {
-  visible: boolean;
-  closeLabel: string;
-  onClose: () => void;
-  onAfterClose?: () => void;
-  overlay?: ReactNode;
-  children: ReactNode;
-  presentation?: 'drawer' | 'dialog';
-  panelStyle?: StyleProp<ViewStyle>;
-}
+import type { ResponsiveDrawerModalProps } from './types';
 
 export function ResponsiveDrawerModal({ visible, closeLabel, onClose, onAfterClose, overlay, children, presentation = 'drawer', panelStyle }: ResponsiveDrawerModalProps) {
   const insets = useSafeAreaInsets();

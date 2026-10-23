@@ -4,22 +4,18 @@ import { ChevronsLeft, LayoutDashboard, LogOut, Menu, Store, UserRound, UsersRou
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { AppToast } from '../../components/AppToast';
 import { AppLoader } from '../../components/AppLoader';
-import { apiRequest, setAccessToken, type AuthenticatedUser } from '../../api/auth';
+import { apiRequest, setAccessToken } from '../../api/auth';
 import { theme } from '../../config/theme';
 import { t, translateRole } from '../../i18n';
 import { adminStyles as styles, getAdminDrawerSafeAreaStyles, getAdminSafeAreaStyles } from '../../styles/adminStyles';
 import { getAdminLayout } from '../../utils/adminLayout';
 import { AdminDashboardScreen } from './AdminDashboardScreen';
 import { AdminProfileScreen } from './AdminProfileScreen';
-import { AdminStoresScreen } from './AdminStoresScreen';
-import { AdminUsersScreen } from './AdminUsersScreen';
+import { AdminStoresScreen } from './stores/AdminStoresScreen';
+import { AdminUsersScreen } from './users/AdminUsersScreen';
+import type { AdminHomeScreenProps, AdminTab } from './types';
 
-export type AdminTab = 'dashboard' | 'stores' | 'users' | 'profile';
-
-interface AdminHomeScreenProps {
-  user: AuthenticatedUser;
-  onLogout: () => void;
-}
+export type { AdminTab } from './types';
 
 export function AdminHomeScreen({ user: initialUser, onLogout }: AdminHomeScreenProps) {
   const insets = useSafeAreaInsets();

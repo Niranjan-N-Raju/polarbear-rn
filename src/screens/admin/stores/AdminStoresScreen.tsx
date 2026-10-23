@@ -1,69 +1,19 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Pressable, ScrollView, Text, useWindowDimensions, View } from 'react-native';
-import { Archive, Filter, MapPin, Pencil, Phone, Plus, RotateCcw, Store as StoreIcon, X } from '../../icons';
-import { AppErrorState } from '../../components/AppErrorState';
-import { AdminFilterDropdown } from '../../components/AdminFilterDropdown';
-import { AdminFormField } from '../../components/AdminFormField';
-import { AppToast } from '../../components/AppToast';
-import { AppLoader } from '../../components/AppLoader';
-import { apiRequest } from '../../api/auth';
-import { theme } from '../../config/theme';
-import { t } from '../../i18n';
-import { adminStyles as styles } from '../../styles/adminStyles';
-import { getAdminLayout } from '../../utils/adminLayout';
-import { ResponsiveDrawerModal } from '../../components/ResponsiveDrawerModal';
-
-interface StoreRecord {
-  _id: string;
-  name: string;
-  storeCode: string;
-  storeType: 'company' | 'franchise';
-  address?: string;
-  phone?: string;
-  description?: string;
-  ownerName?: string;
-  ownerPhone?: string;
-  ownerEmail?: string;
-  createdBy?: string;
-  isActive?: boolean;
-  archivedAt?: string | null;
-}
-
-interface StoreForm {
-  name: string;
-  storeCode: string;
-  address: string;
-  phone: string;
-  description: string;
-  storeType: 'company' | 'franchise';
-  ownerName: string;
-  ownerPhone: string;
-  ownerEmail: string;
-}
-
-type StoreStatusFilter = 'active' | 'archived' | 'all';
-type StoreTypeFilter = 'all' | 'company' | 'franchise';
-interface StoreListFilters {
-  search: string;
-  status: StoreStatusFilter;
-  type: StoreTypeFilter;
-}
-interface PageInfo {
-  page: number;
-  totalPages: number;
-  total: number;
-}
-
-const emptyForm: StoreForm = {
-  name: '', storeCode: '', address: '', phone: '', description: '',
-  storeType: 'company', ownerName: '', ownerPhone: '', ownerEmail: '',
-};
-const defaultStoreFilters: StoreListFilters = { search: '', status: 'active', type: 'all' };
-
-interface AdminStoresScreenProps {
-  userId: string;
-  onToast: (message: string, tone: 'success' | 'error') => void;
-}
+import { Archive, Filter, MapPin, Pencil, Phone, Plus, RotateCcw, Store as StoreIcon } from '../../../icons';
+import { AppErrorState } from '../../../components/AppErrorState';
+import { AppToast } from '../../../components/AppToast';
+import { AppLoader } from '../../../components/AppLoader';
+import { apiRequest } from '../../../api/auth';
+import { theme } from '../../../config/theme';
+import { t } from '../../../i18n';
+import { adminStyles as styles } from '../../../styles/adminStyles';
+import { getAdminLayout } from '../../../utils/adminLayout';
+import { ResponsiveDrawerModal } from '../../../components/ResponsiveDrawerModal';
+import { StoreFiltersDrawer } from './StoreFiltersDrawer';
+import { StoreFormDrawer } from './StoreFormDrawer';
+import { defaultStoreFilters, emptyForm } from './types';
+import type { AdminStoresScreenProps, PageInfo, StoreForm, StoreListFilters, StoreRecord, StoreStatusFilter, StoreTypeFilter } from './types';
 
 export function AdminStoresScreen({ userId, onToast }: AdminStoresScreenProps) {
   const { width, height } = useWindowDimensions();
@@ -461,156 +411,52 @@ export function AdminStoresScreen({ userId, onToast }: AdminStoresScreenProps) {
         </Pressable>
       ) : null}
 
-      <ResponsiveDrawerModal
+      <StoreFiltersDrawer
         visible={isFilterDrawerOpen}
-        closeLabel={t('adminCloseMenu')}
+        height={height}
+        isWeb={layout.isWeb}
+        searchText={searchText}
+        statusFilter={statusFilter}
+        typeFilter={typeFilter}
+        openFilter={openMobileFilter}
+        hasDraftFilters={hasDraftFilters}
         onClose={() => setIsFilterDrawerOpen(false)}
         onAfterClose={() => setOpenMobileFilter(null)}
-        panelStyle={!layout.isWeb ? { height: Math.min(height * 0.8, 390) } : undefined}
-      >
-        <View style={styles.drawerContent}>
-          <View style={styles.drawerHeading}>
-            <Text style={[styles.modalTitle, styles.drawerHeadingTitle]}>{t('adminFilterStores')}</Text>
-            <Pressable accessibilityRole="button" accessibilityLabel={t('adminCloseMenu')} onPress={() => setIsFilterDrawerOpen(false)} style={styles.userIconAction}>
-              <X color={theme.colors.muted} size={18} />
-            </Pressable>
-          </View>
-          <ScrollView style={styles.drawerFormScroll} contentContainerStyle={styles.filterDrawerFields} keyboardShouldPersistTaps="handled">
-            <AdminFormField
-              label={t('adminSearchStoresPlaceholder')}
-              placeholder={t('adminSearchStoresPlaceholder')}
-              value={searchText}
-              onChangeText={setSearchText}
-              containerStyle={styles.filterDrawerField}
-            />
-            <AdminFilterDropdown
-              label={t('adminStatus')}
-              value={statusFilter}
-              expanded={openMobileFilter === 'status'}
-              onToggle={() => setOpenMobileFilter((current) => current === 'status' ? null : 'status')}
-              onSelect={(value) => { setStatusFilter(value as StoreStatusFilter); setOpenMobileFilter(null); }}
-              containerStyle={styles.filterDrawerDropdown}
-              options={[
-                { value: 'active', label: t('adminActive') },
-                { value: 'archived', label: t('adminArchived') },
-                { value: 'all', label: t('adminAllStores') },
-              ]}
-            />
-            <AdminFilterDropdown
-              label={t('adminStoreType')}
-              value={typeFilter}
-              expanded={openMobileFilter === 'type'}
-              optionsPlacement="above"
-              onToggle={() => setOpenMobileFilter((current) => current === 'type' ? null : 'type')}
-              onSelect={(value) => { setTypeFilter(value as StoreTypeFilter); setOpenMobileFilter(null); }}
-              containerStyle={styles.filterDrawerDropdown}
-              options={[
-                { value: 'all', label: t('adminAllTypes') },
-                { value: 'company', label: t('adminCompanyStore') },
-                { value: 'franchise', label: t('adminFranchiseStore') },
-              ]}
-            />
-            {openMobileFilter ? (
-              <Pressable
-                testID="store-filter-dropdown-dismiss"
-                accessibilityRole="button"
-                accessibilityLabel={t('adminCloseMenu')}
-                onPress={() => setOpenMobileFilter(null)}
-                style={styles.filterDropdownDismissOverlay}
-              />
-            ) : null}
-          </ScrollView>
-          <View style={styles.modalActions}>
-            <View style={styles.drawerActionSlot}>
-              <Pressable
-                accessibilityRole="button"
-                accessibilityState={{ disabled: !hasDraftFilters }}
-                disabled={!hasDraftFilters}
-                onPress={clearFilters}
-                style={[
-                  styles.secondaryButton,
-                  styles.drawerActionButton,
-                  !hasDraftFilters && styles.filterDrawerDisabledButton,
-                ]}
-              >
-                <Text style={styles.secondaryButtonText}>{t('adminClearFilters')}</Text>
-              </Pressable>
-            </View>
-            <View style={styles.drawerActionSlot}>
-              <Pressable onPress={applyFilters} style={[styles.primaryButton, styles.drawerActionButton]}>
-                <Text style={styles.primaryButtonText}>{t('adminApplyFilters')}</Text>
-              </Pressable>
-            </View>
-          </View>
-        </View>
-      </ResponsiveDrawerModal>
+        onSearchChange={setSearchText}
+        onStatusChange={(value) => {
+          setStatusFilter(value);
+          setOpenMobileFilter(null);
+        }}
+        onTypeChange={(value) => {
+          setTypeFilter(value);
+          setOpenMobileFilter(null);
+        }}
+        onToggleFilter={(filter) => setOpenMobileFilter((current) => current === filter ? null : filter)}
+        onDismissDropdown={() => setOpenMobileFilter(null)}
+        onClearFilters={clearFilters}
+        onApplyFilters={applyFilters}
+      />
 
-      <ResponsiveDrawerModal
+      <StoreFormDrawer
         visible={isFormOpen}
-        closeLabel={t('adminCloseMenu')}
+        editingStore={editingStore}
+        form={form}
+        formIsArchived={formIsArchived}
+        fieldErrors={fieldErrors}
+        isSaving={isSaving}
+        toastMessage={toastMessage}
+        toastTone={toastTone}
         onClose={() => setIsFormOpen(false)}
         onAfterClose={() => {
           if (!pendingSuccessMessage) return;
           onToast(pendingSuccessMessage, 'success');
           setPendingSuccessMessage('');
         }}
-        overlay={isFormOpen && toastMessage ? <AppToast message={toastMessage} tone={toastTone} onDismiss={dismissToast} /> : null}
-      >
-        <View style={styles.drawerContent}>
-          <View style={styles.drawerHeading}>
-            <Text style={[styles.modalTitle, styles.drawerHeadingTitle]}>{t(editingStore ? 'adminEditStore' : 'adminAddStore')}</Text>
-          </View>
-          <ScrollView style={styles.drawerFormScroll} keyboardShouldPersistTaps="handled">
-            <Text style={styles.fieldLabel}>{t('adminStoreType')}</Text>
-            <View style={styles.typeOptions}>
-              <Pressable onPress={() => updateField('storeType', 'company')} style={[styles.secondaryButton, styles.typeOption, styles.storeChoiceOption, form.storeType === 'company' && styles.storeOptionSelected]}>
-                <Text style={styles.secondaryButtonText}>{t('adminCompanyStore')}</Text>
-              </Pressable>
-              <Pressable onPress={() => updateField('storeType', 'franchise')} style={[styles.secondaryButton, styles.typeOption, styles.storeChoiceOption, form.storeType === 'franchise' && styles.storeOptionSelected]}>
-                <Text style={styles.secondaryButtonText}>{t('adminFranchiseStore')}</Text>
-              </Pressable>
-            </View>
-            <AdminFormField label={t('adminStoreName')} placeholder={t('adminStoreNamePlaceholder')} value={form.name} onChangeText={(value) => updateField('name', value)} error={fieldErrors.name} />
-            <AdminFormField label={t('adminStoreCode')} placeholder={t('adminStoreCodePlaceholder')} value={form.storeCode} onChangeText={(value) => updateField('storeCode', value.toUpperCase())} autoCapitalize="characters" error={fieldErrors.storeCode} />
-            <AdminFormField label={t('adminPhone')} placeholder={t('adminPhonePlaceholder')} value={form.phone} onChangeText={(value) => updateField('phone', value.replace(/\D/g, '').slice(0, 10))} keyboardType="phone-pad" phonePrefix="+91" error={fieldErrors.phone} />
-            <AdminFormField label={t('adminAddress')} placeholder={t('adminAddressPlaceholder')} value={form.address} onChangeText={(value) => updateField('address', value)} />
-            <AdminFormField label={t('adminDescription')} placeholder={t('adminDescriptionPlaceholder')} value={form.description} onChangeText={(value) => updateField('description', value)} multiline />
-            {form.storeType === 'franchise' ? (
-              <>
-                <Text style={styles.sectionLabel}>{t('adminOwnerDetails')}</Text>
-                <AdminFormField label={t('adminOwnerName')} placeholder={t('adminOwnerNamePlaceholder')} value={form.ownerName} onChangeText={(value) => updateField('ownerName', value)} />
-                <AdminFormField label={t('adminOwnerPhone')} placeholder={t('adminOwnerPhonePlaceholder')} value={form.ownerPhone} onChangeText={(value) => updateField('ownerPhone', value.replace(/\D/g, '').slice(0, 10))} keyboardType="phone-pad" phonePrefix="+91" error={fieldErrors.ownerPhone} />
-                <AdminFormField label={t('adminOwnerEmail')} placeholder={t('adminOwnerEmailPlaceholder')} value={form.ownerEmail} onChangeText={(value) => updateField('ownerEmail', value)} keyboardType="email-address" autoCapitalize="none" error={fieldErrors.ownerEmail} />
-              </>
-            ) : null}
-            {editingStore ? (
-              <>
-                <Text style={styles.fieldLabel}>{t('adminStatus')}</Text>
-                <View style={styles.typeOptions}>
-                  <Pressable onPress={() => setFormIsArchived(false)} style={[styles.secondaryButton, styles.typeOption, styles.storeChoiceOption, !formIsArchived && styles.storeOptionSelected]}>
-                    <Text style={styles.secondaryButtonText}>{t('adminActive')}</Text>
-                  </Pressable>
-                  <Pressable onPress={() => setFormIsArchived(true)} style={[styles.secondaryButton, styles.typeOption, styles.storeChoiceOption, formIsArchived && styles.storeOptionSelected]}>
-                    <Text style={styles.secondaryButtonText}>{t('adminArchived')}</Text>
-                  </Pressable>
-                </View>
-              </>
-            ) : null}
-          </ScrollView>
-          <View style={styles.modalActions}>
-            <View style={styles.drawerActionSlot}>
-              <Pressable onPress={() => setIsFormOpen(false)} style={[styles.secondaryButton, styles.drawerActionButton]}>
-                <Text style={styles.secondaryButtonText}>{t('adminCancel')}</Text>
-              </Pressable>
-            </View>
-            <View style={styles.drawerActionSlot}>
-              <Pressable disabled={isSaving} onPress={() => void saveStore()} style={[styles.primaryButton, styles.drawerActionButton]}>
-                {isSaving ? <AppLoader variant="inline" color={theme.colors.white} /> : <Text style={styles.primaryButtonText}>{t(editingStore ? 'adminSaveChanges' : 'adminCreateStore')}</Text>}
-              </Pressable>
-            </View>
-          </View>
-        </View>
-      </ResponsiveDrawerModal>
+        onDismissToast={dismissToast}
+        onFieldChange={updateField}
+        onArchivedChange={setFormIsArchived}
+        onSave={() => void saveStore()}
+      />
 
       {!isFormOpen && toastMessage ? <AppToast message={toastMessage} tone={toastTone} onDismiss={dismissToast} /> : null}
 

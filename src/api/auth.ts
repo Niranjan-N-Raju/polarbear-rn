@@ -1,5 +1,8 @@
 import { apiBaseUrl } from '../config/apiBaseUrl';
 import { t } from '../i18n';
+import type { AuthenticatedUser, LoginResponse } from './types';
+
+export type { AuthenticatedUser, LoginResponse } from './types';
 
 let accessToken: string | null = null;
 let unauthorizedHandler: (() => void) | null = null;
@@ -24,18 +27,6 @@ export async function apiRequest(path: string, init: RequestInit = {}): Promise<
     unauthorizedHandler?.();
   }
   return response;
-}
-
-export interface AuthenticatedUser {
-  id: string;
-  name: string;
-  email: string;
-  role: string;
-}
-
-export interface LoginResponse {
-  token: string;
-  user: AuthenticatedUser;
 }
 
 export async function login(email: string, password: string): Promise<LoginResponse> {
