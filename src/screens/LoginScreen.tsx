@@ -127,7 +127,7 @@ export function LoginScreen() {
               safeAreaStyles.scrollBottom,
               isWide && styles.scrollContentWide,
             ]}
-            keyboardShouldPersistTaps="handled"
+            keyboardShouldPersistTaps="always"
           >
             {!isWide ? (
               <View style={styles.mobileProgress}>

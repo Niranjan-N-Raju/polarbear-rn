@@ -40,14 +40,19 @@ export interface LoginResponse {
 
 export async function login(email: string, password: string): Promise<LoginResponse> {
   let response: Response;
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 15_000);
   try {
     response = await fetch(`${apiBaseUrl}/auth/login`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email, password }),
+      signal: controller.signal,
     });
   } catch {
     throw new Error(t('unableToReachServer'));
+  } finally {
+    clearTimeout(timeout);
   }
 
   const data = (await response.json().catch(() => ({}))) as {

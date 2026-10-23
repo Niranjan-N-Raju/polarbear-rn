@@ -1,4 +1,4 @@
-import { ActivityIndicator, Modal, StyleSheet, Text, View, type ColorValue } from 'react-native';
+import { ActivityIndicator, StyleSheet, Text, View, type ColorValue } from 'react-native';
 import { theme } from '../config/theme';
 import { t } from '../i18n';
 
@@ -38,11 +38,9 @@ export function AppLoader({ variant = 'screen', color = theme.colors.orange }: A
   if (variant === 'inline') return indicator;
 
   return (
-    <Modal visible transparent animationType="fade" statusBarTranslucent onRequestClose={() => {}}>
-      <View style={styles.screen}>
-        {indicator}
-        <Text style={styles.label}>{label}</Text>
-      </View>
-    </Modal>
+    <View style={styles.screen}>
+      {indicator}
+      <Text style={styles.label}>{label}</Text>
+    </View>
   );
 }

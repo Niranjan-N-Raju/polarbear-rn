@@ -313,6 +313,16 @@ const baseAdminStyles = StyleSheet.create({
     minHeight: 42,
     marginBottom: spacing.md,
   },
+  usersFilterLabel: {
+    marginBottom: spacing.sm,
+    color: colors.muted,
+    fontSize: typography.xs,
+    fontWeight: theme.fontWeight.medium,
+  },
+  userStatusFilters: {
+    flexWrap: 'wrap',
+    marginBottom: spacing.lg,
+  },
   filterChip: {
     minHeight: 36,
     justifyContent: 'center',
@@ -1433,4 +1443,3 @@ export function getAdminDrawerSafeAreaStyles(topInset: number, bottomInset: numb
     },
   };
 }
-

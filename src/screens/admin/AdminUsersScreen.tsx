@@ -20,7 +20,9 @@ interface AdminUser {
   _id: string;
   name: string;
   email: string;
+  phone?: string;
   role: string;
+  isActive?: boolean;
   franchises: StoreOption[];
 }
 
@@ -33,6 +35,7 @@ interface UserForm {
 }
 
 type UserFieldErrors = Partial<Record<'name' | 'email' | 'password' | 'franchiseIds', string>>;
+type UserStatusFilter = 'all' | 'active' | 'inactive';
 
 const blankForm: UserForm = { name: '', email: '', password: '', role: 'sub_admin', franchiseIds: [] };
 
@@ -46,6 +49,7 @@ export function AdminUsersScreen({ onToast }: AdminUsersScreenProps) {
   const [users, setUsers] = useState<AdminUser[]>([]);
   const [stores, setStores] = useState<StoreOption[]>([]);
   const [filterStore, setFilterStore] = useState('');
+  const [filterStatus, setFilterStatus] = useState<UserStatusFilter>('all');
   const [searchText, setSearchText] = useState('');
   const [isLoading, setIsLoading] = useState(true);
   const [isLoadingStores, setIsLoadingStores] = useState(false);
@@ -69,8 +73,11 @@ export function AdminUsersScreen({ onToast }: AdminUsersScreenProps) {
     setIsLoading(true);
     setLoadError('');
     try {
-      const query = new URLSearchParams({ excludeEmployees: 'true', limit: '500' });
-      if (filterStore) query.set('franchiseId', filterStore);
+      const query = new URLSearchParams({
+        excludeEmployees: 'true',
+        includeArchived: 'true',
+        limit: '500',
+      });
       const usersResponse = await apiRequest(`/users?${query.toString()}`);
       const usersData = await usersResponse.json() as { users?: AdminUser[]; message?: string };
       if (!usersResponse.ok) throw new Error(usersData.message ?? t('adminLoadFailed'));
@@ -86,18 +93,22 @@ export function AdminUsersScreen({ onToast }: AdminUsersScreenProps) {
     } finally {
       setIsLoading(false);
     }
-  }, [filterStore]);
+  }, []);
 
   useEffect(() => {
     void load();
   }, [load]);
 
   const normalizedSearch = searchText.trim().toLocaleLowerCase();
-  const visibleUsers = users.filter((user) =>
-    `${user.name} ${user.email} ${translateRole(user.role)} ${user.franchises.map((store) => store.name).join(' ')}`
+  const visibleUsers = users.filter((user) => {
+    const matchesSearch = `${user.name} ${user.email} ${user.phone ?? ''}`
       .toLocaleLowerCase()
-      .includes(normalizedSearch),
-  );
+      .includes(normalizedSearch);
+    const matchesStore = !filterStore || user.franchises.some((store) => store._id === filterStore);
+    const matchesStatus = filterStatus === 'all'
+      || (filterStatus === 'active' ? user.isActive !== false : user.isActive === false);
+    return matchesSearch && matchesStore && matchesStatus;
+  });
 
   const loadStores = useCallback(async () => {
     if (hasLoadedStores || isLoadingStores) return;
@@ -114,6 +125,10 @@ export function AdminUsersScreen({ onToast }: AdminUsersScreenProps) {
       setIsLoadingStores(false);
     }
   }, [hasLoadedStores, isLoadingStores, showErrorToast]);
+
+  useEffect(() => {
+    void loadStores();
+  }, [loadStores]);
 
   function openCreate(): void {
     setEditing(null);
@@ -251,16 +266,33 @@ export function AdminUsersScreen({ onToast }: AdminUsersScreenProps) {
         autoCapitalize="none"
       />
 
+      <Text style={styles.usersFilterLabel}>{t('adminUserStoreFilter')}</Text>
       <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.filterScroll} contentContainerStyle={styles.filterOptions}>
-        <Pressable onPress={() => setFilterStore('')} style={[styles.filterChip, !filterStore && styles.filterChipActive]}>
+        <Pressable accessibilityRole="button" accessibilityState={{ selected: !filterStore }} onPress={() => setFilterStore('')} style={[styles.filterChip, !filterStore && styles.filterChipActive]}>
           <Text style={[styles.filterChipText, !filterStore && styles.filterChipTextActive]}>{t('adminAllStores')}</Text>
         </Pressable>
         {stores.map((store) => (
-          <Pressable key={store._id} onPress={() => setFilterStore(store._id)} style={[styles.filterChip, filterStore === store._id && styles.filterChipActive]}>
+          <Pressable key={store._id} accessibilityRole="button" accessibilityState={{ selected: filterStore === store._id }} onPress={() => setFilterStore(store._id)} style={[styles.filterChip, filterStore === store._id && styles.filterChipActive]}>
             <Text style={[styles.filterChipText, filterStore === store._id && styles.filterChipTextActive]}>{store.name}</Text>
           </Pressable>
         ))}
       </ScrollView>
+      <Text style={styles.usersFilterLabel}>{t('adminStatus')}</Text>
+      <View style={[styles.filterOptions, styles.userStatusFilters]}>
+        {(['all', 'active', 'inactive'] as const).map((status) => (
+          <Pressable
+            key={status}
+            accessibilityRole="button"
+            accessibilityState={{ selected: filterStatus === status }}
+            onPress={() => setFilterStatus(status)}
+            style={[styles.filterChip, filterStatus === status && styles.filterChipActive]}
+          >
+            <Text style={[styles.filterChipText, filterStatus === status && styles.filterChipTextActive]}>
+              {t(status === 'all' ? 'adminAllUsers' : status === 'active' ? 'adminActive' : 'adminInactive')}
+            </Text>
+          </Pressable>
+        ))}
+      </View>
 
       {visibleUsers.length === 0 ? <Text style={styles.stateMessage}>{users.length === 0 ? t('adminNoUsers') : t('adminNoMatchingUsers')}</Text> : null}
       {visibleUsers.length > 0 ? (layout.usersTable ? (

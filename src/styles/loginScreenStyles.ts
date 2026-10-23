@@ -43,6 +43,7 @@ export const styles = StyleSheet.create({
   },
   shellCompact: {
     flex: 0,
+    flexShrink: 1,
     maxHeight: '100%',
   },
   webCompactShell: {
