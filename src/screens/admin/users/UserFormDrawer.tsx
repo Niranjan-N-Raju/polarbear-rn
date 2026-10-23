@@ -102,7 +102,7 @@ export function UserFormDrawer({
                     style={[styles.checkboxRow, selected && styles.checkboxRowSelected]}
                   >
                     <View style={[styles.checkbox, selected && styles.checkboxSelected]}>
-                      {selected ? <Check color={theme.colors.white} size={14} strokeWidth={3} /> : null}
+                      {selected ? <Check color={theme.colors.white} size={14} strokeWidth={3} style={{ transform: [{ translateY: 2 }] }} /> : null}
                     </View>
                     <Text style={styles.checkboxText}>{store.name}</Text>
                   </Pressable>
