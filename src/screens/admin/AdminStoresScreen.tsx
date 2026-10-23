@@ -66,7 +66,7 @@ interface AdminStoresScreenProps {
 }
 
 export function AdminStoresScreen({ userId, onToast }: AdminStoresScreenProps) {
-  const { width } = useWindowDimensions();
+  const { width, height } = useWindowDimensions();
   const layout = getAdminLayout(width);
   const [stores, setStores] = useState<StoreRecord[]>([]);
   const [searchText, setSearchText] = useState('');
@@ -169,12 +169,11 @@ export function AdminStoresScreen({ userId, onToast }: AdminStoresScreenProps) {
   }
 
   async function clearFilters(): Promise<void> {
-    const filters: StoreListFilters = { search: '', status: 'all', type: 'all' };
-    if (!await loadStores(1, filters)) return;
+    if (!await loadStores(1, defaultStoreFilters)) return;
     setSearchText('');
-    setStatusFilter('all');
+    setStatusFilter('active');
     setTypeFilter('all');
-    setAppliedFilters(filters);
+    setAppliedFilters(defaultStoreFilters);
     setOpenMobileFilter(null);
     setIsFilterDrawerOpen(false);
   }
@@ -467,16 +466,16 @@ export function AdminStoresScreen({ userId, onToast }: AdminStoresScreenProps) {
         closeLabel={t('adminCloseMenu')}
         onClose={() => setIsFilterDrawerOpen(false)}
         onAfterClose={() => setOpenMobileFilter(null)}
-        panelStyle={!layout.isWeb ? styles.filterDrawerPanel : undefined}
+        panelStyle={!layout.isWeb ? { height: Math.min(height * 0.8, 390) } : undefined}
       >
-        <View style={[styles.drawerContent, styles.filterDrawerContent]}>
+        <View style={styles.drawerContent}>
           <View style={styles.drawerHeading}>
             <Text style={[styles.modalTitle, styles.drawerHeadingTitle]}>{t('adminFilterStores')}</Text>
             <Pressable accessibilityRole="button" accessibilityLabel={t('adminCloseMenu')} onPress={() => setIsFilterDrawerOpen(false)} style={styles.userIconAction}>
               <X color={theme.colors.muted} size={18} />
             </Pressable>
           </View>
-          <ScrollView style={[styles.drawerFormScroll, styles.filterDrawerScroll]} contentContainerStyle={styles.filterDrawerFields} keyboardShouldPersistTaps="handled">
+          <ScrollView style={styles.drawerFormScroll} contentContainerStyle={styles.filterDrawerFields} keyboardShouldPersistTaps="handled">
             <Field
               label={t('adminSearchStoresPlaceholder')}
               placeholder={t('adminSearchStoresPlaceholder')}
@@ -484,26 +483,26 @@ export function AdminStoresScreen({ userId, onToast }: AdminStoresScreenProps) {
               onChangeText={setSearchText}
               containerStyle={styles.filterDrawerField}
             />
-            <View style={styles.filterDrawerDropdownField}>
-              <StoreFilterDropdown
-                label={t('adminStatus')}
-                value={statusFilter}
-                expanded={openMobileFilter === 'status'}
-                onToggle={() => setOpenMobileFilter((current) => current === 'status' ? null : 'status')}
-                onSelect={(value) => { setStatusFilter(value as StoreStatusFilter); setOpenMobileFilter(null); }}
-                options={[
-                  { value: 'active', label: t('adminActive') },
-                  { value: 'archived', label: t('adminArchived') },
-                  { value: 'all', label: t('adminAllStores') },
-                ]}
-              />
-            </View>
+            <StoreFilterDropdown
+              label={t('adminStatus')}
+              value={statusFilter}
+              expanded={openMobileFilter === 'status'}
+              onToggle={() => setOpenMobileFilter((current) => current === 'status' ? null : 'status')}
+              onSelect={(value) => { setStatusFilter(value as StoreStatusFilter); setOpenMobileFilter(null); }}
+              containerStyle={styles.filterDrawerDropdown}
+              options={[
+                { value: 'active', label: t('adminActive') },
+                { value: 'archived', label: t('adminArchived') },
+                { value: 'all', label: t('adminAllStores') },
+              ]}
+            />
             <StoreFilterDropdown
               label={t('adminStoreType')}
               value={typeFilter}
               expanded={openMobileFilter === 'type'}
               onToggle={() => setOpenMobileFilter((current) => current === 'type' ? null : 'type')}
               onSelect={(value) => { setTypeFilter(value as StoreTypeFilter); setOpenMobileFilter(null); }}
+              containerStyle={styles.filterDrawerDropdown}
               options={[
                 { value: 'all', label: t('adminAllTypes') },
                 { value: 'company', label: t('adminCompanyStore') },
@@ -512,13 +511,21 @@ export function AdminStoresScreen({ userId, onToast }: AdminStoresScreenProps) {
             />
           </ScrollView>
           <View style={styles.modalActions}>
-            {hasDraftFilters ? (
-              <View style={styles.drawerActionSlot}>
-                <Pressable onPress={clearFilters} style={[styles.secondaryButton, styles.drawerActionButton]}>
-                  <Text style={styles.secondaryButtonText}>{t('adminClearFilters')}</Text>
-                </Pressable>
-              </View>
-            ) : null}
+            <View style={styles.drawerActionSlot}>
+              <Pressable
+                accessibilityRole="button"
+                accessibilityState={{ disabled: !hasDraftFilters }}
+                disabled={!hasDraftFilters}
+                onPress={clearFilters}
+                style={[
+                  styles.secondaryButton,
+                  styles.drawerActionButton,
+                  !hasDraftFilters && styles.filterDrawerDisabledButton,
+                ]}
+              >
+                <Text style={styles.secondaryButtonText}>{t('adminClearFilters')}</Text>
+              </Pressable>
+            </View>
             <View style={styles.drawerActionSlot}>
               <Pressable onPress={applyFilters} style={[styles.primaryButton, styles.drawerActionButton]}>
                 <Text style={styles.primaryButtonText}>{t('adminApplyFilters')}</Text>
@@ -693,13 +700,14 @@ interface StoreFilterDropdownProps<Value extends StoreFilterValue> {
   options: { value: Value; label: string }[];
   onToggle: () => void;
   onSelect: (value: Value) => void;
+  containerStyle?: StyleProp<ViewStyle>;
 }
 
-function StoreFilterDropdown<Value extends StoreFilterValue>({ label, value, expanded, options, onToggle, onSelect }: StoreFilterDropdownProps<Value>) {
+function StoreFilterDropdown<Value extends StoreFilterValue>({ label, value, expanded, options, onToggle, onSelect, containerStyle }: StoreFilterDropdownProps<Value>) {
   const selectedLabel = options.find((option) => option.value === value)?.label ?? '';
 
   return (
-    <View style={[styles.storeFilterDropdown, expanded && styles.storeFilterDropdownOpen]}>
+    <View style={[styles.storeFilterDropdown, expanded && styles.storeFilterDropdownOpen, containerStyle]}>
       <Pressable accessibilityRole="button" accessibilityState={{ expanded }} onPress={onToggle} style={[styles.storeFilterDropdownButton, expanded && styles.storeFilterDropdownButtonOpen]}>
         <View style={styles.storeFilterDropdownCopy}>
           <Text style={styles.storeFilterDropdownLabel}>{label}</Text>

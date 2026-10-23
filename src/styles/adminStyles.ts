@@ -634,6 +634,10 @@ const baseAdminStyles = StyleSheet.create({
     backgroundColor: colors.white,
   },
   drawerHeading: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: spacing.md,
     marginTop: -spacing['2xl'],
     marginHorizontal: -spacing['2xl'],
     marginBottom: spacing['2xl'],
@@ -684,6 +688,22 @@ const baseAdminStyles = StyleSheet.create({
   drawerFormScroll: {
     flex: 1,
     minHeight: 0,
+  },
+  filterDrawerFields: {
+    gap: spacing.xl,
+    paddingBottom: spacing.lg,
+  },
+  filterDrawerField: {
+    marginBottom: 0,
+  },
+  filterDrawerDisabledButton: {
+    opacity: 0.5,
+  },
+  filterDrawerDropdown: {
+    flex: 0,
+    flexGrow: 0,
+    flexShrink: 0,
+    flexBasis: 'auto',
   },
   modalTitle: {
     marginBottom: spacing['2xl'],
@@ -1159,29 +1179,6 @@ const webAdminStyles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: spacing.md,
-  },
-  filterDrawerFields: {
-    gap: spacing.xl,
-    paddingBottom: spacing.lg,
-  },
-  filterDrawerPanel: {
-    height: 'auto',
-    maxHeight: '80%',
-  },
-  filterDrawerContent: {
-    flex: 0,
-    flexShrink: 1,
-  },
-  filterDrawerScroll: {
-    flexGrow: 0,
-    flexShrink: 1,
-    minHeight: 0,
-  },
-  filterDrawerField: {
-    marginBottom: 0,
-  },
-  filterDrawerDropdownField: {
-    marginBottom: spacing.lg,
   },
   loadMoreButton: {
     minHeight: 42,

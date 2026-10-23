@@ -58,7 +58,7 @@ interface AdminUsersScreenProps {
 }
 
 export function AdminUsersScreen({ onToast }: AdminUsersScreenProps) {
-  const { width } = useWindowDimensions();
+  const { width, height } = useWindowDimensions();
   const layout = getAdminLayout(width);
   const [users, setUsers] = useState<AdminUser[]>([]);
   const [stores, setStores] = useState<StoreOption[]>([]);
@@ -457,16 +457,16 @@ export function AdminUsersScreen({ onToast }: AdminUsersScreenProps) {
         closeLabel={t('adminCloseMenu')}
         onClose={() => setIsFilterDrawerOpen(false)}
         onAfterClose={() => setOpenFilter(null)}
-        panelStyle={!layout.isWeb ? styles.filterDrawerPanel : undefined}
+        panelStyle={!layout.isWeb ? { height: Math.min(height * 0.8, 470) } : undefined}
       >
-        <View style={[styles.drawerContent, styles.filterDrawerContent]}>
+        <View style={styles.drawerContent}>
           <View style={styles.drawerHeading}>
             <Text style={[styles.modalTitle, styles.drawerHeadingTitle]}>{t('adminFilterUsers')}</Text>
             <Pressable accessibilityRole="button" accessibilityLabel={t('adminCloseMenu')} onPress={() => setIsFilterDrawerOpen(false)} style={styles.userIconAction}>
               <X color={theme.colors.muted} size={18} />
             </Pressable>
           </View>
-          <ScrollView style={[styles.drawerFormScroll, styles.filterDrawerScroll]} contentContainerStyle={styles.filterDrawerFields} keyboardShouldPersistTaps="handled">
+          <ScrollView style={styles.drawerFormScroll} contentContainerStyle={styles.filterDrawerFields} keyboardShouldPersistTaps="handled">
             <Field
               label={t('adminSearchUsers')}
               placeholder={t('adminSearchUsers')}
@@ -478,6 +478,7 @@ export function AdminUsersScreen({ onToast }: AdminUsersScreenProps) {
               stores={stores}
               value={storeSearchText}
               expanded={openFilter === 'store'}
+              containerStyle={styles.filterDrawerDropdown}
               onFocus={() => setOpenFilter('store')}
               onChangeText={(value) => {
                 setStoreSearchText(value);
@@ -494,6 +495,7 @@ export function AdminUsersScreen({ onToast }: AdminUsersScreenProps) {
               label={t('adminStatus')}
               value={filterStatus}
               expanded={openFilter === 'status'}
+              containerStyle={styles.filterDrawerDropdown}
               onToggle={() => setOpenFilter((current) => current === 'status' ? null : 'status')}
               onSelect={(value) => {
                 setFilterStatus(value);
@@ -509,6 +511,7 @@ export function AdminUsersScreen({ onToast }: AdminUsersScreenProps) {
               label={t('adminUserTypeFilter')}
               value={filterRole}
               expanded={openFilter === 'type'}
+              containerStyle={styles.filterDrawerDropdown}
               onToggle={() => setOpenFilter((current) => current === 'type' ? null : 'type')}
               onSelect={(value) => {
                 setFilterRole(value);
@@ -521,13 +524,21 @@ export function AdminUsersScreen({ onToast }: AdminUsersScreenProps) {
             />
           </ScrollView>
           <View style={styles.modalActions}>
-            {hasDraftFilters ? (
-              <View style={styles.drawerActionSlot}>
-                <Pressable onPress={clearFilters} style={[styles.secondaryButton, styles.drawerActionButton]}>
-                  <Text style={styles.secondaryButtonText}>{t('adminClearFilters')}</Text>
-                </Pressable>
-              </View>
-            ) : null}
+            <View style={styles.drawerActionSlot}>
+              <Pressable
+                accessibilityRole="button"
+                accessibilityState={{ disabled: !hasDraftFilters }}
+                disabled={!hasDraftFilters}
+                onPress={clearFilters}
+                style={[
+                  styles.secondaryButton,
+                  styles.drawerActionButton,
+                  !hasDraftFilters && styles.filterDrawerDisabledButton,
+                ]}
+              >
+                <Text style={styles.secondaryButtonText}>{t('adminClearFilters')}</Text>
+              </Pressable>
+            </View>
             <View style={styles.drawerActionSlot}>
               <Pressable onPress={applyFilters} style={[styles.primaryButton, styles.drawerActionButton]}>
                 <Text style={styles.primaryButtonText}>{t('adminApplyFilters')}</Text>
@@ -674,6 +685,7 @@ interface UserFilterDropdownProps<Value extends string> {
   options: { value: Value; label: string }[];
   onToggle: () => void;
   onSelect: (value: Value) => void;
+  containerStyle?: StyleProp<ViewStyle>;
 }
 
 function UserFilterDropdown<Value extends string>({
@@ -683,6 +695,7 @@ function UserFilterDropdown<Value extends string>({
   options,
   onToggle,
   onSelect,
+  containerStyle,
 }: UserFilterDropdownProps<Value>) {
   const selectedLabel = options.find((option) => option.value === value)?.label ?? '';
 
@@ -691,6 +704,7 @@ function UserFilterDropdown<Value extends string>({
       styles.storeFilterDropdown,
       styles.userFilterDropdown,
       expanded && styles.storeFilterDropdownOpen,
+      containerStyle,
     ]}>
       <Pressable
         accessibilityRole="button"
@@ -732,19 +746,20 @@ interface StoreAutocompleteProps {
   stores: StoreOption[];
   value: string;
   expanded: boolean;
+  containerStyle?: StyleProp<ViewStyle>;
   onFocus: () => void;
   onChangeText: (value: string) => void;
   onSelect: (store: StoreOption) => void;
 }
 
-function StoreAutocomplete({ stores, value, expanded, onFocus, onChangeText, onSelect }: StoreAutocompleteProps) {
+function StoreAutocomplete({ stores, value, expanded, containerStyle, onFocus, onChangeText, onSelect }: StoreAutocompleteProps) {
   const normalizedSearch = value.trim().toLocaleLowerCase();
   const matches = stores
     .filter((store) => store.name.toLocaleLowerCase().includes(normalizedSearch))
     .slice(0, 8);
 
   return (
-    <View style={[styles.storeFilterDropdown, styles.userStoreAutocomplete, expanded && styles.storeFilterDropdownOpen]}>
+    <View style={[styles.storeFilterDropdown, styles.userStoreAutocomplete, expanded && styles.storeFilterDropdownOpen, containerStyle]}>
       <TextInput
         value={value}
         placeholder={t('adminSearchStores')}
