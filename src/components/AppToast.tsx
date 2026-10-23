@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef } from 'react';
 import { Animated, Platform, Pressable, StyleSheet, Text, View } from 'react-native';
-import { X } from 'lucide-react-native';
+import { X } from '../icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { theme } from '../config/theme';
 import { t } from '../i18n';

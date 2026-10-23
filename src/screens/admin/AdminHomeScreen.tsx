@@ -1,6 +1,6 @@
 import { useCallback, useState } from 'react';
 import { Modal, Pressable, Text, useWindowDimensions, View } from 'react-native';
-import { ChevronsLeft, LayoutDashboard, LogOut, Menu, Store, UserRound, UsersRound, X } from 'lucide-react-native';
+import { ChevronsLeft, LayoutDashboard, LogOut, Menu, Store, UserRound, UsersRound, X } from '../../icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { AppToast } from '../../components/AppToast';
 import { AppLoader } from '../../components/AppLoader';

@@ -1,5 +1,5 @@
 import { Pressable, StyleSheet, Text, View } from 'react-native';
-import { RefreshCw } from 'lucide-react-native';
+import { RefreshCw } from '../icons';
 import { theme } from '../config/theme';
 import { t } from '../i18n';
 

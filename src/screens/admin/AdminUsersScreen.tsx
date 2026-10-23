@@ -1,8 +1,10 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Pressable, ScrollView, Text, TextInput, useWindowDimensions, View } from 'react-native';
 import type { StyleProp, ViewStyle } from 'react-native';
-import { Check, ChevronDown, Filter, Pencil, Plus, Trash2, X } from 'lucide-react-native';
+import { Check, Filter, Pencil, Plus, Trash2, X } from '../../icons';
 import { AppErrorState } from '../../components/AppErrorState';
+import { AdminFilterDropdown } from '../../components/AdminFilterDropdown';
+import { AdminFormField } from '../../components/AdminFormField';
 import { AppToast } from '../../components/AppToast';
 import { AppLoader } from '../../components/AppLoader';
 import { apiRequest } from '../../api/auth';
@@ -467,11 +469,12 @@ export function AdminUsersScreen({ onToast }: AdminUsersScreenProps) {
             </Pressable>
           </View>
           <ScrollView style={styles.drawerFormScroll} contentContainerStyle={styles.filterDrawerFields} keyboardShouldPersistTaps="handled">
-            <Field
+            <AdminFormField
               label={t('adminSearchUsers')}
               placeholder={t('adminSearchUsers')}
               value={searchText}
               onChangeText={setSearchText}
+              autoCorrect={false}
               containerStyle={styles.filterDrawerField}
             />
             <StoreAutocomplete
@@ -491,11 +494,11 @@ export function AdminUsersScreen({ onToast }: AdminUsersScreenProps) {
                 setOpenFilter(null);
               }}
             />
-            <UserFilterDropdown
+            <AdminFilterDropdown
               label={t('adminStatus')}
               value={filterStatus}
               expanded={openFilter === 'status'}
-              containerStyle={styles.filterDrawerDropdown}
+              containerStyle={[styles.userFilterDropdown, styles.filterDrawerDropdown]}
               onToggle={() => setOpenFilter((current) => current === 'status' ? null : 'status')}
               onSelect={(value) => {
                 setFilterStatus(value);
@@ -507,11 +510,11 @@ export function AdminUsersScreen({ onToast }: AdminUsersScreenProps) {
                 { value: 'inactive', label: t('adminInactive') },
               ]}
             />
-            <UserFilterDropdown
+            <AdminFilterDropdown
               label={t('adminUserTypeFilter')}
               value={filterRole}
               expanded={openFilter === 'type'}
-              containerStyle={styles.filterDrawerDropdown}
+              containerStyle={[styles.userFilterDropdown, styles.filterDrawerDropdown]}
               optionsPlacement="above"
               onToggle={() => setOpenFilter((current) => current === 'type' ? null : 'type')}
               onSelect={(value) => {
@@ -575,9 +578,9 @@ export function AdminUsersScreen({ onToast }: AdminUsersScreenProps) {
             <Text style={[styles.modalTitle, styles.drawerHeadingTitle]}>{t(editing ? 'adminEditUser' : 'adminAddUser')}</Text>
           </View>
           <ScrollView style={styles.drawerFormScroll} keyboardShouldPersistTaps="handled">
-              <Field label={t('adminFullName')} placeholder={t('adminFullNamePlaceholder')} value={form.name} onChangeText={(name) => updateField('name', name)} error={fieldErrors.name} />
-              <Field label={t('adminEmail')} placeholder={t('adminUserEmailPlaceholder')} value={form.email} editable={!editing} keyboardType="email-address" autoCapitalize="none" onChangeText={(email) => updateField('email', email)} error={fieldErrors.email} />
-              {!editing ? <Field label={t('adminPassword')} placeholder={t('adminUserPasswordPlaceholder')} value={form.password} secureTextEntry keyboardType="default" onChangeText={(password) => updateField('password', password)} error={fieldErrors.password} /> : null}
+              <AdminFormField label={t('adminFullName')} placeholder={t('adminFullNamePlaceholder')} value={form.name} onChangeText={(name) => updateField('name', name)} error={fieldErrors.name} autoCorrect={false} />
+              <AdminFormField label={t('adminEmail')} placeholder={t('adminUserEmailPlaceholder')} value={form.email} editable={!editing} keyboardType="email-address" autoCapitalize="none" onChangeText={(email) => updateField('email', email)} error={fieldErrors.email} autoCorrect={false} />
+              {!editing ? <AdminFormField label={t('adminPassword')} placeholder={t('adminUserPasswordPlaceholder')} value={form.password} secureTextEntry onChangeText={(password) => updateField('password', password)} error={fieldErrors.password} autoCorrect={false} /> : null}
               <Text style={styles.fieldLabel}>{t('adminRole')}</Text>
               <View style={styles.typeOptions}>
                 {(['sub_admin', 'franchise_admin'] as const).map((role) => (
@@ -659,108 +662,6 @@ export function AdminUsersScreen({ onToast }: AdminUsersScreenProps) {
           </View>
         </View>
       </ResponsiveDrawerModal>
-    </View>
-  );
-}
-
-interface FieldProps {
-  label: string;
-  placeholder: string;
-  value: string;
-  onChangeText: (value: string) => void;
-  editable?: boolean;
-  secureTextEntry?: boolean;
-  keyboardType?: 'default' | 'email-address';
-  autoCapitalize?: 'none' | 'sentences';
-  error?: string;
-  containerStyle?: StyleProp<ViewStyle>;
-}
-
-function Field({ label, placeholder, value, onChangeText, editable = true, secureTextEntry, keyboardType = 'default', autoCapitalize, error, containerStyle }: FieldProps) {
-  return (
-    <View style={[styles.field, containerStyle]}>
-      <Text style={styles.fieldLabel}>{label}</Text>
-      <TextInput
-        value={value}
-        placeholder={placeholder}
-        onChangeText={onChangeText}
-        editable={editable}
-        secureTextEntry={secureTextEntry}
-        keyboardType={keyboardType}
-        autoCapitalize={autoCapitalize}
-        autoCorrect={false}
-        style={[styles.fieldInput, error && styles.inputError, !editable && styles.fieldInputDisabled]}
-      />
-      {error ? <Text accessibilityRole="alert" style={styles.fieldError}>{error}</Text> : null}
-    </View>
-  );
-}
-
-interface UserFilterDropdownProps<Value extends string> {
-  label: string;
-  value: Value;
-  expanded: boolean;
-  optionsPlacement?: 'above' | 'below';
-  options: { value: Value; label: string }[];
-  onToggle: () => void;
-  onSelect: (value: Value) => void;
-  containerStyle?: StyleProp<ViewStyle>;
-}
-
-function UserFilterDropdown<Value extends string>({
-  label,
-  value,
-  expanded,
-  optionsPlacement = 'below',
-  options,
-  onToggle,
-  onSelect,
-  containerStyle,
-}: UserFilterDropdownProps<Value>) {
-  const selectedLabel = options.find((option) => option.value === value)?.label ?? '';
-
-  return (
-    <View style={[
-      styles.storeFilterDropdown,
-      styles.userFilterDropdown,
-      expanded && styles.storeFilterDropdownOpen,
-      containerStyle,
-    ]}>
-      <Pressable
-        accessibilityRole="button"
-        accessibilityState={{ expanded }}
-        onPress={onToggle}
-        style={[styles.storeFilterDropdownButton, expanded && styles.storeFilterDropdownButtonOpen]}
-      >
-        <View style={styles.storeFilterDropdownCopy}>
-          <Text style={styles.storeFilterDropdownLabel}>{label}</Text>
-          <Text numberOfLines={1} style={styles.storeFilterDropdownValue}>{selectedLabel}</Text>
-        </View>
-        <ChevronDown color={theme.colors.muted} size={14} />
-      </Pressable>
-      {expanded ? (
-        <View style={[
-          styles.storeFilterDropdownOptions,
-          optionsPlacement === 'above' && styles.storeFilterDropdownOptionsAbove,
-        ]}>
-          {options.map((option) => {
-            const active = option.value === value;
-            return (
-              <Pressable
-                key={option.value}
-                accessibilityRole="button"
-                accessibilityState={{ selected: active }}
-                onPress={() => onSelect(option.value)}
-                style={[styles.storeFilterDropdownOption, active && styles.storeFilterDropdownOptionActive]}
-              >
-                <Text style={[styles.storeFilterDropdownOptionText, active && styles.storeFilterDropdownOptionTextActive]}>
-                  {option.label}
-                </Text>
-              </Pressable>
-            );
-          })}
-        </View>
-      ) : null}
     </View>
   );
 }

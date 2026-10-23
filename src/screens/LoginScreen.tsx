@@ -10,7 +10,7 @@ import {
   View,
 } from 'react-native';
 import { useCallback, useEffect, useRef, useState, type ComponentRef } from 'react';
-import { ChevronRight, Eye, EyeOff, LockKeyhole, Mail } from 'lucide-react-native';
+import { Eye, EyeOff, LockKeyhole, Mail } from '../icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { AppToast } from '../components/AppToast';
 import { AppLoader } from '../components/AppLoader';

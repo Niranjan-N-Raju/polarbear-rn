@@ -1,4 +1,4 @@
-import { Building2, CircleCheck, Handshake, ShieldCheck, Store, UserRoundCog, UsersRound } from 'lucide-react-native';
+import { Building2, CircleCheck, Handshake, ShieldCheck, Store, UserRoundCog, UsersRound } from '../icons';
 import { theme } from '../config/theme';
 import type { TranslationKey } from '../i18n';
 import { getAdminLayout } from './adminLayout';

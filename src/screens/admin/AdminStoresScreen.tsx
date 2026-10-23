@@ -1,8 +1,9 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { Pressable, ScrollView, Text, TextInput, useWindowDimensions, View } from 'react-native';
-import type { StyleProp, ViewStyle } from 'react-native';
-import { Archive, ChevronDown, Filter, MapPin, Pencil, Phone, Plus, RotateCcw, Store as StoreIcon, X } from 'lucide-react-native';
+import { Pressable, ScrollView, Text, useWindowDimensions, View } from 'react-native';
+import { Archive, Filter, MapPin, Pencil, Phone, Plus, RotateCcw, Store as StoreIcon, X } from '../../icons';
 import { AppErrorState } from '../../components/AppErrorState';
+import { AdminFilterDropdown } from '../../components/AdminFilterDropdown';
+import { AdminFormField } from '../../components/AdminFormField';
 import { AppToast } from '../../components/AppToast';
 import { AppLoader } from '../../components/AppLoader';
 import { apiRequest } from '../../api/auth';
@@ -42,7 +43,6 @@ interface StoreForm {
 
 type StoreStatusFilter = 'active' | 'archived' | 'all';
 type StoreTypeFilter = 'all' | 'company' | 'franchise';
-type StoreFilterValue = StoreStatusFilter | StoreTypeFilter;
 interface StoreListFilters {
   search: string;
   status: StoreStatusFilter;
@@ -476,14 +476,14 @@ export function AdminStoresScreen({ userId, onToast }: AdminStoresScreenProps) {
             </Pressable>
           </View>
           <ScrollView style={styles.drawerFormScroll} contentContainerStyle={styles.filterDrawerFields} keyboardShouldPersistTaps="handled">
-            <Field
+            <AdminFormField
               label={t('adminSearchStoresPlaceholder')}
               placeholder={t('adminSearchStoresPlaceholder')}
               value={searchText}
               onChangeText={setSearchText}
               containerStyle={styles.filterDrawerField}
             />
-            <StoreFilterDropdown
+            <AdminFilterDropdown
               label={t('adminStatus')}
               value={statusFilter}
               expanded={openMobileFilter === 'status'}
@@ -496,7 +496,7 @@ export function AdminStoresScreen({ userId, onToast }: AdminStoresScreenProps) {
                 { value: 'all', label: t('adminAllStores') },
               ]}
             />
-            <StoreFilterDropdown
+            <AdminFilterDropdown
               label={t('adminStoreType')}
               value={typeFilter}
               expanded={openMobileFilter === 'type'}
@@ -570,17 +570,17 @@ export function AdminStoresScreen({ userId, onToast }: AdminStoresScreenProps) {
                 <Text style={styles.secondaryButtonText}>{t('adminFranchiseStore')}</Text>
               </Pressable>
             </View>
-            <Field label={t('adminStoreName')} placeholder={t('adminStoreNamePlaceholder')} value={form.name} onChangeText={(value) => updateField('name', value)} error={fieldErrors.name} />
-            <Field label={t('adminStoreCode')} placeholder={t('adminStoreCodePlaceholder')} value={form.storeCode} onChangeText={(value) => updateField('storeCode', value.toUpperCase())} autoCapitalize="characters" error={fieldErrors.storeCode} />
-            <Field label={t('adminPhone')} placeholder={t('adminPhonePlaceholder')} value={form.phone} onChangeText={(value) => updateField('phone', value.replace(/\D/g, '').slice(0, 10))} keyboardType="phone-pad" phonePrefix="+91" error={fieldErrors.phone} />
-            <Field label={t('adminAddress')} placeholder={t('adminAddressPlaceholder')} value={form.address} onChangeText={(value) => updateField('address', value)} />
-            <Field label={t('adminDescription')} placeholder={t('adminDescriptionPlaceholder')} value={form.description} onChangeText={(value) => updateField('description', value)} multiline />
+            <AdminFormField label={t('adminStoreName')} placeholder={t('adminStoreNamePlaceholder')} value={form.name} onChangeText={(value) => updateField('name', value)} error={fieldErrors.name} />
+            <AdminFormField label={t('adminStoreCode')} placeholder={t('adminStoreCodePlaceholder')} value={form.storeCode} onChangeText={(value) => updateField('storeCode', value.toUpperCase())} autoCapitalize="characters" error={fieldErrors.storeCode} />
+            <AdminFormField label={t('adminPhone')} placeholder={t('adminPhonePlaceholder')} value={form.phone} onChangeText={(value) => updateField('phone', value.replace(/\D/g, '').slice(0, 10))} keyboardType="phone-pad" phonePrefix="+91" error={fieldErrors.phone} />
+            <AdminFormField label={t('adminAddress')} placeholder={t('adminAddressPlaceholder')} value={form.address} onChangeText={(value) => updateField('address', value)} />
+            <AdminFormField label={t('adminDescription')} placeholder={t('adminDescriptionPlaceholder')} value={form.description} onChangeText={(value) => updateField('description', value)} multiline />
             {form.storeType === 'franchise' ? (
               <>
                 <Text style={styles.sectionLabel}>{t('adminOwnerDetails')}</Text>
-                <Field label={t('adminOwnerName')} placeholder={t('adminOwnerNamePlaceholder')} value={form.ownerName} onChangeText={(value) => updateField('ownerName', value)} />
-                <Field label={t('adminOwnerPhone')} placeholder={t('adminOwnerPhonePlaceholder')} value={form.ownerPhone} onChangeText={(value) => updateField('ownerPhone', value.replace(/\D/g, '').slice(0, 10))} keyboardType="phone-pad" phonePrefix="+91" error={fieldErrors.ownerPhone} />
-                <Field label={t('adminOwnerEmail')} placeholder={t('adminOwnerEmailPlaceholder')} value={form.ownerEmail} onChangeText={(value) => updateField('ownerEmail', value)} keyboardType="email-address" autoCapitalize="none" error={fieldErrors.ownerEmail} />
+                <AdminFormField label={t('adminOwnerName')} placeholder={t('adminOwnerNamePlaceholder')} value={form.ownerName} onChangeText={(value) => updateField('ownerName', value)} />
+                <AdminFormField label={t('adminOwnerPhone')} placeholder={t('adminOwnerPhonePlaceholder')} value={form.ownerPhone} onChangeText={(value) => updateField('ownerPhone', value.replace(/\D/g, '').slice(0, 10))} keyboardType="phone-pad" phonePrefix="+91" error={fieldErrors.ownerPhone} />
+                <AdminFormField label={t('adminOwnerEmail')} placeholder={t('adminOwnerEmailPlaceholder')} value={form.ownerEmail} onChangeText={(value) => updateField('ownerEmail', value)} keyboardType="email-address" autoCapitalize="none" error={fieldErrors.ownerEmail} />
               </>
             ) : null}
             {editingStore ? (
@@ -657,90 +657,6 @@ export function AdminStoresScreen({ userId, onToast }: AdminStoresScreenProps) {
           </View>
         </View>
       </ResponsiveDrawerModal>
-    </View>
-  );
-}
-
-interface FieldProps {
-  label: string;
-  placeholder: string;
-  value: string;
-  onChangeText: (value: string) => void;
-  keyboardType?: 'default' | 'phone-pad' | 'email-address';
-  autoCapitalize?: 'none' | 'characters';
-  multiline?: boolean;
-  error?: string;
-  phonePrefix?: string;
-  containerStyle?: StyleProp<ViewStyle>;
-}
-
-function Field({ label, placeholder, value, onChangeText, keyboardType = 'default', autoCapitalize, multiline, error, phonePrefix, containerStyle }: FieldProps) {
-  const input = (
-    <TextInput
-      value={value}
-      placeholder={placeholder}
-      onChangeText={onChangeText}
-      keyboardType={keyboardType}
-      autoCapitalize={autoCapitalize}
-      multiline={multiline}
-      style={[styles.fieldInput, multiline && styles.multilineField, phonePrefix && styles.phoneFieldInput, !phonePrefix && error && styles.inputError]}
-    />
-  );
-
-  return (
-    <View style={[styles.field, containerStyle]}>
-      <Text style={styles.fieldLabel}>{label}</Text>
-      {phonePrefix ? (
-        <View style={[styles.phoneInputWrap, error && styles.phoneInputWrapError]}>
-          <View style={styles.phoneInputCode}>
-            <Text style={styles.phoneInputPrefix}>{phonePrefix}</Text>
-          </View>
-          {input}
-        </View>
-      ) : input}
-      {error ? <Text accessibilityRole="alert" style={styles.fieldError}>{error}</Text> : null}
-    </View>
-  );
-}
-
-interface StoreFilterDropdownProps<Value extends StoreFilterValue> {
-  label: string;
-  value: Value;
-  expanded: boolean;
-  optionsPlacement?: 'above' | 'below';
-  options: { value: Value; label: string }[];
-  onToggle: () => void;
-  onSelect: (value: Value) => void;
-  containerStyle?: StyleProp<ViewStyle>;
-}
-
-function StoreFilterDropdown<Value extends StoreFilterValue>({ label, value, expanded, optionsPlacement = 'below', options, onToggle, onSelect, containerStyle }: StoreFilterDropdownProps<Value>) {
-  const selectedLabel = options.find((option) => option.value === value)?.label ?? '';
-
-  return (
-    <View style={[styles.storeFilterDropdown, expanded && styles.storeFilterDropdownOpen, containerStyle]}>
-      <Pressable accessibilityRole="button" accessibilityState={{ expanded }} onPress={onToggle} style={[styles.storeFilterDropdownButton, expanded && styles.storeFilterDropdownButtonOpen]}>
-        <View style={styles.storeFilterDropdownCopy}>
-          <Text style={styles.storeFilterDropdownLabel}>{label}</Text>
-          <Text numberOfLines={1} style={styles.storeFilterDropdownValue}>{selectedLabel}</Text>
-        </View>
-        <ChevronDown color={theme.colors.muted} size={14} />
-      </Pressable>
-      {expanded ? (
-        <View style={[
-          styles.storeFilterDropdownOptions,
-          optionsPlacement === 'above' && styles.storeFilterDropdownOptionsAbove,
-        ]}>
-          {options.map((option) => {
-            const active = option.value === value;
-            return (
-              <Pressable key={option.value} onPress={() => onSelect(option.value)} style={[styles.storeFilterDropdownOption, active && styles.storeFilterDropdownOptionActive]}>
-                <Text style={[styles.storeFilterDropdownOptionText, active && styles.storeFilterDropdownOptionTextActive]}>{option.label}</Text>
-              </Pressable>
-            );
-          })}
-        </View>
-      ) : null}
     </View>
   );
 }

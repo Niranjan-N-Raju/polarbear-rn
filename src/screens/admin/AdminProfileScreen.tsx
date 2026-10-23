@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react';
-import { Pressable, ScrollView, Text, TextInput, useWindowDimensions, View } from 'react-native';
-import { Eye, EyeOff } from 'lucide-react-native';
+import { Pressable, ScrollView, Text, useWindowDimensions, View } from 'react-native';
 import { apiRequest, setAccessToken } from '../../api/auth';
 import type { AuthenticatedUser } from '../../api/auth';
+import { AdminFormField } from '../../components/AdminFormField';
 import { AppLoader } from '../../components/AppLoader';
 import { theme } from '../../config/theme';
 import { t, translateRole } from '../../i18n';
@@ -165,7 +165,7 @@ export function AdminProfileScreen({ user: initialUser, onUserUpdated }: AdminPr
 
             <View style={styles.profileCard}>
               <Text style={styles.sectionLabel}>{t('adminUpdateName')}</Text>
-              <Field label={t('adminFullName')} value={name} onChangeText={(value) => { setName(value); setNameError(''); }} error={nameError} />
+              <AdminFormField label={t('adminFullName')} value={name} onChangeText={(value) => { setName(value); setNameError(''); }} error={nameError} errorTextStyle={[styles.formError, styles.stateError]} />
               <Pressable disabled={isSavingName} onPress={() => void saveName()} style={styles.primaryButton}>
                 {isSavingName ? <AppLoader variant="inline" color={theme.colors.white} /> : <Text style={styles.primaryButtonText}>{t('adminSaveName')}</Text>}
               </Pressable>
@@ -175,9 +175,9 @@ export function AdminProfileScreen({ user: initialUser, onUserUpdated }: AdminPr
           <View style={styles.profileColumn}>
             <View style={styles.profileCard}>
               <Text style={styles.sectionLabel}>{t('adminChangePassword')}</Text>
-              <Field label={t('adminCurrentPassword')} value={currentPassword} onChangeText={(value) => { setCurrentPassword(value); setCurrentPasswordError(''); }} error={currentPasswordError} secureTextEntry={!showCurrent} onToggleVisibility={() => setShowCurrent((value) => !value)} visible={showCurrent} />
-              <Field label={t('adminNewPassword')} value={newPassword} onChangeText={(value) => { setNewPassword(value); setNewPasswordError(''); }} error={newPasswordError} secureTextEntry={!showNew} onToggleVisibility={() => setShowNew((value) => !value)} visible={showNew} />
-              <Field label={t('adminConfirmPassword')} value={confirmPassword} onChangeText={(value) => { setConfirmPassword(value); setConfirmPasswordError(''); }} error={confirmPasswordError} secureTextEntry={!showConfirm} onToggleVisibility={() => setShowConfirm((value) => !value)} visible={showConfirm} />
+              <AdminFormField label={t('adminCurrentPassword')} value={currentPassword} onChangeText={(value) => { setCurrentPassword(value); setCurrentPasswordError(''); }} error={currentPasswordError} errorTextStyle={[styles.formError, styles.stateError]} secureTextEntry={!showCurrent} onToggleVisibility={() => setShowCurrent((value) => !value)} visible={showCurrent} autoCapitalize="none" />
+              <AdminFormField label={t('adminNewPassword')} value={newPassword} onChangeText={(value) => { setNewPassword(value); setNewPasswordError(''); }} error={newPasswordError} errorTextStyle={[styles.formError, styles.stateError]} secureTextEntry={!showNew} onToggleVisibility={() => setShowNew((value) => !value)} visible={showNew} autoCapitalize="none" />
+              <AdminFormField label={t('adminConfirmPassword')} value={confirmPassword} onChangeText={(value) => { setConfirmPassword(value); setConfirmPasswordError(''); }} error={confirmPasswordError} errorTextStyle={[styles.formError, styles.stateError]} secureTextEntry={!showConfirm} onToggleVisibility={() => setShowConfirm((value) => !value)} visible={showConfirm} autoCapitalize="none" />
               {passwordError ? <Text accessibilityRole="alert" style={[styles.formError, styles.stateError]}>{passwordError}</Text> : null}
               <Pressable disabled={isSavingPassword} onPress={() => void changePassword()} style={styles.primaryButton}>
                 {isSavingPassword ? <AppLoader variant="inline" color={theme.colors.white} /> : <Text style={styles.primaryButtonText}>{t('adminUpdatePassword')}</Text>}
@@ -194,16 +194,16 @@ export function AdminProfileScreen({ user: initialUser, onUserUpdated }: AdminPr
           </View>
           <View style={styles.profileCard}>
             <Text style={styles.sectionLabel}>{t('adminUpdateName')}</Text>
-            <Field label={t('adminFullName')} value={name} onChangeText={(value) => { setName(value); setNameError(''); }} error={nameError} />
+            <AdminFormField label={t('adminFullName')} value={name} onChangeText={(value) => { setName(value); setNameError(''); }} error={nameError} errorTextStyle={[styles.formError, styles.stateError]} />
             <Pressable disabled={isSavingName} onPress={() => void saveName()} style={styles.primaryButton}>
               {isSavingName ? <AppLoader variant="inline" color={theme.colors.white} /> : <Text style={styles.primaryButtonText}>{t('adminSaveName')}</Text>}
             </Pressable>
           </View>
           <View style={styles.profileCard}>
             <Text style={styles.sectionLabel}>{t('adminChangePassword')}</Text>
-            <Field label={t('adminCurrentPassword')} value={currentPassword} onChangeText={(value) => { setCurrentPassword(value); setCurrentPasswordError(''); }} error={currentPasswordError} secureTextEntry={!showCurrent} onToggleVisibility={() => setShowCurrent((value) => !value)} visible={showCurrent} />
-            <Field label={t('adminNewPassword')} value={newPassword} onChangeText={(value) => { setNewPassword(value); setNewPasswordError(''); }} error={newPasswordError} secureTextEntry={!showNew} onToggleVisibility={() => setShowNew((value) => !value)} visible={showNew} />
-            <Field label={t('adminConfirmPassword')} value={confirmPassword} onChangeText={(value) => { setConfirmPassword(value); setConfirmPasswordError(''); }} error={confirmPasswordError} secureTextEntry={!showConfirm} onToggleVisibility={() => setShowConfirm((value) => !value)} visible={showConfirm} />
+            <AdminFormField label={t('adminCurrentPassword')} value={currentPassword} onChangeText={(value) => { setCurrentPassword(value); setCurrentPasswordError(''); }} error={currentPasswordError} errorTextStyle={[styles.formError, styles.stateError]} secureTextEntry={!showCurrent} onToggleVisibility={() => setShowCurrent((value) => !value)} visible={showCurrent} autoCapitalize="none" />
+            <AdminFormField label={t('adminNewPassword')} value={newPassword} onChangeText={(value) => { setNewPassword(value); setNewPasswordError(''); }} error={newPasswordError} errorTextStyle={[styles.formError, styles.stateError]} secureTextEntry={!showNew} onToggleVisibility={() => setShowNew((value) => !value)} visible={showNew} autoCapitalize="none" />
+            <AdminFormField label={t('adminConfirmPassword')} value={confirmPassword} onChangeText={(value) => { setConfirmPassword(value); setConfirmPasswordError(''); }} error={confirmPasswordError} errorTextStyle={[styles.formError, styles.stateError]} secureTextEntry={!showConfirm} onToggleVisibility={() => setShowConfirm((value) => !value)} visible={showConfirm} autoCapitalize="none" />
             {passwordError ? <Text accessibilityRole="alert" style={[styles.formError, styles.stateError]}>{passwordError}</Text> : null}
             <Pressable disabled={isSavingPassword} onPress={() => void changePassword()} style={styles.primaryButton}>
               {isSavingPassword ? <AppLoader variant="inline" color={theme.colors.white} /> : <Text style={styles.primaryButtonText}>{t('adminUpdatePassword')}</Text>}
@@ -212,32 +212,5 @@ export function AdminProfileScreen({ user: initialUser, onUserUpdated }: AdminPr
         </>
       )}
     </ScrollView>
-  );
-}
-
-interface FieldProps {
-  label: string;
-  value: string;
-  onChangeText: (value: string) => void;
-  error?: string;
-  secureTextEntry?: boolean;
-  onToggleVisibility?: () => void;
-  visible?: boolean;
-}
-
-function Field({ label, value, onChangeText, error, secureTextEntry, onToggleVisibility, visible }: FieldProps) {
-  return (
-    <View style={styles.field}>
-      <Text style={styles.fieldLabel}>{label}</Text>
-      <View style={styles.inputWrap}>
-        <TextInput value={value} onChangeText={onChangeText} secureTextEntry={secureTextEntry} autoCapitalize="none" style={[styles.fieldInput, error ? styles.inputError : null]} />
-        {onToggleVisibility ? (
-          <Pressable accessibilityRole="button" accessibilityLabel={visible ? t('hidePassword') : t('showPassword')} onPress={onToggleVisibility} style={styles.visibilityButton}>
-            {visible ? <EyeOff color={theme.colors.iconMuted} size={theme.layout.iconSize} /> : <Eye color={theme.colors.iconMuted} size={theme.layout.iconSize} />}
-          </Pressable>
-        ) : null}
-      </View>
-      {error ? <Text style={[styles.formError, styles.stateError]}>{error}</Text> : null}
-    </View>
   );
 }
