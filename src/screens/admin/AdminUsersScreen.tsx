@@ -176,13 +176,15 @@ export function AdminUsersScreen({ onToast }: AdminUsersScreenProps) {
       status: filterStatus,
       role: filterRole,
     };
-    if (!await load(1, filters)) return;
-    setAppliedFilters(filters);
     setOpenFilter(null);
     setIsFilterDrawerOpen(false);
+    if (!await load(1, filters)) return;
+    setAppliedFilters(filters);
   }
 
   async function clearFilters(): Promise<void> {
+    setOpenFilter(null);
+    setIsFilterDrawerOpen(false);
     if (!await load(1, defaultUserFilters)) return;
     setSearchText('');
     setStoreSearchText('');
@@ -190,8 +192,6 @@ export function AdminUsersScreen({ onToast }: AdminUsersScreenProps) {
     setFilterStatus('all');
     setFilterRole('all');
     setAppliedFilters(defaultUserFilters);
-    setOpenFilter(null);
-    setIsFilterDrawerOpen(false);
   }
 
   function loadMore(): void {
@@ -512,6 +512,7 @@ export function AdminUsersScreen({ onToast }: AdminUsersScreenProps) {
               value={filterRole}
               expanded={openFilter === 'type'}
               containerStyle={styles.filterDrawerDropdown}
+              optionsPlacement="above"
               onToggle={() => setOpenFilter((current) => current === 'type' ? null : 'type')}
               onSelect={(value) => {
                 setFilterRole(value);
@@ -522,6 +523,15 @@ export function AdminUsersScreen({ onToast }: AdminUsersScreenProps) {
                 ...userRoleOptions,
               ]}
             />
+            {openFilter ? (
+              <Pressable
+                testID="user-filter-dropdown-dismiss"
+                accessibilityRole="button"
+                accessibilityLabel={t('adminCloseMenu')}
+                onPress={() => setOpenFilter(null)}
+                style={styles.filterDropdownDismissOverlay}
+              />
+            ) : null}
           </ScrollView>
           <View style={styles.modalActions}>
             <View style={styles.drawerActionSlot}>
@@ -682,6 +692,7 @@ interface UserFilterDropdownProps<Value extends string> {
   label: string;
   value: Value;
   expanded: boolean;
+  optionsPlacement?: 'above' | 'below';
   options: { value: Value; label: string }[];
   onToggle: () => void;
   onSelect: (value: Value) => void;
@@ -692,6 +703,7 @@ function UserFilterDropdown<Value extends string>({
   label,
   value,
   expanded,
+  optionsPlacement = 'below',
   options,
   onToggle,
   onSelect,
@@ -719,7 +731,10 @@ function UserFilterDropdown<Value extends string>({
         <ChevronDown color={theme.colors.muted} size={14} />
       </Pressable>
       {expanded ? (
-        <View style={styles.storeFilterDropdownOptions}>
+        <View style={[
+          styles.storeFilterDropdownOptions,
+          optionsPlacement === 'above' && styles.storeFilterDropdownOptionsAbove,
+        ]}>
           {options.map((option) => {
             const active = option.value === value;
             return (

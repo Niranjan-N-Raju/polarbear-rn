@@ -705,6 +705,15 @@ const baseAdminStyles = StyleSheet.create({
     flexShrink: 0,
     flexBasis: 'auto',
   },
+  filterDropdownDismissOverlay: {
+    position: 'absolute',
+    top: 0,
+    right: 0,
+    bottom: 0,
+    left: 0,
+    zIndex: 20,
+    elevation: 20,
+  },
   modalTitle: {
     marginBottom: spacing['2xl'],
     color: colors.ink,
@@ -968,6 +977,10 @@ const baseAdminStyles = StyleSheet.create({
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.12,
     shadowRadius: 8,
+  },
+  storeFilterDropdownOptionsAbove: {
+    top: undefined,
+    bottom: 48,
   },
   storeFilterDropdownOption: {
     minHeight: 36,

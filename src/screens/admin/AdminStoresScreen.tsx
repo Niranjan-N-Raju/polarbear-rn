@@ -162,20 +162,20 @@ export function AdminStoresScreen({ userId, onToast }: AdminStoresScreenProps) {
       status: statusFilter,
       type: typeFilter,
     };
-    if (!await loadStores(1, filters)) return;
-    setAppliedFilters(filters);
     setOpenMobileFilter(null);
     setIsFilterDrawerOpen(false);
+    if (!await loadStores(1, filters)) return;
+    setAppliedFilters(filters);
   }
 
   async function clearFilters(): Promise<void> {
+    setOpenMobileFilter(null);
+    setIsFilterDrawerOpen(false);
     if (!await loadStores(1, defaultStoreFilters)) return;
     setSearchText('');
     setStatusFilter('active');
     setTypeFilter('all');
     setAppliedFilters(defaultStoreFilters);
-    setOpenMobileFilter(null);
-    setIsFilterDrawerOpen(false);
   }
 
   function loadMore(): void {
@@ -500,6 +500,7 @@ export function AdminStoresScreen({ userId, onToast }: AdminStoresScreenProps) {
               label={t('adminStoreType')}
               value={typeFilter}
               expanded={openMobileFilter === 'type'}
+              optionsPlacement="above"
               onToggle={() => setOpenMobileFilter((current) => current === 'type' ? null : 'type')}
               onSelect={(value) => { setTypeFilter(value as StoreTypeFilter); setOpenMobileFilter(null); }}
               containerStyle={styles.filterDrawerDropdown}
@@ -509,6 +510,15 @@ export function AdminStoresScreen({ userId, onToast }: AdminStoresScreenProps) {
                 { value: 'franchise', label: t('adminFranchiseStore') },
               ]}
             />
+            {openMobileFilter ? (
+              <Pressable
+                testID="store-filter-dropdown-dismiss"
+                accessibilityRole="button"
+                accessibilityLabel={t('adminCloseMenu')}
+                onPress={() => setOpenMobileFilter(null)}
+                style={styles.filterDropdownDismissOverlay}
+              />
+            ) : null}
           </ScrollView>
           <View style={styles.modalActions}>
             <View style={styles.drawerActionSlot}>
@@ -697,13 +707,14 @@ interface StoreFilterDropdownProps<Value extends StoreFilterValue> {
   label: string;
   value: Value;
   expanded: boolean;
+  optionsPlacement?: 'above' | 'below';
   options: { value: Value; label: string }[];
   onToggle: () => void;
   onSelect: (value: Value) => void;
   containerStyle?: StyleProp<ViewStyle>;
 }
 
-function StoreFilterDropdown<Value extends StoreFilterValue>({ label, value, expanded, options, onToggle, onSelect, containerStyle }: StoreFilterDropdownProps<Value>) {
+function StoreFilterDropdown<Value extends StoreFilterValue>({ label, value, expanded, optionsPlacement = 'below', options, onToggle, onSelect, containerStyle }: StoreFilterDropdownProps<Value>) {
   const selectedLabel = options.find((option) => option.value === value)?.label ?? '';
 
   return (
@@ -716,7 +727,10 @@ function StoreFilterDropdown<Value extends StoreFilterValue>({ label, value, exp
         <ChevronDown color={theme.colors.muted} size={14} />
       </Pressable>
       {expanded ? (
-        <View style={styles.storeFilterDropdownOptions}>
+        <View style={[
+          styles.storeFilterDropdownOptions,
+          optionsPlacement === 'above' && styles.storeFilterDropdownOptionsAbove,
+        ]}>
           {options.map((option) => {
             const active = option.value === value;
             return (
