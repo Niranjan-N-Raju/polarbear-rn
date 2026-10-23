@@ -267,7 +267,7 @@ const baseAdminStyles = StyleSheet.create({
     padding: spacing['2xl'],
     borderWidth: theme.border.width,
     borderColor: colors.beige,
-    backgroundColor: 'rgba(255, 255, 255, 0.8)',
+    backgroundColor: colors.white,
     ...theme.shadows.frame,
   },
   screenEyebrow: {
@@ -283,6 +283,43 @@ const baseAdminStyles = StyleSheet.create({
     lineHeight: typography.headingLineHeight,
     fontWeight: theme.fontWeight.medium,
   },
+  screenTitleRow: {
+    width: '100%',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: spacing.md,
+    backgroundColor: 'transparent',
+  },
+  screenHeaderCopy: {
+    flex: 1,
+    minWidth: 0,
+  },
+  screenHeaderCopyNative: {
+    width: '100%',
+    backgroundColor: 'transparent',
+  },
+  screenTitleInline: {
+    marginTop: 0,
+    flexShrink: 1,
+  },
+  filterIconButton: {
+    width: 40,
+    height: 40,
+    position: 'relative',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 0,
+  },
+  filterActiveDot: {
+    position: 'absolute',
+    top: 7,
+    right: 7,
+    width: 7,
+    height: 7,
+    borderRadius: 4,
+    backgroundColor: colors.orange,
+  },
   screenDescription: {
     marginTop: spacing.xs,
     color: colors.muted,
@@ -297,31 +334,6 @@ const baseAdminStyles = StyleSheet.create({
   },
   stateError: {
     color: colors.error,
-  },
-  filterScroll: {
-    flexGrow: 0,
-    marginBottom: spacing.lg,
-  },
-  filterOptions: {
-    flexDirection: 'row',
-    gap: spacing.sm,
-    paddingRight: spacing['2xl'],
-  },
-  usersSearch: {
-    width: '100%',
-    height: 42,
-    minHeight: 42,
-    marginBottom: spacing.md,
-  },
-  usersFilterLabel: {
-    marginBottom: spacing.sm,
-    color: colors.muted,
-    fontSize: typography.xs,
-    fontWeight: theme.fontWeight.medium,
-  },
-  userStatusFilters: {
-    flexWrap: 'wrap',
-    marginBottom: spacing.lg,
   },
   filterChip: {
     minHeight: 36,
@@ -427,6 +439,26 @@ const baseAdminStyles = StyleSheet.create({
   userCardTitle: {
     flex: 1,
     minWidth: 0,
+  },
+  userNameRoleGroup: {
+    flex: 1,
+    minWidth: 0,
+    flexDirection: 'row',
+    alignItems: 'center',
+    flexWrap: 'wrap',
+    gap: 6,
+  },
+  userRoleTag: {
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderWidth: theme.border.width,
+    borderColor: 'rgba(0, 162, 192, 0.2)',
+    backgroundColor: 'rgba(0, 162, 192, 0.1)',
+  },
+  userRoleTagText: {
+    color: colors.teal,
+    fontSize: 11,
+    fontWeight: theme.fontWeight.medium,
   },
   typeOptions: {
     flexDirection: 'row',
@@ -807,6 +839,61 @@ const baseAdminStyles = StyleSheet.create({
     flexDirection: 'row',
     gap: spacing.md,
   },
+  userFilterPanel: {
+    gap: spacing.sm,
+    padding: spacing.md,
+    borderWidth: theme.border.width,
+    borderColor: 'rgba(232, 228, 215, 0.8)',
+    borderRadius: 6,
+    backgroundColor: colors.white,
+  },
+  userFilterHeading: {
+    color: colors.muted,
+    fontSize: typography.xs,
+    fontWeight: theme.fontWeight.bold,
+    letterSpacing: 0.5,
+    textTransform: 'uppercase',
+  },
+  userFilterPanelHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: spacing.md,
+  },
+  userClearFiltersButton: {
+    minHeight: 32,
+    justifyContent: 'center',
+    paddingHorizontal: spacing.sm,
+  },
+  userClearFiltersText: {
+    color: colors.teal,
+    fontSize: typography.xs,
+    fontWeight: theme.fontWeight.bold,
+  },
+  userFilterGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: spacing.sm,
+  },
+  storeScreenFilterGrid: {
+    marginTop: 0,
+  },
+  userFilterDropdown: {
+    flexGrow: 1,
+    flexBasis: '47%',
+    minWidth: 128,
+  },
+  userStoreAutocomplete: {
+    flexGrow: 1,
+    flexBasis: '100%',
+    width: '100%',
+  },
+  userStoreAutocompleteOptions: {
+    top: 42,
+  },
+  userFilterInput: {
+    backgroundColor: colors.white,
+  },
   storeFilterDropdown: {
     flex: 1,
     minWidth: 0,
@@ -1051,17 +1138,68 @@ const webAdminStyles = StyleSheet.create({
     gap: 12,
   },
   screenHeaderCopy: {
-    flex: 1,
-    minWidth: 0,
+    ...baseAdminStyles.screenHeaderCopy,
+  },
+  screenTitleRow: {
+    ...baseAdminStyles.screenTitleRow,
+    flexDirection: 'row',
+    alignItems: 'center',
+    alignSelf: 'stretch',
   },
   screenHeaderStack: {
     flexDirection: 'column',
     gap: 16,
-    alignItems: 'flex-start',
+    alignItems: 'stretch',
   },
   screenHeaderAction: {
     alignSelf: 'flex-start',
     marginTop: 0,
+  },
+  screenHeaderActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.md,
+  },
+  filterDrawerFields: {
+    gap: spacing.xl,
+    paddingBottom: spacing.lg,
+  },
+  filterDrawerPanel: {
+    height: 'auto',
+    maxHeight: '80%',
+  },
+  filterDrawerContent: {
+    flex: 0,
+    flexShrink: 1,
+  },
+  filterDrawerScroll: {
+    flexGrow: 0,
+    flexShrink: 1,
+    minHeight: 0,
+  },
+  filterDrawerField: {
+    marginBottom: 0,
+  },
+  filterDrawerDropdownField: {
+    marginBottom: spacing.lg,
+  },
+  loadMoreButton: {
+    minHeight: 42,
+    marginTop: spacing.md,
+    marginBottom: spacing.md,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: theme.border.width,
+    borderColor: colors.beige,
+    backgroundColor: colors.white,
+  },
+  loadMoreButtonDisabled: {
+    opacity: 0.65,
+  },
+  loadMoreButtonText: {
+    color: colors.teal,
+    fontSize: typography.sm,
+    fontWeight: theme.fontWeight.bold,
   },
   webSidebarCollapsed: {
     width: 64,
@@ -1341,6 +1479,7 @@ const webAdminStyles = StyleSheet.create({
   },
   userTableNameText: {
     flexShrink: 1,
+    minWidth: 0,
     color: colors.ink,
     fontSize: 14,
     fontWeight: theme.fontWeight.medium,

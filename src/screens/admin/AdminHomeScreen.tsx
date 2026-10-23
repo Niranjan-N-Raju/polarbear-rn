@@ -34,6 +34,9 @@ export function AdminHomeScreen({ user: initialUser, onLogout }: AdminHomeScreen
   const safeAreaStyles = getAdminSafeAreaStyles(insets.top, insets.bottom);
   const drawerSafeAreaStyles = getAdminDrawerSafeAreaStyles(insets.top, insets.bottom);
   const dismissAppToast = useCallback(() => setAppToast(null), []);
+  const showAppToast = useCallback((message: string, tone: 'success' | 'error') => {
+    setAppToast({ message, tone });
+  }, []);
 
   async function logout(): Promise<void> {
     setIsLoggingOut(true);
@@ -145,8 +148,8 @@ export function AdminHomeScreen({ user: initialUser, onLogout }: AdminHomeScreen
       <View style={[styles.mainPanel, layout.hasSidebar && styles.mainPanelWeb]}>
       <View style={[styles.content, layout.compactWeb && styles.contentCompact]}>
         {activeTab === 'dashboard' ? <AdminDashboardScreen /> : null}
-        {activeTab === 'stores' ? <AdminStoresScreen userId={user.id} onToast={(message, tone) => setAppToast({ message, tone })} /> : null}
-        {activeTab === 'users' ? <AdminUsersScreen onToast={(message, tone) => setAppToast({ message, tone })} /> : null}
+        {activeTab === 'stores' ? <AdminStoresScreen userId={user.id} onToast={showAppToast} /> : null}
+        {activeTab === 'users' ? <AdminUsersScreen onToast={showAppToast} /> : null}
         {activeTab === 'profile' ? <AdminProfileScreen user={user} onUserUpdated={setUser} /> : null}
       </View>
 

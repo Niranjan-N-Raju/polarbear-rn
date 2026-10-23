@@ -1,6 +1,7 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { Pressable, ScrollView, Text, TextInput, useWindowDimensions, View } from 'react-native';
-import { Pencil, Plus, Trash2 } from 'lucide-react-native';
+import type { StyleProp, ViewStyle } from 'react-native';
+import { ChevronDown, Filter, Pencil, Plus, Trash2, X } from 'lucide-react-native';
 import { AppErrorState } from '../../components/AppErrorState';
 import { AppToast } from '../../components/AppToast';
 import { AppLoader } from '../../components/AppLoader';
@@ -36,8 +37,21 @@ interface UserForm {
 
 type UserFieldErrors = Partial<Record<'name' | 'email' | 'password' | 'franchiseIds', string>>;
 type UserStatusFilter = 'all' | 'active' | 'inactive';
+type OpenUserFilter = 'store' | 'status' | 'type' | null;
+interface UserListFilters {
+  search: string;
+  franchiseId: string;
+  status: UserStatusFilter;
+  role: string;
+}
+interface PageInfo {
+  page: number;
+  totalPages: number;
+  total: number;
+}
 
 const blankForm: UserForm = { name: '', email: '', password: '', role: 'sub_admin', franchiseIds: [] };
+const defaultUserFilters: UserListFilters = { search: '', franchiseId: '', status: 'all', role: 'all' };
 
 interface AdminUsersScreenProps {
   onToast: (message: string, tone: 'success' | 'error') => void;
@@ -50,7 +64,15 @@ export function AdminUsersScreen({ onToast }: AdminUsersScreenProps) {
   const [stores, setStores] = useState<StoreOption[]>([]);
   const [filterStore, setFilterStore] = useState('');
   const [filterStatus, setFilterStatus] = useState<UserStatusFilter>('all');
+  const [filterRole, setFilterRole] = useState('all');
+  const [storeSearchText, setStoreSearchText] = useState('');
+  const [openFilter, setOpenFilter] = useState<OpenUserFilter>(null);
   const [searchText, setSearchText] = useState('');
+  const [appliedFilters, setAppliedFilters] = useState(defaultUserFilters);
+  const [isFilterDrawerOpen, setIsFilterDrawerOpen] = useState(false);
+  const [pageInfo, setPageInfo] = useState<PageInfo>({ page: 1, totalPages: 1, total: 0 });
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [isLoadingStores, setIsLoadingStores] = useState(false);
   const [hasLoadedStores, setHasLoadedStores] = useState(false);
@@ -66,49 +88,115 @@ export function AdminUsersScreen({ onToast }: AdminUsersScreenProps) {
   const [isSaving, setIsSaving] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const initialLoadComplete = useRef(false);
   const dismissToast = useCallback(() => setToastMessage(''), []);
   const showErrorToast = useCallback((message: string) => setToastMessage(message), []);
 
-  const load = useCallback(async () => {
-    setIsLoading(true);
+  const load = useCallback(async (page: number, filters: UserListFilters, append = false): Promise<boolean> => {
+    if (append) setIsLoadingMore(true);
+    else setIsRefreshing(true);
     setLoadError('');
     try {
       const query = new URLSearchParams({
         excludeEmployees: 'true',
         includeArchived: 'true',
-        limit: '500',
+        page: String(page),
+        limit: '10',
+        status: filters.status,
       });
+      if (filters.search.trim()) query.set('search', filters.search.trim());
+      if (filters.franchiseId) query.set('franchiseId', filters.franchiseId);
+      if (filters.role !== 'all') query.set('role', filters.role);
       const usersResponse = await apiRequest(`/users?${query.toString()}`);
-      const usersData = await usersResponse.json() as { users?: AdminUser[]; message?: string };
+      const usersData = await usersResponse.json() as {
+        users?: AdminUser[];
+        pagination?: PageInfo;
+        message?: string;
+      };
       if (!usersResponse.ok) throw new Error(usersData.message ?? t('adminLoadFailed'));
       const loadedUsers = usersData.users ?? [];
-      setUsers(loadedUsers);
+      setUsers((current) => append ? [...current, ...loadedUsers] : loadedUsers);
+      setPageInfo(usersData.pagination ?? { page, totalPages: page, total: loadedUsers.length });
+      initialLoadComplete.current = true;
       setStores((current) => {
         const options = new Map(current.map((store) => [store._id, store]));
         loadedUsers.forEach((user) => user.franchises.forEach((store) => options.set(store._id, store)));
         return [...options.values()];
       });
+      return true;
     } catch (error) {
-      setLoadError(error instanceof Error ? error.message : t('adminLoadFailed'));
+      const message = error instanceof Error ? error.message : t('adminLoadFailed');
+      if (append || initialLoadComplete.current) onToast(message, 'error');
+      else setLoadError(message);
+      return false;
     } finally {
-      setIsLoading(false);
+      if (append) setIsLoadingMore(false);
+      else {
+        setIsLoading(false);
+        setIsRefreshing(false);
+      }
     }
-  }, []);
+  }, [onToast]);
 
   useEffect(() => {
-    void load();
+    void load(1, defaultUserFilters);
   }, [load]);
 
-  const normalizedSearch = searchText.trim().toLocaleLowerCase();
-  const visibleUsers = users.filter((user) => {
-    const matchesSearch = `${user.name} ${user.email} ${user.phone ?? ''}`
-      .toLocaleLowerCase()
-      .includes(normalizedSearch);
-    const matchesStore = !filterStore || user.franchises.some((store) => store._id === filterStore);
-    const matchesStatus = filterStatus === 'all'
-      || (filterStatus === 'active' ? user.isActive !== false : user.isActive === false);
-    return matchesSearch && matchesStore && matchesStatus;
-  });
+  const visibleUsers = users;
+  const userRoleOptions = ['admin', 'sub_admin', 'franchise_admin']
+    .map((role) => ({ value: role, label: translateRole(role) }));
+  const hasActiveFilters = Boolean(
+    appliedFilters.search
+    || appliedFilters.franchiseId
+    || appliedFilters.status !== 'all'
+    || appliedFilters.role !== 'all',
+  );
+  const hasDraftFilters = Boolean(
+    searchText.trim()
+    || filterStore
+    || filterStatus !== 'all'
+    || filterRole !== 'all',
+  );
+
+  function openFilters(): void {
+    setSearchText(appliedFilters.search);
+    setFilterStore(appliedFilters.franchiseId);
+    setStoreSearchText(stores.find((store) => store._id === appliedFilters.franchiseId)?.name ?? '');
+    setFilterStatus(appliedFilters.status);
+    setFilterRole(appliedFilters.role);
+    setOpenFilter(null);
+    setIsFilterDrawerOpen(true);
+    void loadStores();
+  }
+
+  async function applyFilters(): Promise<void> {
+    const filters: UserListFilters = {
+      search: searchText.trim(),
+      franchiseId: filterStore,
+      status: filterStatus,
+      role: filterRole,
+    };
+    if (!await load(1, filters)) return;
+    setAppliedFilters(filters);
+    setOpenFilter(null);
+    setIsFilterDrawerOpen(false);
+  }
+
+  async function clearFilters(): Promise<void> {
+    if (!await load(1, defaultUserFilters)) return;
+    setSearchText('');
+    setStoreSearchText('');
+    setFilterStore('');
+    setFilterStatus('all');
+    setFilterRole('all');
+    setAppliedFilters(defaultUserFilters);
+    setOpenFilter(null);
+    setIsFilterDrawerOpen(false);
+  }
+
+  function loadMore(): void {
+    void load(pageInfo.page + 1, appliedFilters, true);
+  }
 
   const loadStores = useCallback(async () => {
     if (hasLoadedStores || isLoadingStores) return;
@@ -158,7 +246,10 @@ export function AdminUsersScreen({ onToast }: AdminUsersScreenProps) {
     setForm((current) => ({ ...current, [key]: value }));
     setFieldErrors((current) => {
       const next = { ...current };
-      if (key === 'name' || key === 'email' || key === 'password' || key === 'franchiseIds') delete next[key];
+      if (key === 'name') delete next.name;
+      else if (key === 'email') delete next.email;
+      else if (key === 'password') delete next.password;
+      else if (key === 'franchiseIds') delete next.franchiseIds;
       return next;
     });
   }
@@ -241,60 +332,38 @@ export function AdminUsersScreen({ onToast }: AdminUsersScreenProps) {
   }
 
   if (isLoading) return <AppLoader variant="screen" />;
-  if (loadError) return <AppErrorState message={loadError} onRetry={() => void load()} />;
+  if (loadError) return <AppErrorState message={loadError} onRetry={() => void load(1, appliedFilters)} />;
 
   return (
     <View style={styles.screen}>
       <View style={[styles.screenHeader, layout.desktopWeb && styles.screenHeaderInline, layout.compactWeb && styles.screenHeaderStack]}>
-        <View style={layout.isWeb ? styles.screenHeaderCopy : undefined}>
+        <View style={layout.isWeb ? styles.screenHeaderCopy : styles.screenHeaderCopyNative}>
           {layout.desktopWeb ? <Text style={[styles.screenEyebrow, styles.screenEyebrowTeal]}>Access management</Text> : null}
-          <Text style={styles.screenTitle}>{t('adminUsers')}</Text>
+          <View style={styles.screenTitleRow}>
+            <Text style={[styles.screenTitle, styles.screenTitleInline]}>{t('adminUsers')}</Text>
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel={t('adminOpenFilters')}
+              onPress={openFilters}
+              style={styles.filterIconButton}
+            >
+              <Filter color={theme.colors.teal} size={18} />
+              {hasActiveFilters ? <View style={styles.filterActiveDot} /> : null}
+            </Pressable>
+          </View>
           <Text style={styles.screenDescription}>{t('adminManageUsers')}</Text>
         </View>
-        {layout.desktopWeb ? (
-          <Pressable accessibilityRole="button" onPress={openCreate} style={[styles.primaryButton, styles.screenHeaderAction]}>
-            <Text style={styles.primaryButtonText}>{t('adminAddUser')}</Text>
-          </Pressable>
-        ) : null}
+        <View style={styles.screenHeaderActions}>
+          {layout.desktopWeb ? (
+            <Pressable accessibilityRole="button" onPress={openCreate} style={[styles.primaryButton, styles.screenHeaderAction]}>
+              <Text style={styles.primaryButtonText}>{t('adminAddUser')}</Text>
+            </Pressable>
+          ) : null}
+        </View>
       </View>
 
-      <TextInput
-        value={searchText}
-        onChangeText={setSearchText}
-        placeholder={t('adminSearchUsers')}
-        style={styles.usersSearch}
-        autoCapitalize="none"
-      />
-
-      <Text style={styles.usersFilterLabel}>{t('adminUserStoreFilter')}</Text>
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.filterScroll} contentContainerStyle={styles.filterOptions}>
-        <Pressable accessibilityRole="button" accessibilityState={{ selected: !filterStore }} onPress={() => setFilterStore('')} style={[styles.filterChip, !filterStore && styles.filterChipActive]}>
-          <Text style={[styles.filterChipText, !filterStore && styles.filterChipTextActive]}>{t('adminAllStores')}</Text>
-        </Pressable>
-        {stores.map((store) => (
-          <Pressable key={store._id} accessibilityRole="button" accessibilityState={{ selected: filterStore === store._id }} onPress={() => setFilterStore(store._id)} style={[styles.filterChip, filterStore === store._id && styles.filterChipActive]}>
-            <Text style={[styles.filterChipText, filterStore === store._id && styles.filterChipTextActive]}>{store.name}</Text>
-          </Pressable>
-        ))}
-      </ScrollView>
-      <Text style={styles.usersFilterLabel}>{t('adminStatus')}</Text>
-      <View style={[styles.filterOptions, styles.userStatusFilters]}>
-        {(['all', 'active', 'inactive'] as const).map((status) => (
-          <Pressable
-            key={status}
-            accessibilityRole="button"
-            accessibilityState={{ selected: filterStatus === status }}
-            onPress={() => setFilterStatus(status)}
-            style={[styles.filterChip, filterStatus === status && styles.filterChipActive]}
-          >
-            <Text style={[styles.filterChipText, filterStatus === status && styles.filterChipTextActive]}>
-              {t(status === 'all' ? 'adminAllUsers' : status === 'active' ? 'adminActive' : 'adminInactive')}
-            </Text>
-          </Pressable>
-        ))}
-      </View>
-
-      {visibleUsers.length === 0 ? <Text style={styles.stateMessage}>{users.length === 0 ? t('adminNoUsers') : t('adminNoMatchingUsers')}</Text> : null}
+      {isRefreshing ? <AppLoader variant="inline" /> : null}
+      {visibleUsers.length === 0 ? <Text style={styles.stateMessage}>{hasActiveFilters ? t('adminNoMatchingUsers') : t('adminNoUsers')}</Text> : null}
       {visibleUsers.length > 0 ? (layout.usersTable ? (
         <View style={styles.usersTable}>
           <View style={[styles.usersTableRow, styles.usersTableHeader]}>
@@ -308,7 +377,12 @@ export function AdminUsersScreen({ onToast }: AdminUsersScreenProps) {
               <View key={user._id} style={styles.usersTableRow}>
                 <View style={[styles.usersTableCell, styles.usersTableName]}>
                   <View style={styles.userAvatar}><Text style={styles.userAvatarText}>{user.name.charAt(0).toUpperCase()}</Text></View>
-                  <Text numberOfLines={1} style={styles.userTableNameText}>{user.name} ({translateRole(user.role)})</Text>
+                  <View style={styles.userNameRoleGroup}>
+                    <Text numberOfLines={1} style={styles.userTableNameText}>{user.name}</Text>
+                    <View style={styles.userRoleTag}>
+                      <Text style={styles.userRoleTagText}>{translateRole(user.role)}</Text>
+                    </View>
+                  </View>
                 </View>
                 <Text numberOfLines={1} style={[styles.usersTableCell, styles.usersTableEmail]}>{user.email}</Text>
                 <View style={[styles.usersTableCell, styles.usersTableStores]}>
@@ -333,7 +407,12 @@ export function AdminUsersScreen({ onToast }: AdminUsersScreenProps) {
         {visibleUsers.map((user) => (
           <View key={user._id} style={styles.row}>
             <View style={styles.rowHeader}>
-              <Text numberOfLines={1} style={[styles.rowTitle, styles.userCardTitle]}>{user.name} ({translateRole(user.role)})</Text>
+              <View style={[styles.userNameRoleGroup, styles.userCardTitle]}>
+                <Text numberOfLines={1} style={[styles.rowTitle, styles.userTableNameText]}>{user.name}</Text>
+                <View style={styles.userRoleTag}>
+                  <Text style={styles.userRoleTagText}>{translateRole(user.role)}</Text>
+                </View>
+              </View>
               <View style={styles.userCardActions}>
                 <Pressable accessibilityRole="button" accessibilityLabel={`${t('adminEditUser')} ${user.name}`} onPress={() => openEdit(user)} style={styles.userIconAction}>
                   <Pencil color={theme.colors.teal} size={16} />
@@ -354,11 +433,109 @@ export function AdminUsersScreen({ onToast }: AdminUsersScreenProps) {
       </ScrollView>
       )) : null}
 
+      {pageInfo.page < pageInfo.totalPages ? (
+        <Pressable
+          accessibilityRole="button"
+          disabled={isLoadingMore}
+          onPress={loadMore}
+          style={[styles.loadMoreButton, isLoadingMore && styles.loadMoreButtonDisabled]}
+        >
+          {isLoadingMore
+            ? <AppLoader variant="inline" />
+            : <Text style={styles.loadMoreButtonText}>{t('adminLoadMore')}</Text>}
+        </Pressable>
+      ) : null}
+
       {!layout.desktopWeb ? (
         <Pressable accessibilityRole="button" accessibilityLabel={t('adminAddUser')} onPress={openCreate} style={styles.fab}>
           <Plus color={theme.colors.white} size={24} />
         </Pressable>
       ) : null}
+
+      <ResponsiveDrawerModal
+        visible={isFilterDrawerOpen}
+        closeLabel={t('adminCloseMenu')}
+        onClose={() => setIsFilterDrawerOpen(false)}
+        onAfterClose={() => setOpenFilter(null)}
+        panelStyle={!layout.isWeb ? styles.filterDrawerPanel : undefined}
+      >
+        <View style={[styles.drawerContent, styles.filterDrawerContent]}>
+          <View style={styles.drawerHeading}>
+            <Text style={[styles.modalTitle, styles.drawerHeadingTitle]}>{t('adminFilterUsers')}</Text>
+            <Pressable accessibilityRole="button" accessibilityLabel={t('adminCloseMenu')} onPress={() => setIsFilterDrawerOpen(false)} style={styles.userIconAction}>
+              <X color={theme.colors.muted} size={18} />
+            </Pressable>
+          </View>
+          <ScrollView style={[styles.drawerFormScroll, styles.filterDrawerScroll]} contentContainerStyle={styles.filterDrawerFields} keyboardShouldPersistTaps="handled">
+            <Field
+              label={t('adminSearchUsers')}
+              placeholder={t('adminSearchUsers')}
+              value={searchText}
+              onChangeText={setSearchText}
+              containerStyle={styles.filterDrawerField}
+            />
+            <StoreAutocomplete
+              stores={stores}
+              value={storeSearchText}
+              expanded={openFilter === 'store'}
+              onFocus={() => setOpenFilter('store')}
+              onChangeText={(value) => {
+                setStoreSearchText(value);
+                setFilterStore('');
+                setOpenFilter('store');
+              }}
+              onSelect={(store) => {
+                setStoreSearchText(store.name);
+                setFilterStore(store._id);
+                setOpenFilter(null);
+              }}
+            />
+            <UserFilterDropdown
+              label={t('adminStatus')}
+              value={filterStatus}
+              expanded={openFilter === 'status'}
+              onToggle={() => setOpenFilter((current) => current === 'status' ? null : 'status')}
+              onSelect={(value) => {
+                setFilterStatus(value);
+                setOpenFilter(null);
+              }}
+              options={[
+                { value: 'all', label: t('adminAllUsers') },
+                { value: 'active', label: t('adminActive') },
+                { value: 'inactive', label: t('adminInactive') },
+              ]}
+            />
+            <UserFilterDropdown
+              label={t('adminUserTypeFilter')}
+              value={filterRole}
+              expanded={openFilter === 'type'}
+              onToggle={() => setOpenFilter((current) => current === 'type' ? null : 'type')}
+              onSelect={(value) => {
+                setFilterRole(value);
+                setOpenFilter(null);
+              }}
+              options={[
+                { value: 'all', label: t('adminAllUserTypes') },
+                ...userRoleOptions,
+              ]}
+            />
+          </ScrollView>
+          <View style={styles.modalActions}>
+            {hasDraftFilters ? (
+              <View style={styles.drawerActionSlot}>
+                <Pressable onPress={clearFilters} style={[styles.secondaryButton, styles.drawerActionButton]}>
+                  <Text style={styles.secondaryButtonText}>{t('adminClearFilters')}</Text>
+                </Pressable>
+              </View>
+            ) : null}
+            <View style={styles.drawerActionSlot}>
+              <Pressable onPress={applyFilters} style={[styles.primaryButton, styles.drawerActionButton]}>
+                <Text style={styles.primaryButtonText}>{t('adminApplyFilters')}</Text>
+              </Pressable>
+            </View>
+          </View>
+        </View>
+      </ResponsiveDrawerModal>
 
       <ResponsiveDrawerModal
         visible={isFormOpen}
@@ -368,7 +545,7 @@ export function AdminUsersScreen({ onToast }: AdminUsersScreenProps) {
           if (!pendingFormSuccess) return;
           onToast(pendingFormSuccess, 'success');
           setPendingFormSuccess('');
-          void load();
+          void load(1, appliedFilters);
         }}
         overlay={toastMessage ? <AppToast message={toastMessage} onDismiss={dismissToast} /> : null}
       >
@@ -430,7 +607,7 @@ export function AdminUsersScreen({ onToast }: AdminUsersScreenProps) {
           if (!pendingDeleteSuccess) return;
           onToast(pendingDeleteSuccess, 'success');
           setPendingDeleteSuccess('');
-          void load();
+          void load(1, appliedFilters);
         }}
         overlay={toastMessage ? <AppToast message={toastMessage} onDismiss={dismissToast} /> : null}
       >
@@ -467,11 +644,12 @@ interface FieldProps {
   keyboardType?: 'default' | 'email-address';
   autoCapitalize?: 'none' | 'sentences';
   error?: string;
+  containerStyle?: StyleProp<ViewStyle>;
 }
 
-function Field({ label, placeholder, value, onChangeText, editable = true, secureTextEntry, keyboardType = 'default', autoCapitalize, error }: FieldProps) {
+function Field({ label, placeholder, value, onChangeText, editable = true, secureTextEntry, keyboardType = 'default', autoCapitalize, error, containerStyle }: FieldProps) {
   return (
-    <View style={styles.field}>
+    <View style={[styles.field, containerStyle]}>
       <Text style={styles.fieldLabel}>{label}</Text>
       <TextInput
         value={value}
@@ -485,6 +663,111 @@ function Field({ label, placeholder, value, onChangeText, editable = true, secur
         style={[styles.fieldInput, error && styles.inputError, !editable && styles.fieldInputDisabled]}
       />
       {error ? <Text accessibilityRole="alert" style={styles.fieldError}>{error}</Text> : null}
+    </View>
+  );
+}
+
+interface UserFilterDropdownProps<Value extends string> {
+  label: string;
+  value: Value;
+  expanded: boolean;
+  options: { value: Value; label: string }[];
+  onToggle: () => void;
+  onSelect: (value: Value) => void;
+}
+
+function UserFilterDropdown<Value extends string>({
+  label,
+  value,
+  expanded,
+  options,
+  onToggle,
+  onSelect,
+}: UserFilterDropdownProps<Value>) {
+  const selectedLabel = options.find((option) => option.value === value)?.label ?? '';
+
+  return (
+    <View style={[
+      styles.storeFilterDropdown,
+      styles.userFilterDropdown,
+      expanded && styles.storeFilterDropdownOpen,
+    ]}>
+      <Pressable
+        accessibilityRole="button"
+        accessibilityState={{ expanded }}
+        onPress={onToggle}
+        style={[styles.storeFilterDropdownButton, expanded && styles.storeFilterDropdownButtonOpen]}
+      >
+        <View style={styles.storeFilterDropdownCopy}>
+          <Text style={styles.storeFilterDropdownLabel}>{label}</Text>
+          <Text numberOfLines={1} style={styles.storeFilterDropdownValue}>{selectedLabel}</Text>
+        </View>
+        <ChevronDown color={theme.colors.muted} size={14} />
+      </Pressable>
+      {expanded ? (
+        <View style={styles.storeFilterDropdownOptions}>
+          {options.map((option) => {
+            const active = option.value === value;
+            return (
+              <Pressable
+                key={option.value}
+                accessibilityRole="button"
+                accessibilityState={{ selected: active }}
+                onPress={() => onSelect(option.value)}
+                style={[styles.storeFilterDropdownOption, active && styles.storeFilterDropdownOptionActive]}
+              >
+                <Text style={[styles.storeFilterDropdownOptionText, active && styles.storeFilterDropdownOptionTextActive]}>
+                  {option.label}
+                </Text>
+              </Pressable>
+            );
+          })}
+        </View>
+      ) : null}
+    </View>
+  );
+}
+
+interface StoreAutocompleteProps {
+  stores: StoreOption[];
+  value: string;
+  expanded: boolean;
+  onFocus: () => void;
+  onChangeText: (value: string) => void;
+  onSelect: (store: StoreOption) => void;
+}
+
+function StoreAutocomplete({ stores, value, expanded, onFocus, onChangeText, onSelect }: StoreAutocompleteProps) {
+  const normalizedSearch = value.trim().toLocaleLowerCase();
+  const matches = stores
+    .filter((store) => store.name.toLocaleLowerCase().includes(normalizedSearch))
+    .slice(0, 8);
+
+  return (
+    <View style={[styles.storeFilterDropdown, styles.userStoreAutocomplete, expanded && styles.storeFilterDropdownOpen]}>
+      <TextInput
+        value={value}
+        placeholder={t('adminSearchStores')}
+        onFocus={onFocus}
+        onChangeText={onChangeText}
+        autoCapitalize="none"
+        autoCorrect={false}
+        style={[styles.fieldInput, styles.storeSearch, styles.userFilterInput]}
+      />
+      {expanded && matches.length > 0 ? (
+        <View style={[styles.storeFilterDropdownOptions, styles.userStoreAutocompleteOptions]}>
+          {matches.map((store) => (
+            <Pressable
+              key={store._id}
+              accessibilityRole="button"
+              onPress={() => onSelect(store)}
+              style={styles.storeFilterDropdownOption}
+            >
+              <Text style={styles.storeFilterDropdownOptionText}>{store.name}</Text>
+            </Pressable>
+          ))}
+        </View>
+      ) : null}
     </View>
   );
 }
