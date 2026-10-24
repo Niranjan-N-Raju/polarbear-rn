@@ -1,5 +1,6 @@
 import { act } from 'react-test-renderer';
-import { Platform } from 'react-native';
+import { Platform, ScrollView, StyleSheet, Text } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import * as authApi from '../src/api/auth';
 import { t } from '../src/i18n';
 import { FranchiseDashboardScreen } from '../src/screens/franchise/FranchiseDashboardScreen';
@@ -56,17 +57,27 @@ describe('FranchiseHomeScreen', () => {
     expect(renderer.root.findByType(FranchiseDashboardScreen).props.storeId).toBe('store-1');
     act(() => renderer.root.findByProps({ accessibilityLabel: t('adminOpenMenu') }).props.onPress());
     expect(renderer.root.findAllByProps({ accessibilityLabel: t('franchiseSwitchStore') })).toHaveLength(0);
-    const groupButton = (label: string) => buttons(renderer).find((button) => button.props.children?.props?.children === label)!;
+    const groupButton = (label: string) => renderer.root.findByProps({ accessibilityLabel: label });
+    expect(groupButton(t('franchiseStoreGroup')).props.accessibilityState.expanded).toBe(false);
     act(() => groupButton(t('franchiseStoreGroup')).props.onPress());
+    expect(groupButton(t('franchiseStoreGroup')).props.accessibilityState.expanded).toBe(true);
     for (const label of ['franchiseSales', 'franchiseInventory', 'franchisePnl', 'franchiseWithdrawals'] as const) {
       expect(renderer.root.findAllByProps({ accessibilityLabel: t(label) }).length).toBeGreaterThan(0);
     }
     act(() => groupButton(t('franchiseStaffGroup')).props.onPress());
+    expect(groupButton(t('franchiseStoreGroup')).props.accessibilityState.expanded).toBe(false);
+    expect(groupButton(t('franchiseStaffGroup')).props.accessibilityState.expanded).toBe(true);
     for (const label of ['adminEmployees', 'franchiseAttendance', 'franchiseSalary', 'adminProfile', 'franchiseStoreConfig'] as const) {
       expect(renderer.root.findAllByProps({ accessibilityLabel: t(label) }).length).toBeGreaterThan(0);
     }
     act(() => renderer.root.findByProps({ accessibilityLabel: t('franchiseSalary') }).props.onPress());
     expect(renderer.root.findAllByProps({ children: t('franchiseNotMigrated') }).length).toBeGreaterThan(0);
+    act(() => renderer.root.findByProps({ accessibilityLabel: t('adminOpenMenu') }).props.onPress());
+    const salaryItem = renderer.root.findByProps({ accessibilityLabel: t('franchiseSalary') });
+    expect(salaryItem.props.accessibilityState.selected).toBe(true);
+    expect(StyleSheet.flatten(salaryItem.props.style)).toMatchObject({ backgroundColor: 'rgba(0, 162, 192, 0.1)', borderLeftWidth: 3, borderLeftColor: '#00A2C0' });
+    const salaryLabel = salaryItem.findAllByType(Text).find((node) => node.props.children === t('franchiseSalary'));
+    expect(StyleSheet.flatten(salaryLabel?.props.style)).toMatchObject({ color: '#00A2C0', fontWeight: '700' });
     act(() => renderer.unmount());
   });
 
@@ -101,6 +112,22 @@ describe('FranchiseHomeScreen', () => {
     await flushEffects();
     expect(renderer.root.findByType(FranchiseDashboardScreen).props.storeId).toBe('store-2');
     expect(renderer.root.findAllByProps({ accessibilityLabel: t('franchiseSelectStoreName', { name: 'Central' }) })).toHaveLength(0);
+    act(() => renderer.unmount());
+  });
+
+  it('keeps drawer actions in the safe-area scrollable panel on short screens', async () => {
+    jest.spyOn(require('react-native'), 'useWindowDimensions').mockReturnValue({ width: 390, height: 480, scale: 1, fontScale: 1.6 });
+    jest.spyOn(authApi, 'apiRequest').mockResolvedValue(response(200, { franchises: stores }));
+    const renderer = renderSafeArea(<FranchiseHomeScreen user={user} onLogout={jest.fn()} />);
+    await flushEffects();
+    act(() => renderer.root.findByProps({ accessibilityLabel: t('franchiseSelectStoreName', { name: 'Central' }) }).props.onPress());
+    act(() => renderer.root.findByProps({ accessibilityLabel: t('adminOpenMenu') }).props.onPress());
+    const navigation = renderer.root.findByType(ScrollView);
+    expect(navigation.findAllByProps({ accessibilityLabel: t('franchiseSwitchStore') }).length).toBeGreaterThan(0);
+    expect(navigation.findAllByProps({ accessibilityLabel: t('signOut') }).length).toBeGreaterThan(0);
+    expect(renderer.root.findAllByType(SafeAreaView).some((panel) => (
+      panel.props.edges?.includes('bottom') && panel.findAllByType(ScrollView).length > 0
+    ))).toBe(true);
     act(() => renderer.unmount());
   });
 });

@@ -14,6 +14,8 @@ The dashboard migrates the Next.js summary cards, sales trend (date range, This 
 
 The full source menu is present: Dashboard; Store (Sales, Inventory, P&L, Withdrawals); Staff (Employees, Attendance, Salary); Profile; and Store Config. Dashboard and the existing shared Profile screen work in this phase. Remaining screens are labeled **Not yet migrated**, rather than displaying fictitious operational data.
 
+The mobile menu respects device safe areas and scrolls when space is limited, including its store-switch and sign-out actions. Every route and group has its own relevant icon. Store and Staff groups animate their height, opacity, and chevron rotation when expanded or collapsed; the mobile drawer fades in and out. The collapsed desktop sidebar uses icon-only actions.
+
 > **Note**: Make sure you have completed the [Set Up Your Environment](https://reactnative.dev/docs/set-up-your-environment) guide before proceeding.
 
 ## Step 1: Start Metro

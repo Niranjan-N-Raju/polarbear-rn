@@ -5,17 +5,34 @@ import { apiRequest } from '../../api/auth';
 import type { AuthenticatedUser } from '../../api/types';
 import { AppLoader } from '../../components/AppLoader';
 import { theme } from '../../config/theme';
-import { ChevronsLeft, LayoutDashboard, Menu, Store, UserRound, X } from '../../icons';
+import { Banknote, CalendarCheck, ChartNoAxesCombined, ChevronsLeft, LayoutDashboard, LogOut, Menu, Package, Receipt, RefreshCw, Settings, Store, UserRound, UsersRound, Wallet, X } from '../../icons';
 import { t } from '../../i18n';
 import type { TranslationKey } from '../../i18n';
 import { getAdminLayout } from '../../utils/adminLayout';
 import { AdminProfileScreen } from '../admin/AdminProfileScreen';
 import { FranchiseDashboardScreen } from './FranchiseDashboardScreen';
+import { FranchiseMenuGroup } from './FranchiseMenuGroup';
 import { franchiseStyles as styles } from './franchiseStyles';
 import { StorePicker } from './StorePicker';
 import type { FranchiseStore } from './types';
 
-const menuGroups: { label?: TranslationKey; items: { key: string; label: TranslationKey }[] }[] = [
+const menuIcons = {
+  dashboard: LayoutDashboard,
+  sales: Receipt,
+  inventory: Package,
+  pnl: ChartNoAxesCombined,
+  withdrawals: Wallet,
+  employees: UsersRound,
+  attendance: CalendarCheck,
+  salary: Banknote,
+  profile: UserRound,
+  'store-config': Settings,
+};
+
+type MenuKey = keyof typeof menuIcons;
+interface MenuItem { key: MenuKey; label: TranslationKey }
+
+const menuGroups: { label?: TranslationKey; items: MenuItem[] }[] = [
   { items: [{ key: 'dashboard', label: 'adminDashboard' }] },
   { label: 'franchiseStoreGroup', items: [
     { key: 'sales', label: 'franchiseSales' },
@@ -88,22 +105,30 @@ export function FranchiseHomeScreen({ user: initialUser, onLogout }: FranchiseHo
     setDrawerOpen(false);
   }
 
-  function renderNavItem(item: { key: string; label: TranslationKey }) {
+  function renderNavItem(item: MenuItem) {
     const available = item.key === 'dashboard' || item.key === 'profile';
-    const Icon = item.key === 'dashboard' ? LayoutDashboard : item.key === 'profile' ? UserRound : Store;
+    const Icon = menuIcons[item.key];
+    const active = tab === item.key;
+    const compact = hasSidebar && collapsed;
     return (
       <Pressable
         key={item.key}
         accessibilityRole="button"
         accessibilityLabel={t(item.label)}
-        accessibilityState={{ selected: tab === item.key }}
+        accessibilityState={{ selected: active }}
         onPress={() => navigate(item.key)}
-        style={[styles.navItem, tab === item.key && styles.activeNavItem]}
+        style={[
+          styles.menuItem,
+          hasSidebar && styles.menuItemSidebar,
+          compact && styles.menuItemCollapsed,
+          active && styles.activeNavItem,
+          active && hasSidebar && styles.activeNavItemSidebar,
+        ]}
       >
-        <Icon size={20} color={tab === item.key ? theme.colors.teal : theme.colors.muted} />
-        {!collapsed || !hasSidebar ? (
-          <View>
-            <Text style={styles.navLabel}>{t(item.label)}</Text>
+        <Icon size={20} color={active ? theme.colors.teal : theme.colors.muted} />
+        {!compact ? (
+          <View style={styles.navCopy}>
+            <Text style={[styles.navLabel, active && (hasSidebar ? styles.navLabelActiveSidebar : styles.navLabelActive)]}>{t(item.label)}</Text>
             {!available ? <Text style={styles.pending}>{t('franchiseNotMigratedBadge')}</Text> : null}
           </View>
         ) : null}
@@ -114,7 +139,7 @@ export function FranchiseHomeScreen({ user: initialUser, onLogout }: FranchiseHo
   function renderNavigation() {
     const compact = hasSidebar && collapsed;
     return (
-      <View style={[styles.sidebar, compact && styles.sidebarCollapsed]}>
+      <SafeAreaView edges={hasSidebar ? [] : ['top', 'bottom', 'left']} style={[styles.sidebar, !hasSidebar && styles.drawerPanel, compact && styles.sidebarCollapsed]}>
         <View style={styles.sidebarHeading}>
           {!compact ? <Text style={styles.sectionTitle}>{t('brandName')}</Text> : null}
           <Pressable
@@ -126,41 +151,45 @@ export function FranchiseHomeScreen({ user: initialUser, onLogout }: FranchiseHo
             {hasSidebar ? compact ? <Menu size={20} color={theme.colors.muted} /> : <ChevronsLeft size={20} color={theme.colors.muted} /> : <X size={20} color={theme.colors.muted} />}
           </Pressable>
         </View>
-        <ScrollView style={styles.nav} contentContainerStyle={styles.navContent}>
-          {menuGroups.map((group, index) => (
-            <View key={group.label ?? index}>
-              {group.label && !compact ? (
-                <Pressable
-                  accessibilityRole="button"
-                  accessibilityState={{ expanded: expandedGroup === group.label }}
-                  onPress={() => setExpandedGroup((current) => current === group.label ? null : group.label ?? null)}
-                >
-                  <Text style={styles.group}>{t(group.label)}</Text>
-                </Pressable>
-              ) : null}
-              {!group.label || compact || expandedGroup === group.label ? group.items.map(renderNavItem) : null}
-            </View>
-          ))}
-        </ScrollView>
-        <View style={styles.footer}>
-          {renderNavItem({ key: 'profile', label: 'adminProfile' })}
-          {renderNavItem({ key: 'store-config', label: 'franchiseStoreConfig' })}
-          {!compact ? <Text numberOfLines={2} style={styles.body}>{activeStore?.name}</Text> : null}
-          {stores.length > 1 ? (
-            <Pressable
-              accessibilityRole="button"
-              accessibilityLabel={t('franchiseSwitchStore')}
-              onPress={() => { setDrawerOpen(false); setPickerOpen(true); setVersion((value) => value + 1); }}
-              style={styles.button}
-            >
-              <Text style={styles.buttonText}>{compact ? t('franchiseSwitchShort') : t('franchiseSwitchStore')}</Text>
+        <ScrollView style={styles.nav} contentContainerStyle={styles.navigationContent} keyboardShouldPersistTaps="handled">
+          <View style={styles.navContent}>
+            {menuGroups.map((group, index) => (
+              <View key={group.label ?? index}>
+                {group.label && !compact ? (
+                  <FranchiseMenuGroup
+                    label={t(group.label)}
+                    Icon={group.label === 'franchiseStoreGroup' ? Store : UsersRound}
+                    expanded={expandedGroup === group.label}
+                    onPress={() => setExpandedGroup((current) => current === group.label ? null : group.label ?? null)}
+                  >
+                    {group.items.map(renderNavItem)}
+                  </FranchiseMenuGroup>
+                ) : group.items.map(renderNavItem)}
+              </View>
+            ))}
+          </View>
+          <View style={styles.footer}>
+            {renderNavItem({ key: 'profile', label: 'adminProfile' })}
+            {renderNavItem({ key: 'store-config', label: 'franchiseStoreConfig' })}
+            {!compact ? <Text numberOfLines={2} style={styles.activeStoreName}>{activeStore?.name}</Text> : null}
+            {stores.length > 1 ? (
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel={t('franchiseSwitchStore')}
+                onPress={() => { setDrawerOpen(false); setPickerOpen(true); setVersion((value) => value + 1); }}
+                style={[styles.navItem, compact && styles.compactAction]}
+              >
+                <RefreshCw size={20} color={theme.colors.muted} />
+                {!compact ? <Text style={styles.actionText}>{t('franchiseSwitchStore')}</Text> : null}
+              </Pressable>
+            ) : null}
+            <Pressable accessibilityRole="button" accessibilityLabel={t('signOut')} onPress={onLogout} style={[styles.navItem, styles.signOutAction, compact && styles.compactAction]}>
+              <LogOut size={20} color={theme.colors.muted} />
+              {!compact ? <Text style={styles.actionText}>{t('signOut')}</Text> : null}
             </Pressable>
-          ) : null}
-          <Pressable accessibilityRole="button" accessibilityLabel={t('signOut')} onPress={onLogout} style={styles.button}>
-            <Text style={styles.buttonText}>{t('signOut')}</Text>
-          </Pressable>
-        </View>
-      </View>
+          </View>
+        </ScrollView>
+      </SafeAreaView>
     );
   }
 
@@ -212,12 +241,12 @@ export function FranchiseHomeScreen({ user: initialUser, onLogout }: FranchiseHo
           </View>
         )}
       </View>
-      {!hasSidebar && drawerOpen && !pickerOpen ? (
-        <Modal transparent visible animationType="none" onRequestClose={() => setDrawerOpen(false)}>
-          <SafeAreaView style={styles.modalRoot}>
+      {!hasSidebar && !pickerOpen ? (
+        <Modal transparent visible={drawerOpen} animationType="fade" onRequestClose={() => setDrawerOpen(false)}>
+          <View style={styles.modalRoot}>
             {renderNavigation()}
             <Pressable accessibilityRole="button" accessibilityLabel={t('adminCloseMenu')} onPress={() => setDrawerOpen(false)} style={styles.scrim} />
-          </SafeAreaView>
+          </View>
         </Modal>
       ) : null}
       {pickerOpen ? (
