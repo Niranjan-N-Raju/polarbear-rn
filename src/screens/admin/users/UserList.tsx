@@ -5,7 +5,7 @@ import { t, translateRole } from '../../../i18n';
 import { adminStyles as styles } from '../../../styles/adminStyles';
 import type { UserListProps } from './types';
 
-export function UserList({ users, isTable, isDesktopWeb, onEdit, onDelete }: UserListProps) {
+export function UserList({ users, isTable, isDesktopWeb, footer, onEdit, onDelete }: UserListProps) {
   if (isTable) {
     return (
       <View style={styles.usersTable}>
@@ -45,6 +45,7 @@ export function UserList({ users, isTable, isDesktopWeb, onEdit, onDelete }: Use
               </View>
             </View>
           ))}
+          {footer}
         </ScrollView>
       </View>
     );
@@ -85,6 +86,7 @@ export function UserList({ users, isTable, isDesktopWeb, onEdit, onDelete }: Use
           </View>
         </View>
       ))}
+      {footer}
     </ScrollView>
   );
 }

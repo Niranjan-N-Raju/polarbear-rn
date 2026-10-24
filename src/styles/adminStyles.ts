@@ -380,6 +380,32 @@ const baseAdminStyles = StyleSheet.create({
   listContent: {
     paddingBottom: spacing['5xl'],
   },
+  loadMoreFooter: {
+    width: '100%',
+    alignItems: 'center',
+  },
+  loadMoreButton: {
+    alignSelf: 'center',
+    minHeight: 42,
+    minWidth: 160,
+    marginTop: spacing.md,
+    marginBottom: spacing.md,
+    paddingHorizontal: spacing.lg,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: theme.border.width,
+    borderColor: colors.teal,
+    borderRadius: 6,
+    backgroundColor: colors.white,
+  },
+  loadMoreButtonDisabled: {
+    opacity: 0.65,
+  },
+  loadMoreButtonText: {
+    color: colors.teal,
+    fontSize: typography.sm,
+    fontWeight: theme.fontWeight.bold,
+  },
   userListWithFab: {
     marginBottom: 72,
   },
@@ -1203,24 +1229,6 @@ const webAdminStyles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: spacing.md,
-  },
-  loadMoreButton: {
-    minHeight: 42,
-    marginTop: spacing.md,
-    marginBottom: spacing.md,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: theme.border.width,
-    borderColor: colors.beige,
-    backgroundColor: colors.white,
-  },
-  loadMoreButtonDisabled: {
-    opacity: 0.65,
-  },
-  loadMoreButtonText: {
-    color: colors.teal,
-    fontSize: typography.sm,
-    fontWeight: theme.fontWeight.bold,
   },
   webSidebarCollapsed: {
     width: 64,

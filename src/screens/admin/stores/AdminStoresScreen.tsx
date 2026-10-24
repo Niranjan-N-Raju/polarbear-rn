@@ -332,20 +332,21 @@ export function AdminStoresScreen({ userId, onToast }: AdminStoresScreenProps) {
             }}
           />
         ))}
+        {pageInfo.page < pageInfo.totalPages ? (
+          <View style={styles.loadMoreFooter}>
+            <Pressable
+              accessibilityRole="button"
+              disabled={isLoadingMore}
+              onPress={loadMore}
+              style={[styles.loadMoreButton, isLoadingMore && styles.loadMoreButtonDisabled]}
+            >
+              {isLoadingMore
+                ? <AppLoader variant="inline" />
+                : <Text style={styles.loadMoreButtonText}>{t('adminLoadMore')}</Text>}
+            </Pressable>
+          </View>
+        ) : null}
       </ScrollView>
-
-      {pageInfo.page < pageInfo.totalPages ? (
-        <Pressable
-          accessibilityRole="button"
-          disabled={isLoadingMore}
-          onPress={loadMore}
-          style={[styles.loadMoreButton, isLoadingMore && styles.loadMoreButtonDisabled]}
-        >
-          {isLoadingMore
-            ? <AppLoader variant="inline" />
-            : <Text style={styles.loadMoreButtonText}>{t('adminLoadMore')}</Text>}
-        </Pressable>
-      ) : null}
 
       {!layout.desktopWeb ? (
         <Pressable accessibilityRole="button" accessibilityLabel={t('adminAddStore')} onPress={openCreate} style={styles.fab}>

@@ -98,6 +98,8 @@ export interface UserListProps {
   users: AdminUser[];
   isTable: boolean;
   isDesktopWeb: boolean;
+  footer?: ReactNode;
   onEdit: (user: AdminUser) => void;
   onDelete: (user: AdminUser) => void;
 }
+import type { ReactNode } from 'react';
