@@ -10,10 +10,34 @@ const store: StoreRecord = {
   storeCode: 'C001',
   storeType: 'franchise',
   address: 'Main road',
+  description: 'Internal notes that should stay in the edit form.',
   createdBy: 'user-1',
 };
 
 describe('StoreCard', () => {
+  it('shows the key store details without displaying the long description', () => {
+    const renderer = render(
+      <StoreCard
+        store={{ ...store, phone: '8123456789', isActive: true }}
+        userId="someone-else"
+        storeCardStyle={null}
+        actionsAtBottom={false}
+        isUpdatingArchive={false}
+        onEdit={jest.fn()}
+        onArchive={jest.fn()}
+      />,
+    );
+
+    expect(renderer.root.findAllByProps({ children: 'Central' }).length).toBeGreaterThan(0);
+    expect(renderer.root.findAllByProps({ children: 'C001' }).length).toBeGreaterThan(0);
+    expect(renderer.root.findAllByProps({ children: t('adminFranchiseStore') }).length).toBeGreaterThan(0);
+    expect(renderer.root.findAllByProps({ children: t('adminActive') }).length).toBeGreaterThan(0);
+    expect(renderer.root.findAllByProps({ children: 'Main road' }).length).toBeGreaterThan(0);
+    expect(renderer.root.findAllByProps({ children: '8123456789' }).length).toBeGreaterThan(0);
+    expect(renderer.root.findAllByProps({ children: store.description })).toHaveLength(0);
+    act(() => renderer.unmount());
+  });
+
   it('renders store card states and dispatches edit/archive actions only for its owner', () => {
       const onEdit = jest.fn();
       const onArchive = jest.fn();

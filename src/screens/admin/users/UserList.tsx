@@ -57,10 +57,13 @@ export function UserList({ users, isTable, isDesktopWeb, footer, onEdit, onDelet
       contentContainerStyle={[styles.listContent, !isDesktopWeb && styles.userListContentWithFab]}
     >
       {users.map((user) => (
-        <View key={user._id} style={styles.row}>
-          <View style={styles.rowHeader}>
-            <View style={[styles.userNameRoleGroup, styles.userCardTitle]}>
-              <Text numberOfLines={1} style={[styles.rowTitle, styles.userTableNameText]}>{user.name}</Text>
+        <View key={user._id} style={styles.userCard}>
+          <View style={styles.userCardHeader}>
+            <View style={styles.userCardAvatar}>
+              <Text style={styles.userAvatarText}>{user.name.charAt(0).toUpperCase()}</Text>
+            </View>
+            <View style={styles.userCardIdentity}>
+              <Text numberOfLines={1} style={styles.userCardName}>{user.name}</Text>
               <View style={styles.userRoleTag}>
                 <Text style={styles.userRoleTagText}>{translateRole(user.role)}</Text>
               </View>
@@ -74,16 +77,19 @@ export function UserList({ users, isTable, isDesktopWeb, footer, onEdit, onDelet
               </Pressable>
             </View>
           </View>
-          <Text style={styles.rowSubtext}>{user.email}</Text>
-          <View style={styles.storePills}>
-            {user.franchises.length === 0
-              ? <Text style={styles.rowSubtext}>{t('adminNoStore')}</Text>
-              : user.franchises.map((store) => (
+          <Text numberOfLines={1} style={styles.userCardEmail}>{user.email}</Text>
+          {user.phone ? <Text style={styles.userCardPhone}>{user.phone}</Text> : null}
+          {user.franchises.length === 0 ? (
+            <Text style={styles.userCardNoStores}>{t('adminNoStore')}</Text>
+          ) : (
+            <View style={styles.userCardStores}>
+              {user.franchises.map((store) => (
                 <View key={store._id} style={styles.storePill}>
                   <Text style={styles.storePillText}>{store.name}</Text>
                 </View>
               ))}
-          </View>
+            </View>
+          )}
         </View>
       ))}
       {footer}
