@@ -3,6 +3,8 @@ import { act } from 'react-test-renderer';
 import * as authApi from '../src/api/auth';
 import { t } from '../src/i18n';
 import { LoginScreen } from '../src/screens/LoginScreen';
+import { AdminHomeScreen } from '../src/screens/admin/AdminHomeScreen';
+import { FranchiseHomeScreen } from '../src/screens/franchise/FranchiseHomeScreen';
 import { renderSafeArea, buttons, flushEffects, response } from './testUtils';
 
 const originalPlatform = Platform.OS;
@@ -124,5 +126,39 @@ describe('LoginScreen', () => {
     act(() => renderer.root.findByProps({ accessibilityLabel: t('adminDismissToast') }).props.onPress());
     act(() => renderer.unmount());
     jest.useRealTimers();
+  });
+
+  it('lets franchise admins sign in without opening the super-admin dashboard', async () => {
+    jest.spyOn(authApi, 'login').mockResolvedValue({
+      token: 'franchise-session-token',
+      user: {
+        id: 'franchise-admin-1',
+        name: 'Franchise Admin',
+        email: 'franchise@example.com',
+        role: 'franchise_admin',
+      },
+    });
+    jest.spyOn(authApi, 'apiRequest').mockResolvedValue(response(200, {
+      franchises: [
+        { _id: 'store-1', name: 'Central' },
+        { _id: 'store-2', name: 'North' },
+      ],
+    }));
+    const renderer = renderSafeArea(<LoginScreen />);
+    act(() => {
+      renderer.root.findByProps({ accessibilityLabel: t('emailLabel') }).props.onChangeText('franchise@example.com');
+      renderer.root.findByProps({ accessibilityLabel: t('passwordLabel') }).props.onChangeText('valid-password');
+    });
+    const submit = buttons(renderer).find((button) => button.props.accessibilityRole === 'button'
+      && button.props.children?.props?.children?.props?.children === t('signIn'));
+    await act(async () => { submit?.props.onPress(); });
+
+    expect(renderer.root.findAllByType(FranchiseHomeScreen)).toHaveLength(1);
+    expect(renderer.root.findAllByType(AdminHomeScreen)).toHaveLength(0);
+    expect(renderer.root.findAllByProps({ children: t('franchiseSelectStore') }).length).toBeGreaterThan(0);
+
+    act(() => renderer.root.findByProps({ accessibilityLabel: t('signOut') }).props.onPress());
+    expect(renderer.root.findAllByProps({ accessibilityLabel: t('emailLabel') }).length).toBeGreaterThan(0);
+    act(() => renderer.unmount());
   });
 });

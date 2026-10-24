@@ -40,7 +40,7 @@ describe('useLogin', () => {
       act(() => renderer.unmount());
     })
 
-  it('rejects non-admin users and distinguishes credential and general errors', async () => {
+  it('accepts franchise admins, rejects unsupported roles, and distinguishes errors', async () => {
       const setToken = jest.spyOn(authApi, 'setAccessToken');
       const loginMock = jest.spyOn(authApi, 'login');
       let state!: ReturnType<typeof useLogin>;
@@ -49,13 +49,21 @@ describe('useLogin', () => {
         state.updateEmail('alex@example.com');
         state.updatePassword('valid-password');
       });
-  
+
+      loginMock.mockResolvedValueOnce({
+        token: 'franchise-admin-token',
+        user: { id: 'franchise-admin-1', name: 'Alex', email: 'alex@example.com', role: 'franchise_admin' },
+      });
+      await act(async () => state.submit());
+      expect(state.session?.user.role).toBe('franchise_admin');
+      act(() => state.signOut());
+
       loginMock.mockResolvedValueOnce({
         token: 'wrong-role-token',
         user: { id: 'user-1', name: 'Alex', email: 'alex@example.com', role: 'sub_admin' },
       });
       await act(async () => state.submit());
-      expect(state.formError).toBe(t('mobileSuperAdminOnly'));
+      expect(state.formError).toBe(t('mobileRoleNotSupported'));
       expect(setToken).toHaveBeenCalledWith(null);
   
       loginMock.mockRejectedValueOnce(new Error(t('invalidCredentials')));

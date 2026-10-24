@@ -6,6 +6,14 @@ This is a new [**React Native**](https://reactnative.dev) project, bootstrapped 
 
 Copy `.env.example` to `.env` and set `TEST_LOGIN_EMAIL` and `TEST_LOGIN_PASSWORD` to prefill the login form in development. The local `.env` is ignored by Git. These values are bundled into development clients and are not suitable for production credentials.
 
+## Franchise-admin workspace
+
+Administrator and franchise-admin accounts can sign in. Franchise admins must have a store association. One accessible store is selected automatically; multiple stores require a selection before any dashboard data is requested. Use **Switch store** in the sidebar/mobile menu to recheck accessible stores and select another. Selection is cleared on sign-out, and all dashboard requests are scoped to that selected store.
+
+The dashboard migrates the Next.js summary cards, sales trend (date range, This Week, This Month), employee attrition, weekday sales, top expenses, and payment mix. Dates use `YYYY-MM-DD`; apply the filters after editing. Attendance summary is explicitly marked as not calculated yet, matching Next.js. Loading, empty-data, and request-error states are separate; Refresh retries dashboard requests.
+
+The full source menu is present: Dashboard; Store (Sales, Inventory, P&L, Withdrawals); Staff (Employees, Attendance, Salary); Profile; and Store Config. Dashboard and the existing shared Profile screen work in this phase. Remaining screens are labeled **Not yet migrated**, rather than displaying fictitious operational data.
+
 > **Note**: Make sure you have completed the [Set Up Your Environment](https://reactnative.dev/docs/set-up-your-environment) guide before proceeding.
 
 ## Step 1: Start Metro

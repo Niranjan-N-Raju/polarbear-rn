@@ -2,6 +2,8 @@ import type { PropsWithChildren } from 'react';
 import { View } from 'react-native';
 import { styles } from './safeAreaStyles';
 
+export { View as SafeAreaView };
+
 export function SafeAreaProvider({ children }: PropsWithChildren) {
   return <View style={styles.container}>{children}</View>;
 }

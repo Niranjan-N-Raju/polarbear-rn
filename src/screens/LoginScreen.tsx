@@ -18,6 +18,7 @@ import { setUnauthorizedHandler } from '../api/auth';
 import { theme } from '../config/theme';
 import { useLogin } from '../hooks/useLogin';
 import { t } from '../i18n';
+import { FranchiseHomeScreen } from './franchise/FranchiseHomeScreen';
 import { AdminHomeScreen } from './admin/AdminHomeScreen';
 import {
   getLoginSafeAreaStyles,
@@ -53,6 +54,18 @@ export function LoginScreen() {
   );
 
   if (loginState.session) {
+    if (loginState.session.user.role === 'franchise_admin') {
+      return (
+        <>
+          <FranchiseHomeScreen
+            user={loginState.session.user}
+            onLogout={loginState.signOut}
+          />
+          {authToastMessage ? <AppToast message={authToastMessage} onDismiss={dismissAuthToast} /> : null}
+        </>
+      );
+    }
+
     return (
       <>
         <AdminHomeScreen user={loginState.session.user} onLogout={loginState.signOut} />

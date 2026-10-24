@@ -71,6 +71,7 @@ export const theme = {
   radius: {
     none: 0,
     small: 12,
+    card: 16,
   },
   border: {
     width: 1,

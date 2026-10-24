@@ -24,9 +24,9 @@ export function useLogin() {
     setIsPending(true);
     try {
       const result = await login(normalizedEmail, password);
-      if (result.user.role !== 'admin') {
+      if (!['admin', 'franchise_admin'].includes(result.user.role)) {
         setAccessToken(null);
-        setFormError(t('mobileSuperAdminOnly'));
+        setFormError(t('mobileRoleNotSupported'));
         return;
       }
       Keyboard.dismiss();
