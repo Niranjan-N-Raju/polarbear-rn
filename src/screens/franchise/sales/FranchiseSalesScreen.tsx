@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Pressable, ScrollView, Text, useWindowDimensions, View } from 'react-native';
-import { Filter, Plus } from '../../../icons';
+import { Banknote, CreditCard, Filter, IndianRupee, Plus, Receipt } from '../../../icons';
 import { apiRequest } from '../../../api/auth';
 import { AppErrorState } from '../../../components/AppErrorState';
 import { AppLoader } from '../../../components/AppLoader';
@@ -15,7 +15,7 @@ import { SaleCard } from './SaleCard';
 import { SaleFiltersDrawer } from './SaleFiltersDrawer';
 import { SaleFormDrawer } from './SaleFormDrawer';
 import { salesStyles } from './salesStyles';
-import { defaultSaleRange, formatPercent, type SaleRange, saleRangeError, summarizeSales } from './utils';
+import { defaultSaleRange, type SaleRange, saleRangeError, summarizeSales } from './utils';
 
 const pageSize = 10;
 
@@ -114,12 +114,12 @@ export function FranchiseSalesScreen({ storeId }: FranchiseSalesScreenProps) {
   };
 
   const summaryCards = [
-    { label: t('franchiseTotalSales'), value: formatMoney(summary.totalSales) },
-    { label: t('franchiseOnlineSales'), value: formatMoney(summary.onlineSales) },
-    { label: t('franchiseOnlinePercent'), value: formatPercent(summary.onlinePercent) },
-    { label: t('franchiseTotalExpenses'), value: formatMoney(summary.totalExpenses) },
-    { label: t('franchiseSaleBankingCash'), value: formatMoney(summary.bankingCash), negative: summary.bankingCash < 0 },
+    { label: t('franchiseTotalSales'), value: formatMoney(summary.totalSales), color: theme.colors.teal, Icon: IndianRupee },
+    { label: t('franchiseOnlineSales'), value: formatMoney(summary.onlineSales), color: theme.colors.orange, Icon: CreditCard },
+    { label: t('franchiseTotalExpenses'), value: formatMoney(summary.totalExpenses), color: theme.colors.orange, Icon: Receipt },
+    { label: t('franchiseSaleBankingCash'), value: formatMoney(summary.bankingCash), color: theme.colors.teal, Icon: Banknote },
   ];
+  const summaryRows = layout.desktopWeb ? [summaryCards] : [summaryCards.slice(0, 2), summaryCards.slice(2)];
 
   return (
     <View style={styles.screen}>
@@ -161,13 +161,28 @@ export function FranchiseSalesScreen({ storeId }: FranchiseSalesScreenProps) {
         >
           {isLoading ? <AppLoader variant="inline" /> : null}
           <View style={salesStyles.summaryGrid}>
-            {summaryCards.map((card, index) => (
-              <View
-                key={card.label}
-                style={[salesStyles.summaryCard, !layout.isWeb && index === summaryCards.length - 1 && salesStyles.summaryCardWide]}
-              >
-                <Text style={salesStyles.metricLabel}>{card.label}</Text>
-                <Text style={[salesStyles.metricValue, card.negative && salesStyles.negativeValue]}>{card.value}</Text>
+            {summaryRows.map((row) => (
+              <View key={row[0].label} style={salesStyles.summaryRow}>
+                {row.map(({ label, value, color, Icon }) => (
+                  <View
+                    key={label}
+                    style={[salesStyles.summaryCard, { borderTopColor: color }, layout.isWeb && salesStyles.summaryCardWeb]}
+                  >
+                    <View style={salesStyles.summaryHeader}>
+                      <Text style={salesStyles.summaryLabel} numberOfLines={2}>{label}</Text>
+                      <View style={salesStyles.summaryIcon}>
+                        <Icon color={color} size={16} />
+                      </View>
+                    </View>
+                    <Text
+                      style={[salesStyles.summaryValue, layout.isWeb && salesStyles.summaryValueWeb, { color }]}
+                      numberOfLines={1}
+                      adjustsFontSizeToFit
+                    >
+                      {value}
+                    </Text>
+                  </View>
+                ))}
               </View>
             ))}
           </View>

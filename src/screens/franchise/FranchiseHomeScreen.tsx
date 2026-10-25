@@ -4,6 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { apiRequest } from '../../api/auth';
 import type { AuthenticatedUser } from '../../api/types';
 import { AppLoader } from '../../components/AppLoader';
+import { ResponsiveDrawerModal } from '../../components/ResponsiveDrawerModal';
 import { theme } from '../../config/theme';
 import { Banknote, CalendarCheck, ChartNoAxesCombined, ChevronsLeft, LayoutDashboard, LogOut, Menu, Package, Receipt, RefreshCw, Settings, Store, UserRound, UsersRound, Wallet, X } from '../../icons';
 import { t } from '../../i18n';
@@ -54,8 +55,15 @@ interface FranchiseHomeScreenProps {
 }
 
 export function FranchiseHomeScreen({ user: initialUser, onLogout }: FranchiseHomeScreenProps) {
-  const { width } = useWindowDimensions();
+  const { width, height } = useWindowDimensions();
   const { hasSidebar } = getAdminLayout(width);
+  const pickerPanelStyle = hasSidebar ? undefined : {
+    height: 'auto' as const,
+    maxHeight: height * 0.85,
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    overflow: 'hidden' as const,
+  };
   const [user, setUser] = useState(initialUser);
   const [stores, setStores] = useState<FranchiseStore[]>([]);
   const [activeStore, setActiveStore] = useState<FranchiseStore | null>(null);
@@ -209,7 +217,9 @@ export function FranchiseHomeScreen({ user: initialUser, onLogout }: FranchiseHo
           </View>
         ) : (
           <View style={styles.pickerScreen}>
-            <StorePicker stores={stores} onSelect={selectStore} onSignOut={onLogout} />
+            <ResponsiveDrawerModal visible closeLabel={t('franchiseSelectStore')} onClose={() => undefined} panelStyle={pickerPanelStyle}>
+              <StorePicker stores={stores} onSelect={selectStore} onSignOut={onLogout} fill={hasSidebar} />
+            </ResponsiveDrawerModal>
           </View>
         )}
       </SafeAreaView>
@@ -252,13 +262,14 @@ export function FranchiseHomeScreen({ user: initialUser, onLogout }: FranchiseHo
           </View>
         </Modal>
       ) : null}
-      {pickerOpen ? (
-        <Modal transparent visible animationType="none" onRequestClose={() => setPickerOpen(false)}>
-          <SafeAreaView style={styles.pickerBackdrop}>
-            <StorePicker stores={stores} activeStoreId={activeStore._id} onSelect={selectStore} onCancel={() => setPickerOpen(false)} />
-          </SafeAreaView>
-        </Modal>
-      ) : null}
+      <ResponsiveDrawerModal
+        visible={pickerOpen}
+        closeLabel={t('franchiseSelectStore')}
+        onClose={() => setPickerOpen(false)}
+        panelStyle={pickerPanelStyle}
+      >
+        <StorePicker stores={stores} activeStoreId={activeStore._id} onSelect={selectStore} onCancel={() => setPickerOpen(false)} fill={hasSidebar} />
+      </ResponsiveDrawerModal>
     </SafeAreaView>
   );
 }

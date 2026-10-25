@@ -4,15 +4,17 @@ import { theme } from '../../config/theme';
 const { colors, spacing, typography } = theme;
 
 export const storePickerStyles = StyleSheet.create({
-  card: {
-    width: '100%', maxWidth: 440, maxHeight: '85%', alignSelf: 'center',
-    backgroundColor: colors.white, borderRadius: theme.radius.card, overflow: 'hidden',
-    shadowColor: colors.black, shadowOpacity: 0.18, shadowRadius: 24, shadowOffset: { width: 0, height: 12 }, elevation: 12,
+  sheet: { flexShrink: 1, minHeight: 0, backgroundColor: colors.white },
+  sheetFill: { flex: 1 },
+  handle: {
+    width: 40, height: 4, borderRadius: 2, alignSelf: 'center',
+    marginTop: spacing.md, backgroundColor: colors.beige,
   },
   header: {
     flexDirection: 'row', alignItems: 'flex-start', gap: spacing.lg,
-    padding: spacing['4xl'], paddingBottom: spacing['2xl'],
+    paddingHorizontal: spacing['2xl'], paddingTop: spacing.lg, paddingBottom: spacing['2xl'],
   },
+  headerFill: { paddingTop: spacing['2xl'] },
   headerIcon: {
     width: 44, height: 44, borderRadius: 22, alignItems: 'center', justifyContent: 'center',
     backgroundColor: colors.welcomeTint,
@@ -24,8 +26,9 @@ export const storePickerStyles = StyleSheet.create({
     width: 36, height: 36, borderRadius: 18, alignItems: 'center', justifyContent: 'center',
     backgroundColor: colors.paleBackground,
   },
-  list: { flexGrow: 0 },
-  listContent: { paddingHorizontal: spacing['4xl'], paddingBottom: spacing['4xl'], gap: spacing.md },
+  list: { flexGrow: 0, flexShrink: 1, minHeight: 0 },
+  listFill: { flex: 1 },
+  listContent: { paddingHorizontal: spacing['2xl'], paddingBottom: spacing['2xl'], gap: spacing.md },
   option: {
     flexDirection: 'row', alignItems: 'center', gap: spacing.lg,
     paddingVertical: spacing.xl, paddingHorizontal: spacing['2xl'],
@@ -51,8 +54,8 @@ export const storePickerStyles = StyleSheet.create({
     backgroundColor: colors.teal,
   },
   footer: {
-    borderTopWidth: 1, borderColor: colors.beige, backgroundColor: colors.paleBackground,
-    paddingHorizontal: spacing['4xl'], paddingVertical: spacing.lg,
+    borderTopWidth: 1, borderColor: colors.beige, backgroundColor: colors.white,
+    paddingHorizontal: spacing['2xl'], paddingVertical: spacing.lg,
   },
   signOut: {
     minHeight: 44, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: spacing.md,

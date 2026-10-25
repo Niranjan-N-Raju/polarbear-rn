@@ -11,12 +11,14 @@ interface StorePickerProps {
   onSelect: (store: FranchiseStore) => void;
   onCancel?: () => void;
   onSignOut?: () => void;
+  fill?: boolean;
 }
 
-export function StorePicker({ stores, activeStoreId, onSelect, onCancel, onSignOut }: StorePickerProps) {
+export function StorePicker({ stores, activeStoreId, onSelect, onCancel, onSignOut, fill = false }: StorePickerProps) {
   return (
-    <View style={styles.card}>
-      <View style={styles.header}>
+    <View style={[styles.sheet, fill && styles.sheetFill]}>
+      {!fill ? <View style={styles.handle} /> : null}
+      <View style={[styles.header, fill && styles.headerFill]}>
         <View style={styles.headerIcon}>
           <Store size={22} color={theme.colors.orange} />
         </View>
@@ -37,7 +39,7 @@ export function StorePicker({ stores, activeStoreId, onSelect, onCancel, onSignO
         ) : null}
       </View>
 
-      <ScrollView style={styles.list} contentContainerStyle={styles.listContent}>
+      <ScrollView style={[styles.list, fill && styles.listFill]} contentContainerStyle={styles.listContent}>
         {stores.map((store) => {
           const selected = activeStoreId === store._id;
           return (
