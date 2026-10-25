@@ -5,6 +5,7 @@ import * as authApi from '../src/api/auth';
 import { t } from '../src/i18n';
 import { FranchiseDashboardScreen } from '../src/screens/franchise/FranchiseDashboardScreen';
 import { FranchiseHomeScreen } from '../src/screens/franchise/FranchiseHomeScreen';
+import { FranchiseSalaryScreen } from '../src/screens/franchise/salary/FranchiseSalaryScreen';
 import { buttons, flushEffects, renderSafeArea, response } from './testUtils';
 
 jest.mock('../src/screens/franchise/FranchiseDashboardScreen', () => ({
@@ -71,7 +72,7 @@ describe('FranchiseHomeScreen', () => {
       expect(renderer.root.findAllByProps({ accessibilityLabel: t(label) }).length).toBeGreaterThan(0);
     }
     act(() => renderer.root.findByProps({ accessibilityLabel: t('franchiseSalary') }).props.onPress());
-    expect(renderer.root.findAllByProps({ children: t('franchiseNotMigrated') }).length).toBeGreaterThan(0);
+    expect(renderer.root.findAllByType(FranchiseSalaryScreen)).toHaveLength(1);
     act(() => renderer.root.findByProps({ accessibilityLabel: t('adminOpenMenu') }).props.onPress());
     const salaryItem = renderer.root.findByProps({ accessibilityLabel: t('franchiseSalary') });
     expect(salaryItem.props.accessibilityState.selected).toBe(true);

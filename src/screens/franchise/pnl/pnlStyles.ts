@@ -1,0 +1,35 @@
+import { StyleSheet } from 'react-native';
+import { theme } from '../../../config/theme';
+
+export const pnlStyles = StyleSheet.create({
+  flex: { flex: 1 },
+  scrollContent: { paddingBottom: 12 },
+  monthCard: {
+    backgroundColor: theme.colors.white,
+    borderColor: theme.colors.beige,
+    borderWidth: 1,
+    borderRadius: 14,
+    padding: 14,
+    marginBottom: 10,
+  },
+  monthCardCurrent: { borderLeftColor: theme.colors.teal, borderLeftWidth: 4 },
+  monthHeading: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 8 },
+  monthLabel: { color: theme.colors.ink, fontSize: 15, fontWeight: '700', flex: 1 },
+  monthRange: { color: theme.colors.muted, fontSize: 12, marginTop: 3 },
+  monthMetricGrid: { flexDirection: 'row', flexWrap: 'wrap', marginTop: 12, gap: 8 },
+  monthMetric: { width: '47%', padding: 9, backgroundColor: theme.colors.paleBackground, borderRadius: 10 },
+  metricLabel: { color: theme.colors.muted, fontSize: 11, marginBottom: 4 },
+  metricValue: { color: theme.colors.ink, fontSize: 14, fontWeight: '700' },
+  viewButton: { borderRadius: 9, paddingHorizontal: 12, paddingVertical: 7, backgroundColor: theme.colors.ice },
+  viewButtonText: { color: theme.colors.teal, fontSize: 12, fontWeight: '700' },
+  row: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 12, borderBottomColor: theme.colors.ice, borderBottomWidth: StyleSheet.hairlineWidth, paddingVertical: 10 },
+  rowLabel: { color: theme.colors.muted, fontSize: 13, flex: 1 },
+  rowLabelStrong: { color: theme.colors.ink, fontWeight: '700' },
+  rowValue: { color: theme.colors.ink, fontSize: 13, fontWeight: '600', textAlign: 'right' },
+  section: { marginBottom: 16 },
+  sectionTitle: { color: theme.colors.muted, fontSize: 11, fontWeight: '700', letterSpacing: 0.7, marginBottom: 7, textTransform: 'uppercase' },
+  sectionCard: { backgroundColor: theme.colors.white, borderColor: theme.colors.beige, borderWidth: 1, borderRadius: 12, paddingHorizontal: 12 },
+  headerRange: { color: theme.colors.muted, fontSize: 12, marginTop: 4 },
+  error: { color: theme.colors.error, fontSize: 13, marginVertical: 10 },
+  placeholder: { color: theme.colors.muted, fontSize: 13, textAlign: 'center', paddingVertical: 24 },
+});

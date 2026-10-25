@@ -1,3 +1,10 @@
+import { withdrawalsEn } from './franchise/withdrawals';
+import { pnlEn } from './franchise/pnl';
+import { storeConfigEn } from './franchise/storeConfig';
+import { employeesEn } from './franchise/employees';
+import { attendanceEn } from './franchise/attendance';
+import { salaryEn } from './franchise/salary';
+
 export const en = {
   brandInitials: 'PB',
   pageTitle: 'Polar Bear · Sign in',
@@ -347,4 +354,10 @@ export const en = {
   franchiseInventoryDeleteWarning: 'Delete "{{name}}"? This product is shared across all stores.',
   franchiseInventoryConfirmDelete: 'Delete',
   franchiseInventoryDone: 'Done',
+  ...withdrawalsEn,
+  ...pnlEn,
+  ...storeConfigEn,
+  ...employeesEn,
+  ...attendanceEn,
+  ...salaryEn,
 } as const;

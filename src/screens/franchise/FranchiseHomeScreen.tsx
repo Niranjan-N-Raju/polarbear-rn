@@ -16,7 +16,13 @@ import { FranchiseMenuGroup } from './FranchiseMenuGroup';
 import { franchiseStyles as styles } from './franchiseStyles';
 import { FranchiseInventoryScreen } from './inventory/FranchiseInventoryScreen';
 import { FranchiseSalesScreen } from './sales/FranchiseSalesScreen';
+import { FranchiseAttendanceScreen } from './attendance/FranchiseAttendanceScreen';
+import { FranchiseEmployeesScreen } from './employees/FranchiseEmployeesScreen';
+import { FranchisePnlScreen } from './pnl/FranchisePnlScreen';
+import { FranchiseSalaryScreen } from './salary/FranchiseSalaryScreen';
+import { FranchiseStoreConfigScreen } from './store-config/FranchiseStoreConfigScreen';
 import { StorePicker } from './StorePicker';
+import { FranchiseWithdrawalsScreen } from './withdrawals/FranchiseWithdrawalsScreen';
 import type { FranchiseStore } from './types';
 
 const menuIcons = {
@@ -116,7 +122,6 @@ export function FranchiseHomeScreen({ user: initialUser, onLogout }: FranchiseHo
   }
 
   function renderNavItem(item: MenuItem) {
-    const available = item.key === 'dashboard' || item.key === 'sales' || item.key === 'inventory' || item.key === 'profile';
     const Icon = menuIcons[item.key];
     const active = tab === item.key;
     const compact = hasSidebar && collapsed;
@@ -139,7 +144,6 @@ export function FranchiseHomeScreen({ user: initialUser, onLogout }: FranchiseHo
         {!compact ? (
           <View style={styles.navCopy}>
             <Text style={[styles.navLabel, active && (hasSidebar ? styles.navLabelActiveSidebar : styles.navLabelActive)]}>{t(item.label)}</Text>
-            {!available ? <Text style={styles.pending}>{t('franchiseNotMigratedBadge')}</Text> : null}
           </View>
         ) : null}
       </Pressable>
@@ -246,15 +250,20 @@ export function FranchiseHomeScreen({ user: initialUser, onLogout }: FranchiseHo
           <FranchiseSalesScreen key={activeStore._id} storeId={activeStore._id} />
         ) : tab === 'inventory' ? (
           <FranchiseInventoryScreen key={activeStore._id} storeId={activeStore._id} />
-        ) : tab === 'profile' ? (
-          <AdminProfileScreen user={user} onUserUpdated={setUser} />
+        ) : tab === 'pnl' ? (
+          <FranchisePnlScreen key={activeStore._id} storeId={activeStore._id} />
+        ) : tab === 'withdrawals' ? (
+          <FranchiseWithdrawalsScreen key={activeStore._id} storeId={activeStore._id} />
+        ) : tab === 'employees' ? (
+          <FranchiseEmployeesScreen key={activeStore._id} storeId={activeStore._id} />
+        ) : tab === 'attendance' ? (
+          <FranchiseAttendanceScreen key={activeStore._id} storeId={activeStore._id} />
+        ) : tab === 'salary' ? (
+          <FranchiseSalaryScreen key={activeStore._id} storeId={activeStore._id} />
+        ) : tab === 'store-config' ? (
+          <FranchiseStoreConfigScreen key={activeStore._id} storeId={activeStore._id} />
         ) : (
-          <View style={styles.content}>
-            <View style={styles.card}>
-              <Text style={styles.title}>{t(currentLabel)}</Text>
-              <Text style={styles.body}>{t('franchiseNotMigrated')}</Text>
-            </View>
-          </View>
+          <AdminProfileScreen user={user} onUserUpdated={setUser} />
         )}
       </View>
       {!hasSidebar && !pickerOpen ? (
