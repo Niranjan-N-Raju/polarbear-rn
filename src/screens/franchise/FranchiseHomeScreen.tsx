@@ -14,6 +14,7 @@ import { AdminProfileScreen } from '../admin/AdminProfileScreen';
 import { FranchiseDashboardScreen } from './FranchiseDashboardScreen';
 import { FranchiseMenuGroup } from './FranchiseMenuGroup';
 import { franchiseStyles as styles } from './franchiseStyles';
+import { FranchiseInventoryScreen } from './inventory/FranchiseInventoryScreen';
 import { FranchiseSalesScreen } from './sales/FranchiseSalesScreen';
 import { StorePicker } from './StorePicker';
 import type { FranchiseStore } from './types';
@@ -115,7 +116,7 @@ export function FranchiseHomeScreen({ user: initialUser, onLogout }: FranchiseHo
   }
 
   function renderNavItem(item: MenuItem) {
-    const available = item.key === 'dashboard' || item.key === 'sales' || item.key === 'profile';
+    const available = item.key === 'dashboard' || item.key === 'sales' || item.key === 'inventory' || item.key === 'profile';
     const Icon = menuIcons[item.key];
     const active = tab === item.key;
     const compact = hasSidebar && collapsed;
@@ -243,6 +244,8 @@ export function FranchiseHomeScreen({ user: initialUser, onLogout }: FranchiseHo
         </View>
         {tab === 'dashboard' ? <FranchiseDashboardScreen key={activeStore._id} storeId={activeStore._id} /> : tab === 'sales' ? (
           <FranchiseSalesScreen key={activeStore._id} storeId={activeStore._id} />
+        ) : tab === 'inventory' ? (
+          <FranchiseInventoryScreen key={activeStore._id} storeId={activeStore._id} />
         ) : tab === 'profile' ? (
           <AdminProfileScreen user={user} onUserUpdated={setUser} />
         ) : (

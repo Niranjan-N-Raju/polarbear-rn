@@ -39,3 +39,17 @@ export interface SaleRecord {
   totalExpenses: number;
   bankingCash: number;
 }
+
+export interface InventoryProduct {
+  _id: string;
+  name: string;
+  normalizedName?: string;
+}
+
+export interface InventoryStockItem {
+  _id: string;
+  productId: string;
+  product: string;
+  quantity: number;
+  expiryDate: string;
+}
