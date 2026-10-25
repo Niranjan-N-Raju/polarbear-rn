@@ -20,3 +20,22 @@ export interface DailySale {
   date: string;
   totalSale: number;
 }
+
+export interface SaleExpense {
+  name: string;
+  amount: number;
+}
+
+export interface SaleRecord {
+  _id: string;
+  date: string;
+  totalSale: number;
+  swiggy: number;
+  zomato: number;
+  upi: number;
+  upiCharge: number;
+  cash: number;
+  expenses: SaleExpense[];
+  totalExpenses: number;
+  bankingCash: number;
+}

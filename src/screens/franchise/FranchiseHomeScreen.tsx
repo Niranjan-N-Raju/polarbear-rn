@@ -13,6 +13,7 @@ import { AdminProfileScreen } from '../admin/AdminProfileScreen';
 import { FranchiseDashboardScreen } from './FranchiseDashboardScreen';
 import { FranchiseMenuGroup } from './FranchiseMenuGroup';
 import { franchiseStyles as styles } from './franchiseStyles';
+import { FranchiseSalesScreen } from './sales/FranchiseSalesScreen';
 import { StorePicker } from './StorePicker';
 import type { FranchiseStore } from './types';
 
@@ -106,7 +107,7 @@ export function FranchiseHomeScreen({ user: initialUser, onLogout }: FranchiseHo
   }
 
   function renderNavItem(item: MenuItem) {
-    const available = item.key === 'dashboard' || item.key === 'profile';
+    const available = item.key === 'dashboard' || item.key === 'sales' || item.key === 'profile';
     const Icon = menuIcons[item.key];
     const active = tab === item.key;
     const compact = hasSidebar && collapsed;
@@ -202,15 +203,15 @@ export function FranchiseHomeScreen({ user: initialUser, onLogout }: FranchiseHo
             <Pressable accessibilityRole="button" onPress={() => setVersion((value) => value + 1)} style={styles.button}>
               <Text style={styles.buttonText}>{t('adminRefresh')}</Text>
             </Pressable>
+            <Pressable accessibilityRole="button" accessibilityLabel={t('signOut')} onPress={onLogout} style={styles.button}>
+              <Text style={styles.buttonText}>{t('signOut')}</Text>
+            </Pressable>
           </View>
         ) : (
-          <View style={styles.pickerBackdrop}>
-            <StorePicker stores={stores} onSelect={selectStore} />
+          <View style={styles.pickerScreen}>
+            <StorePicker stores={stores} onSelect={selectStore} onSignOut={onLogout} />
           </View>
         )}
-        <Pressable accessibilityRole="button" accessibilityLabel={t('signOut')} onPress={onLogout} style={styles.button}>
-          <Text style={styles.buttonText}>{t('signOut')}</Text>
-        </Pressable>
       </SafeAreaView>
     );
   }
@@ -230,7 +231,9 @@ export function FranchiseHomeScreen({ user: initialUser, onLogout }: FranchiseHo
             <Text numberOfLines={1} style={styles.subtitle}>{user.name} · {activeStore.name}</Text>
           </View>
         </View>
-        {tab === 'dashboard' ? <FranchiseDashboardScreen key={activeStore._id} storeId={activeStore._id} /> : tab === 'profile' ? (
+        {tab === 'dashboard' ? <FranchiseDashboardScreen key={activeStore._id} storeId={activeStore._id} /> : tab === 'sales' ? (
+          <FranchiseSalesScreen key={activeStore._id} storeId={activeStore._id} />
+        ) : tab === 'profile' ? (
           <AdminProfileScreen user={user} onUserUpdated={setUser} />
         ) : (
           <View style={styles.content}>
