@@ -308,7 +308,6 @@ export function FranchiseInventoryScreen({ storeId }: FranchiseInventoryScreenPr
         storeId={storeId}
         onClose={() => setDrawer(null)}
         onAfterClose={handleAfterClose}
-        onChanged={() => setReloadKey((key) => key + 1)}
       />
 
       <InventoryActionDrawer

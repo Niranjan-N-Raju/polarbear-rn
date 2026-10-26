@@ -37,9 +37,12 @@ export function AdminHomeScreen({ user: initialUser, onLogout }: AdminHomeScreen
   async function logout(): Promise<void> {
     setIsLoggingOut(true);
     try {
-      await apiRequest('/auth/logout', { method: 'POST' });
+      const response = await apiRequest('/auth/logout', { method: 'POST' });
+      if (!response.ok && response.status !== 401) {
+        if (__DEV__) console.warn('[auth.logout] Server revocation failed; only the local session will be cleared.');
+      }
     } catch {
-      // Clearing the local session is sufficient for the stateless bearer token.
+      if (__DEV__) console.warn('[auth.logout] Server unreachable; only the local session will be cleared.');
     } finally {
       setAccessToken(null);
       onLogout();

@@ -2,13 +2,42 @@ This is a new [**React Native**](https://reactnative.dev) project, bootstrapped 
 
 # Getting Started
 
+## Android release signing
+
+Release builds never fall back to the repository's debug keystore. Supply
+`ANDROID_RELEASE_STORE_FILE`, `ANDROID_RELEASE_STORE_PASSWORD`,
+`ANDROID_RELEASE_KEY_ALIAS`, and `ANDROID_RELEASE_KEY_PASSWORD` through your
+local shell or CI secret store. Keep the production keystore outside the repository.
+Missing signing configuration fails the release build; debug builds are unchanged.
+If a distributed release previously used the debug key, arrange signing-key
+rotation through your distribution provider before publishing an update.
+
 ## Development login defaults
 
-Copy `.env.example` to `.env` and set `TEST_LOGIN_EMAIL` and `TEST_LOGIN_PASSWORD` to prefill the login form in development. The local `.env` is ignored by Git. These values are bundled into development clients and are not suitable for production credentials.
+Copy `.env.example` to `.env`. For native development clients, set `TEST_LOGIN_EMAIL` and `TEST_LOGIN_PASSWORD` to prefill the login form; for the web dev server, use `VITE_TEST_LOGIN_EMAIL` and `VITE_TEST_LOGIN_PASSWORD` (the `TEST_*` keys are accepted as a dev-server fallback). The local `.env` is ignored by Git. Never put real production credentials in these keys.
+
+## Release environment and transport security
+
+Release builds read `.env.production` (copy `.env.production.example`). Every `TEST_*` key must be empty and `API_BASE_URL` must be an `https://` URL; the Android `preReleaseBuild` task and the iOS Release bundle phase (`scripts/check-release-env.sh`) fail the build otherwise. Build iOS Release with `ENVFILE=.env.production`. Web production builds (`vite build`) require an `https://` `VITE_API_BASE_URL`, inject a Content-Security-Policy, never include test credentials, and emit no source maps. Development builds may use `http://` only for localhost, the Android emulator host, and private LAN addresses.
+
+Release Android builds set `FLAG_SECURE` to block screenshots and the recents preview; iOS covers the app with a blank view before the app-switcher snapshot. The session token lives only in memory, and API requests time out after 30 seconds.
 
 ## Franchise-admin workspace
 
+The product catalog is read-only for franchise admins; platform administrators
+manage shared products through the authenticated backend API. Store stock,
+consumption, and disposal workflows remain available to franchise admins.
+
 Administrator and franchise-admin accounts can sign in. Franchise admins must have a store association. One accessible store is selected automatically; multiple stores require a selection before any dashboard data is requested. Use **Switch store** in the sidebar/mobile menu to recheck accessible stores and select another. Selection is cleared on sign-out, and all dashboard requests are scoped to that selected store.
+
+Both administrator and franchise sign-out actions request server-side session
+revocation before clearing local state, including sign-out from the initial
+store picker and no-store screen. A successful revocation invalidates all
+sessions for that account. If the server is unreachable or rejects the
+revocation, the app logs a warning and still clears its local session; copied
+tokens are not guaranteed to be revoked in that fallback. The API's strict
+issuer/audience token contract requires existing sessions to sign in again
+after rollout.
 
 The dashboard migrates the Next.js summary cards, sales trend (date range, This Week, This Month), employee attrition, weekday sales, top expenses, and payment mix. Dates use `YYYY-MM-DD`; apply the filters after editing. Attendance summary is explicitly marked as not calculated yet, matching Next.js. Loading, empty-data, and request-error states are separate; Refresh retries dashboard requests.
 

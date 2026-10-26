@@ -157,7 +157,7 @@ describe('LoginScreen', () => {
     expect(renderer.root.findAllByType(AdminHomeScreen)).toHaveLength(0);
     expect(renderer.root.findAllByProps({ children: t('franchiseSelectStore') }).length).toBeGreaterThan(0);
 
-    act(() => renderer.root.findByProps({ accessibilityLabel: t('signOut') }).props.onPress());
+    await act(async () => { await renderer.root.findByProps({ accessibilityLabel: t('signOut') }).props.onPress(); });
     expect(renderer.root.findAllByProps({ accessibilityLabel: t('emailLabel') }).length).toBeGreaterThan(0);
     act(() => renderer.unmount());
   });

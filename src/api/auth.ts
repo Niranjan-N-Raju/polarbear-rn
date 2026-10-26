@@ -4,6 +4,8 @@ import type { AuthenticatedUser, LoginResponse } from './types';
 
 export type { AuthenticatedUser, LoginResponse } from './types';
 
+export const API_REQUEST_TIMEOUT_MS = 30_000;
+
 let accessToken: string | null = null;
 let unauthorizedHandler: (() => void) | null = null;
 let hasHandledUnauthorized = false;
@@ -20,7 +22,18 @@ export function setAccessToken(token: string | null): void {
 export async function apiRequest(path: string, init: RequestInit = {}): Promise<Response> {
   const headers = new Headers(init.headers);
   if (accessToken) headers.set('Authorization', `Bearer ${accessToken}`);
-  const response = await fetch(`${apiBaseUrl}${path}`, { ...init, headers });
+  const controller = new AbortController();
+  const abortFromCaller = () => controller.abort();
+  if (init.signal?.aborted) controller.abort();
+  init.signal?.addEventListener('abort', abortFromCaller);
+  const timeout = setTimeout(() => controller.abort(), API_REQUEST_TIMEOUT_MS);
+  let response: Response;
+  try {
+    response = await fetch(`${apiBaseUrl}${path}`, { ...init, headers, signal: controller.signal });
+  } finally {
+    clearTimeout(timeout);
+    init.signal?.removeEventListener('abort', abortFromCaller);
+  }
   if (response.status === 401 && accessToken && path !== '/auth/logout' && !hasHandledUnauthorized) {
     hasHandledUnauthorized = true;
     accessToken = null;

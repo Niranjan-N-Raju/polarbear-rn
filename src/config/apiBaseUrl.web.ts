@@ -1,5 +1,7 @@
 /// <reference types="vite/client" />
+import { resolveApiBaseUrl } from './resolveApiBaseUrl';
 
-const localApiUrl = 'http://localhost:4000/api';
-
-export const apiBaseUrl = (import.meta.env.VITE_API_BASE_URL?.trim() || localApiUrl).replace(/\/+$/, '');
+export const apiBaseUrl = resolveApiBaseUrl(import.meta.env.VITE_API_BASE_URL, {
+  isDev: import.meta.env.DEV,
+  devFallback: 'http://localhost:4000/api',
+});

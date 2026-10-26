@@ -23,6 +23,34 @@ afterEach(() => {
 });
 
 describe('FranchiseHomeScreen', () => {
+  it('revokes the server session when signing out from the store picker', async () => {
+    const api = jest.spyOn(authApi, 'apiRequest')
+      .mockResolvedValueOnce(response(200, { franchises: stores }))
+      .mockResolvedValueOnce(response(200, { message: 'Logged out.' }));
+    const logout = jest.fn();
+    const renderer = renderSafeArea(<FranchiseHomeScreen user={user} onLogout={logout} />);
+    await flushEffects();
+    await act(async () => { await renderer.root.findByProps({ accessibilityLabel: t('signOut') }).props.onPress(); });
+    expect(api).toHaveBeenLastCalledWith('/auth/logout', { method: 'POST' });
+    expect(logout).toHaveBeenCalledTimes(1);
+    act(() => renderer.unmount());
+  });
+
+  it.each(['offline', 'server-error'] as const)('warns that logout is local-only after %s', async (failure) => {
+    const api = jest.spyOn(authApi, 'apiRequest').mockResolvedValueOnce(response(200, { franchises: [] }));
+    if (failure === 'offline') api.mockRejectedValueOnce(new Error('offline'));
+    else api.mockResolvedValueOnce(response(500, { message: 'Failed.' }));
+    const warning = jest.spyOn(console, 'warn').mockImplementation(() => {});
+    const logout = jest.fn();
+    const renderer = renderSafeArea(<FranchiseHomeScreen user={user} onLogout={logout} />);
+    await flushEffects();
+    await act(async () => { await renderer.root.findByProps({ accessibilityLabel: t('signOut') }).props.onPress(); });
+    expect(api).toHaveBeenLastCalledWith('/auth/logout', { method: 'POST' });
+    expect(warning).toHaveBeenCalledWith(expect.stringContaining('only the local session will be cleared'));
+    expect(logout).toHaveBeenCalledTimes(1);
+    act(() => renderer.unmount());
+  });
+
   it('requires selecting a store for multiple assignments and supports switching and cancellation', async () => {
     const api = jest.spyOn(authApi, 'apiRequest').mockResolvedValue(response(200, { franchises: stores }));
     const logout = jest.fn();
@@ -47,7 +75,8 @@ describe('FranchiseHomeScreen', () => {
     expect(api).toHaveBeenCalledTimes(3);
 
     act(() => renderer.root.findByProps({ accessibilityLabel: t('adminOpenMenu') }).props.onPress());
-    act(() => renderer.root.findByProps({ accessibilityLabel: t('signOut') }).props.onPress());
+    await act(async () => { await renderer.root.findByProps({ accessibilityLabel: t('signOut') }).props.onPress(); });
+    expect(api).toHaveBeenLastCalledWith('/auth/logout', { method: 'POST' });
     expect(logout).toHaveBeenCalledTimes(1);
     act(() => renderer.unmount());
   });

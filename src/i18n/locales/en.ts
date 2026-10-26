@@ -345,6 +345,7 @@ export const en = {
   franchiseInventoryNewProductsPlaceholder: 'e.g. Vanilla tub, Chocolate cone',
   franchiseInventoryAddProducts: 'Add products',
   franchiseInventoryProductsHint: 'Separate multiple products with commas.',
+  franchiseInventoryProductsReadOnly: 'Products are shared across all stores. Contact a platform administrator to add or change products.',
   franchiseInventoryProductUpdated: 'Product updated successfully.',
   franchiseInventoryProductDeleted: 'Product deleted successfully.',
   franchiseInventoryProductName: 'Product name',

@@ -1,6 +1,12 @@
 apply plugin: "com.android.application"
 apply plugin: "org.jetbrains.kotlin.android"
 apply plugin: "com.facebook.react"
+// react-native-config compiles every key of the selected env file into BuildConfig and string
+// resources. Release builds read .env.production so developer-only values never ship.
+project.ext.envConfigFiles = [
+    release: ".env.production",
+    debug: ".env",
+]
 apply from: project(':react-native-config').projectDir.getPath() + "/dotenv.gradle"
 
 /**
@@ -73,6 +79,13 @@ def enableProguardInReleaseBuilds = false
  */
 def jscFlavor = 'io.github.react-native-community:jsc-android:2026004.+'
 
+def releaseSigning = [
+    storePath: System.getenv("ANDROID_RELEASE_STORE_FILE"),
+    storePassword: System.getenv("ANDROID_RELEASE_STORE_PASSWORD"),
+    alias: System.getenv("ANDROID_RELEASE_KEY_ALIAS"),
+    keyPassword: System.getenv("ANDROID_RELEASE_KEY_PASSWORD"),
+]
+
 android {
     ndkVersion rootProject.ext.ndkVersion
     buildToolsVersion rootProject.ext.buildToolsVersion
@@ -87,6 +100,14 @@ android {
         versionName "1.0"
     }
     signingConfigs {
+        release {
+            if (releaseSigning.values().every { it }) {
+                storeFile file(releaseSigning.storePath)
+                storePassword releaseSigning.storePassword
+                keyAlias releaseSigning.alias
+                keyPassword releaseSigning.keyPassword
+            }
+        }
         debug {
             storeFile file('debug.keystore')
             storePassword 'android'
@@ -99,11 +120,34 @@ android {
             signingConfig signingConfigs.debug
         }
         release {
-            // Caution! In production, you need to generate your own keystore file.
-            // see https://reactnative.dev/docs/signed-apk-android.
-            signingConfig signingConfigs.debug
+            signingConfig signingConfigs.release
             minifyEnabled enableProguardInReleaseBuilds
             proguardFiles getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro"
+        }
+    }
+}
+
+tasks.configureEach {
+    if (name == "preReleaseBuild") {
+        doFirst {
+            if (!releaseSigning.values().every { it }) {
+                throw new GradleException("Release signing requires all ANDROID_RELEASE_* signing environment variables. Debug signing is not allowed for releases.")
+            }
+            if (!file(releaseSigning.storePath).isFile()) {
+                throw new GradleException("The configured Android release keystore does not exist.")
+            }
+            if (file(releaseSigning.storePath).canonicalFile == file("debug.keystore").canonicalFile ||
+                releaseSigning.alias == "androiddebugkey") {
+                throw new GradleException("The Android debug keystore cannot be used for release signing.")
+            }
+            def releaseEnv = project.ext.has("env") ? project.env : [:]
+            def developerKeys = releaseEnv.findAll { k, v -> k.startsWith("TEST_") && v?.trim() }.keySet()
+            if (!developerKeys.isEmpty()) {
+                throw new GradleException("Release env file must not define developer-only keys: ${developerKeys.join(', ')}. Use .env.production for release builds.")
+            }
+            if (!(releaseEnv.API_BASE_URL ?: "").trim().startsWith("https://")) {
+                throw new GradleException("Release builds require an https:// API_BASE_URL in .env.production.")
+            }
         }
     }
 }

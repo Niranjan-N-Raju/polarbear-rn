@@ -76,6 +76,7 @@ export function FranchiseHomeScreen({ user: initialUser, onLogout }: FranchiseHo
   const [activeStore, setActiveStore] = useState<FranchiseStore | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
   const [version, setVersion] = useState(0);
   const [pickerOpen, setPickerOpen] = useState(false);
   const [drawerOpen, setDrawerOpen] = useState(false);
@@ -119,6 +120,22 @@ export function FranchiseHomeScreen({ user: initialUser, onLogout }: FranchiseHo
   function navigate(key: string) {
     setTab(key);
     setDrawerOpen(false);
+  }
+
+  async function logout() {
+    if (isLoggingOut) return;
+    setIsLoggingOut(true);
+    try {
+      const response = await apiRequest('/auth/logout', { method: 'POST' });
+      if (!response.ok && response.status !== 401) {
+        if (__DEV__) console.warn('[auth.logout] Server revocation failed; only the local session will be cleared.');
+      }
+    } catch {
+      if (__DEV__) console.warn('[auth.logout] Server unreachable; only the local session will be cleared.');
+    } finally {
+      onLogout();
+      setIsLoggingOut(false);
+    }
   }
 
   function renderNavItem(item: MenuItem) {
@@ -197,8 +214,8 @@ export function FranchiseHomeScreen({ user: initialUser, onLogout }: FranchiseHo
                 {!compact ? <Text style={styles.actionText}>{t('franchiseSwitchStore')}</Text> : null}
               </Pressable>
             ) : null}
-            <Pressable accessibilityRole="button" accessibilityLabel={t('signOut')} onPress={onLogout} style={[styles.navItem, styles.signOutAction, compact && styles.compactAction]}>
-              <LogOut size={20} color={theme.colors.muted} />
+            <Pressable accessibilityRole="button" accessibilityLabel={t('signOut')} disabled={isLoggingOut} onPress={logout} style={[styles.navItem, styles.signOutAction, compact && styles.compactAction]}>
+              {isLoggingOut ? <AppLoader variant="inline" /> : <LogOut size={20} color={theme.colors.muted} />}
               {!compact ? <Text style={styles.actionText}>{t('signOut')}</Text> : null}
             </Pressable>
           </View>
@@ -216,14 +233,14 @@ export function FranchiseHomeScreen({ user: initialUser, onLogout }: FranchiseHo
             <Pressable accessibilityRole="button" onPress={() => setVersion((value) => value + 1)} style={styles.button}>
               <Text style={styles.buttonText}>{t('adminRefresh')}</Text>
             </Pressable>
-            <Pressable accessibilityRole="button" accessibilityLabel={t('signOut')} onPress={onLogout} style={styles.button}>
+            <Pressable accessibilityRole="button" accessibilityLabel={t('signOut')} disabled={isLoggingOut} onPress={logout} style={styles.button}>
               <Text style={styles.buttonText}>{t('signOut')}</Text>
             </Pressable>
           </View>
         ) : (
           <View style={styles.pickerScreen}>
             <ResponsiveDrawerModal visible closeLabel={t('franchiseSelectStore')} onClose={() => undefined} panelStyle={pickerPanelStyle}>
-              <StorePicker stores={stores} onSelect={selectStore} onSignOut={onLogout} fill={hasSidebar} />
+              <StorePicker stores={stores} onSelect={selectStore} onSignOut={logout} fill={hasSidebar} />
             </ResponsiveDrawerModal>
           </View>
         )}
