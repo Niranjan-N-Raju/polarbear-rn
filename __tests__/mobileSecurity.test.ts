@@ -21,6 +21,7 @@ describe('API base URL transport policy', () => {
     ['http://localhost:5000/api'],
     ['ftp://api.example.com'],
     ['//evil.example.com/api'],
+    // eslint-disable-next-line no-script-url -- intentionally malicious input under test
     ['javascript:alert(1)'],
     ['not a url'],
     ['https://user:pass@api.example.com/api'],
