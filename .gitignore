@@ -84,6 +84,8 @@ yarn-error.log
 .expo/
 .expo-shared/
 web-build/
+dist/
+*.map
 .turbo/
 .eslintcache
 *.tsbuildinfo

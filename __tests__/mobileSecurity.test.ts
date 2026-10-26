@@ -211,6 +211,24 @@ describe('iOS platform hardening', () => {
     it('fails when the release env file is missing', () => {
       expect(run(null).code).toBe(1);
     });
+
+    it('fails a Release build that falls back to the developer .env when ENVFILE is unset', () => {
+      fs.writeFileSync(path.join(dir, '.env'), 'API_BASE_URL=https://api.example.com/api\nTEST_LOGIN_EMAIL=dev@example.com\n');
+      const env = { ...process.env };
+      delete env.ENVFILE;
+      let code = 0;
+      let stderr = '';
+      try {
+        execFileSync('sh', [script, dir], { env, stdio: 'pipe' });
+      } catch (error) {
+        const failure = error as { status: number; stderr: Buffer };
+        code = failure.status;
+        stderr = failure.stderr.toString();
+      }
+      expect(code).toBe(1);
+      expect(stderr).toContain('TEST_LOGIN_EMAIL');
+      expect(stderr).not.toContain('dev@example.com');
+    });
   });
 });
 
