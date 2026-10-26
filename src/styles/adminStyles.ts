@@ -6,7 +6,7 @@ const { colors, spacing, typography } = theme;
 const baseAdminStyles = StyleSheet.create({
   root: {
     flex: 1,
-    backgroundColor: colors.sand,
+    backgroundColor: colors.white,
   },
   rootWeb: {
     flexDirection: 'row',
@@ -14,6 +14,7 @@ const baseAdminStyles = StyleSheet.create({
   mainPanel: {
     flex: 1,
     minWidth: 0,
+    backgroundColor: colors.sand,
   },
   mainPanelWeb: {
     minHeight: '100%',

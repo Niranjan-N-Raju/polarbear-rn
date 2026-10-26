@@ -1,8 +1,9 @@
 import React from 'react';
-import { Modal, Platform } from 'react-native';
+import { Modal, Platform, View } from 'react-native';
 import TestRenderer, { act } from 'react-test-renderer';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { ResponsiveDrawerModal } from '../src/components/ResponsiveDrawerModal';
+import { AppLoader, AppLoaderProvider } from '../src/components/AppLoader';
 import { initialMetrics } from './testUtils';
 
 const originalPlatform = Platform.OS;
@@ -14,6 +15,26 @@ afterEach(() => {
 });
 
 describe('ResponsiveDrawerModal', () => {
+  it('covers the entire drawer modal when loading without presenting another native modal', () => {
+    let renderer!: TestRenderer.ReactTestRenderer;
+    act(() => {
+      renderer = TestRenderer.create(
+        <SafeAreaProvider initialMetrics={initialMetrics}>
+          <AppLoaderProvider>
+            <ResponsiveDrawerModal visible closeLabel="Close" onClose={jest.fn()}>
+              <AppLoader />
+            </ResponsiveDrawerModal>
+          </AppLoaderProvider>
+        </SafeAreaProvider>,
+      );
+    });
+    expect(renderer.root.findAllByType(Modal)).toHaveLength(1);
+    const modal = renderer.root.findByType(Modal);
+    expect(modal.findAllByType(View).filter((node) => node.props.testID === 'app-loader-overlay')).toHaveLength(1);
+    expect(renderer.root.findAllByType(View).filter((node) => node.props.testID === 'app-loader-overlay')).toHaveLength(1);
+    act(() => renderer.unmount());
+  });
+
   it('closes the native drawer from the scrim and calls after-close when hidden', async () => {
     jest.useFakeTimers();
     const onClose = jest.fn();

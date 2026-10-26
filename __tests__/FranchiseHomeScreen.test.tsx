@@ -3,6 +3,7 @@ import { Platform, ScrollView, StyleSheet, Text } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import * as authApi from '../src/api/auth';
 import { t } from '../src/i18n';
+import { theme } from '../src/config/theme';
 import { FranchiseDashboardScreen } from '../src/screens/franchise/FranchiseDashboardScreen';
 import { FranchiseHomeScreen } from '../src/screens/franchise/FranchiseHomeScreen';
 import { FranchiseSalaryScreen } from '../src/screens/franchise/salary/FranchiseSalaryScreen';
@@ -56,6 +57,8 @@ describe('FranchiseHomeScreen', () => {
     const renderer = renderSafeArea(<FranchiseHomeScreen user={user} onLogout={jest.fn()} />);
     await flushEffects();
     expect(renderer.root.findByType(FranchiseDashboardScreen).props.storeId).toBe('store-1');
+    const safeArea = renderer.root.findByType(SafeAreaView);
+    expect(StyleSheet.flatten(safeArea.props.style).backgroundColor).toBe(theme.colors.white);
     act(() => renderer.root.findByProps({ accessibilityLabel: t('adminOpenMenu') }).props.onPress());
     expect(renderer.root.findAllByProps({ accessibilityLabel: t('franchiseSwitchStore') })).toHaveLength(0);
     const groupButton = (label: string) => renderer.root.findByProps({ accessibilityLabel: label });

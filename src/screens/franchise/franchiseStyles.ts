@@ -4,9 +4,9 @@ import { theme } from '../../config/theme';
 const { colors, spacing, typography } = theme;
 
 export const franchiseStyles = StyleSheet.create({
-  root: { flex: 1, backgroundColor: colors.paleBackground },
+  root: { flex: 1, backgroundColor: colors.white },
   wideRoot: { flexDirection: 'row' },
-  main: { flex: 1, minWidth: 0 },
+  main: { flex: 1, minWidth: 0, backgroundColor: colors.paleBackground },
   header: {
     flexDirection: 'row', alignItems: 'center', gap: spacing.lg,
     padding: spacing['2xl'], borderBottomWidth: 1, borderColor: colors.beige,

@@ -3,6 +3,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useEffect, useRef, useState } from 'react';
 import { responsiveDrawerStyles as styles } from '../styles/responsiveDrawerStyles';
 import { getResponsiveDrawerLayout } from '../utils/adminLayout';
+import { AppLoaderProvider } from './AppLoader';
 
 import type { ResponsiveDrawerModalProps } from './types';
 
@@ -77,35 +78,37 @@ export function ResponsiveDrawerModal({ visible, closeLabel, onClose, onAfterClo
       statusBarTranslucent
       onRequestClose={onClose}
     >
-      <View style={[styles.root, isDialog ? styles.dialogRoot : drawerLayout.position === 'right' && styles.webRoot]}>
-        <Pressable
-          testID="responsive-drawer-scrim"
-          accessibilityRole="button"
-          accessibilityLabel={closeLabel}
-          disabled={!visible}
-          onPress={onClose}
-          style={styles.scrim}
-        />
-        <View
-          testID="responsive-drawer-panel"
-          style={[
-            styles.panel,
-            isDialog ? styles.dialogPanel : drawerLayout.position === 'right' ? styles.webPanel : styles.nativePanel,
-            drawerLayout.position === 'bottom' && !isDialog ? { paddingBottom: insets.bottom } : undefined,
-            panelStyle,
-            isWeb ? {
-              opacity: webOpen ? 1 : 0,
-              transform: [
-                { translateX: drawerLayout.position === 'right' && !webOpen ? drawerLayout.hiddenOffset : 0 },
-                { translateY: drawerLayout.position === 'bottom' && !webOpen ? drawerLayout.hiddenOffset : 0 },
-              ],
-            } : undefined,
-          ]}
-        >
-          {children}
+      <AppLoaderProvider>
+        <View style={[styles.root, isDialog ? styles.dialogRoot : drawerLayout.position === 'right' && styles.webRoot]}>
+          <Pressable
+            testID="responsive-drawer-scrim"
+            accessibilityRole="button"
+            accessibilityLabel={closeLabel}
+            disabled={!visible}
+            onPress={onClose}
+            style={styles.scrim}
+          />
+          <View
+            testID="responsive-drawer-panel"
+            style={[
+              styles.panel,
+              isDialog ? styles.dialogPanel : drawerLayout.position === 'right' ? styles.webPanel : styles.nativePanel,
+              drawerLayout.position === 'bottom' && !isDialog ? { paddingBottom: insets.bottom } : undefined,
+              panelStyle,
+              isWeb ? {
+                opacity: webOpen ? 1 : 0,
+                transform: [
+                  { translateX: drawerLayout.position === 'right' && !webOpen ? drawerLayout.hiddenOffset : 0 },
+                  { translateY: drawerLayout.position === 'bottom' && !webOpen ? drawerLayout.hiddenOffset : 0 },
+                ],
+              } : undefined,
+            ]}
+          >
+            {children}
+          </View>
+          {overlay}
         </View>
-        {overlay}
-      </View>
+      </AppLoaderProvider>
     </Modal>
   );
 }
