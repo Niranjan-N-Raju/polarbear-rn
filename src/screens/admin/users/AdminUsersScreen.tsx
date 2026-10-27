@@ -312,7 +312,7 @@ export function AdminUsersScreen({ onToast }: AdminUsersScreenProps) {
     <View style={styles.screen}>
       <View style={[styles.screenHeader, layout.desktopWeb && styles.screenHeaderInline, layout.compactWeb && styles.screenHeaderStack]}>
         <View style={layout.isWeb ? styles.screenHeaderCopy : styles.screenHeaderCopyNative}>
-          {layout.desktopWeb ? <Text style={[styles.screenEyebrow, styles.screenEyebrowTeal]}>Access management</Text> : null}
+          {layout.desktopWeb ? <Text style={[styles.screenEyebrow, styles.screenEyebrowTeal]}>{t('adminUsersEyebrow')}</Text> : null}
           <View style={styles.screenTitleRow}>
             <Text style={[styles.screenTitle, styles.screenTitleInline]}>{t('adminUsers')}</Text>
             <Pressable

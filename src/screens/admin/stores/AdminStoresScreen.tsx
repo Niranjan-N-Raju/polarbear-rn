@@ -280,7 +280,7 @@ export function AdminStoresScreen({ userId, onToast }: AdminStoresScreenProps) {
     <View style={styles.screen}>
       <View style={[styles.screenHeader, layout.desktopWeb && styles.screenHeaderInline, layout.compactWeb && styles.screenHeaderStack]}>
         <View style={layout.isWeb ? styles.screenHeaderCopy : styles.screenHeaderCopyNative}>
-          {layout.desktopWeb ? <Text style={[styles.screenEyebrow, styles.screenEyebrowTeal]}>Workspace setup</Text> : null}
+          {layout.desktopWeb ? <Text style={[styles.screenEyebrow, styles.screenEyebrowTeal]}>{t('adminStoresEyebrow')}</Text> : null}
           <View style={styles.screenTitleRow}>
             <Text style={[styles.screenTitle, styles.screenTitleInline]}>{t('adminStores')}</Text>
             <Pressable

@@ -74,7 +74,7 @@ export function AdminHomeScreen({ user: initialUser, onLogout }: AdminHomeScreen
             ) : null}
             <Pressable
               accessibilityRole="button"
-              accessibilityLabel={isSidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+              accessibilityLabel={isSidebarCollapsed ? t('adminExpandSidebar') : t('adminCollapseSidebar')}
               onPress={() => setIsSidebarCollapsed((collapsed) => !collapsed)}
               style={styles.webSidebarCollapseButton}
             >

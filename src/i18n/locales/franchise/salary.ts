@@ -50,6 +50,17 @@ export const salaryEn = {
   franchiseSalaryTotalDeductions: "Total deductions",
   franchiseSalaryPresentDays: "Present days",
   franchiseSalaryWeekOffDays: "Week-off days",
+  franchiseSalaryTypeCashAdvance: 'Cash Advance',
+  franchiseSalaryTypeEmergency: 'Emergency',
+  franchiseSalaryTypeLoanRepayment: 'Loan Repayment',
+  franchiseSalaryTypeGoogleReview: 'Google Review',
+  franchiseSalaryTypeSales: 'Sales',
+  franchiseSalaryTypeAttendance: 'Attendance',
+  franchiseSalaryTypeAudit: 'Audit',
+  franchiseSalaryTypeCompOff: 'Comp Off',
+  franchiseSalaryTypeManualCorrection: 'Manual Correction',
+  franchiseSalaryTypeBonusDay: 'Bonus Day',
+  franchiseSalaryTypeOther: 'Other',
 
 
 } as const;

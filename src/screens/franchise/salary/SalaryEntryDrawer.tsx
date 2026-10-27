@@ -17,6 +17,12 @@ const options: Record<SalaryEntryKind, string[]> = {
   incentives: ['Google Review', 'Sales', 'Attendance', 'Audit', 'Other'],
   'extra-days': ['Comp Off', 'Manual Correction', 'Bonus Day', 'Other'],
 };
+const optionLabelKey: Record<string, Parameters<typeof t>[0]> = {
+  'Cash Advance': 'franchiseSalaryTypeCashAdvance', Emergency: 'franchiseSalaryTypeEmergency', 'Loan Repayment': 'franchiseSalaryTypeLoanRepayment',
+  'Google Review': 'franchiseSalaryTypeGoogleReview', Sales: 'franchiseSalaryTypeSales', Attendance: 'franchiseSalaryTypeAttendance', Audit: 'franchiseSalaryTypeAudit',
+  'Comp Off': 'franchiseSalaryTypeCompOff', 'Manual Correction': 'franchiseSalaryTypeManualCorrection', 'Bonus Day': 'franchiseSalaryTypeBonusDay', Other: 'franchiseSalaryTypeOther',
+};
+export const translateSalaryEntryType = (type: string) => (optionLabelKey[type] ? t(optionLabelKey[type]) : type);
 const translationKey: Record<SalaryEntryKind, Parameters<typeof t>[0]> = { advances: 'franchiseSalaryAdvance', incentives: 'franchiseSalaryIncentive', 'extra-days': 'franchiseSalaryExtraDay' };
 
 export function SalaryEntryDrawer({ visible, storeId, period, employeeId, kind, entry, onClose, onAfterClose, onSaved }: Props) {
@@ -53,7 +59,7 @@ export function SalaryEntryDrawer({ visible, storeId, period, employeeId, kind, 
       <View style={styles.drawerHeading}><Text style={[styles.modalTitle, styles.drawerHeadingTitle]}>{t(entry ? 'franchiseSalaryEditEntry' : 'franchiseSalaryAddEntry', { entry: t(translationKey[kind]) })}</Text><Pressable accessibilityRole="button" accessibilityLabel={t('adminCloseMenu')} onPress={onClose} style={styles.userIconAction}><X color={theme.colors.muted} size={18} /></Pressable></View>
       <ScrollView style={styles.drawerFormScroll} keyboardShouldPersistTaps="handled">
         <Text style={styles.fieldLabel}>{t('franchiseSalaryEntryType')}</Text>
-        <View style={salaryEntryStyles.options}>{options[kind].map((option) => <Pressable key={option} onPress={() => setType(option)} style={[salaryEntryStyles.option, type === option && salaryEntryStyles.selectedOption]}><Text style={{ color: theme.colors.ink }}>{option}</Text></Pressable>)}</View>
+        <View style={salaryEntryStyles.options}>{options[kind].map((option) => <Pressable key={option} onPress={() => setType(option)} style={[salaryEntryStyles.option, type === option && salaryEntryStyles.selectedOption]}><Text style={{ color: theme.colors.ink }}>{t(optionLabelKey[option])}</Text></Pressable>)}</View>
         {type === 'Other' ? <AdminFormField label={t('franchiseSalaryCustomType')} value={customType} onChangeText={setCustomType} /> : null}
         <AdminFormField label={t((kind === 'extra-days' ? 'franchiseSalaryDays' : 'franchiseSalaryAmount') as Parameters<typeof t>[0])} placeholder="0" value={amount} onChangeText={(value) => { setAmount(value.replace(/[^\d.]/g, '')); setError(null); }} keyboardType="decimal-pad" error={error ?? undefined} />
       </ScrollView>

@@ -14,7 +14,7 @@ import { formatMoney } from '../DashboardCharts';
 import { ConfirmDrawer } from '../shared/ConfirmDrawer';
 import { MonthStepper } from '../shared/MonthStepper';
 import { SummaryCards } from '../../../components/SummaryCards';
-import { SalaryEntryDrawer, type SalaryEntry, type SalaryEntryKind } from './SalaryEntryDrawer';
+import { SalaryEntryDrawer, translateSalaryEntryType, type SalaryEntry, type SalaryEntryKind } from './SalaryEntryDrawer';
 
 interface Projection {
   employeeId: string; name: string; position: string; employmentType: string; salary: number;
@@ -159,7 +159,7 @@ export function FranchiseSalaryScreen({ storeId }: { storeId: string }) {
         <View style={salaryStyles.detailLine}><Text>{t('franchiseSalaryIncentivesTotal')}</Text><Text>{formatMoney(selectedEmployee.incentiveTotal)}</Text></View>
         <View style={salaryStyles.detailLine}><Text>{t('franchiseSalaryAdvance')}</Text><Text>-{formatMoney(selectedEmployee.advanceTotal)}</Text></View>
         <View style={salaryStyles.detailLine}><Text>{t('franchiseSalaryEarned')}</Text><Text>{formatMoney(selectedEmployee.earnedSalary)}</Text></View>
-        <View style={salaryStyles.detailEntries}>{entryKinds.map((kind) => <View key={kind}><Text style={salaryStyles.detailTitle}>{t(kindLabel[kind] )}</Text>{findEntry(selectedEmployee, kind).map((entry) => <View key={entry.id} style={salaryStyles.entryRow}><Text style={salaryStyles.entryText}>{entry.type}: {kind === 'extra-days' ? `${entry.days} ${t('franchiseSalaryDaysShort')}` : formatMoney(entry.amount ?? 0)}</Text><Pressable accessibilityRole="button" accessibilityLabel={t('franchiseSalaryEditEntry', { entry: entry.type })} onPress={() => { setQueuedDrawerAction({ type: 'entry', employeeId: selectedEmployee.employeeId, kind, entry }); setSelectedEmployee(null); setSlip(null); }}><Text style={salaryStyles.link}>{t('adminEditUser')}</Text></Pressable><Pressable accessibilityRole="button" accessibilityLabel={t('franchiseSalaryDeleteEntry', { entry: entry.type })} onPress={() => { setQueuedDrawerAction({ type: 'delete', employeeId: selectedEmployee.employeeId, kind, entry }); setSelectedEmployee(null); setSlip(null); }}><Text style={salaryStyles.danger}>{t('adminDelete')}</Text></Pressable></View>)}</View>)}</View>
+        <View style={salaryStyles.detailEntries}>{entryKinds.map((kind) => <View key={kind}><Text style={salaryStyles.detailTitle}>{t(kindLabel[kind] )}</Text>{findEntry(selectedEmployee, kind).map((entry) => <View key={entry.id} style={salaryStyles.entryRow}><Text style={salaryStyles.entryText}>{translateSalaryEntryType(entry.type)}: {kind === 'extra-days' ? `${entry.days} ${t('franchiseSalaryDaysShort')}` : formatMoney(entry.amount ?? 0)}</Text><Pressable accessibilityRole="button" accessibilityLabel={t('franchiseSalaryEditEntry', { entry: translateSalaryEntryType(entry.type) })} onPress={() => { setQueuedDrawerAction({ type: 'entry', employeeId: selectedEmployee.employeeId, kind, entry }); setSelectedEmployee(null); setSlip(null); }}><Text style={salaryStyles.link}>{t('adminEditUser')}</Text></Pressable><Pressable accessibilityRole="button" accessibilityLabel={t('franchiseSalaryDeleteEntry', { entry: translateSalaryEntryType(entry.type) })} onPress={() => { setQueuedDrawerAction({ type: 'delete', employeeId: selectedEmployee.employeeId, kind, entry }); setSelectedEmployee(null); setSlip(null); }}><Text style={salaryStyles.danger}>{t('adminDelete')}</Text></Pressable></View>)}</View>)}</View>
         <Pressable accessibilityRole="button" accessibilityLabel={t('franchiseSalaryViewSlip')} onPress={() => openSlip(selectedEmployee)} style={[styles.primaryButton, salaryStyles.slipButton]}><FileText color={theme.colors.white} size={16} /><Text style={styles.primaryButtonText}>{t('franchiseSalaryViewSlip')}</Text></Pressable>
         {slipBusy ? <AppLoader variant="inline" /> : null}
         {slip ? <View style={salaryStyles.slip}>
@@ -180,16 +180,16 @@ export function FranchiseSalaryScreen({ storeId }: { storeId: string }) {
           <Text>{t("franchiseSalaryTotalWorkingDays")}: {slip.attendance?.totalWorkingDays}</Text>
           <Text>{t("franchiseSalaryGrossEarnings")}: {formatMoney(slip.earnings?.grossEarnings ?? 0)}</Text>
           <Text>{t("franchiseSalaryTotalDeductions")}: {formatMoney(slip.deductions?.totalDeductions ?? 0)}</Text>
-          {slip.attendance?.extraDays?.map((item, index) => <Text key={index}>{item.type}: {item.days} {t("franchiseSalaryDaysShort")}</Text>)}
-          {slip.incentives?.map((item, index) => <Text key={index}>{item.type}: {formatMoney(item.amount)}</Text>)}
-          {slip.deductions?.advances?.map((item, index) => <Text key={index}>{item.type}: {formatMoney(item.amount)}</Text>)}
+          {slip.attendance?.extraDays?.map((item, index) => <Text key={index}>{translateSalaryEntryType(item.type)}: {item.days} {t("franchiseSalaryDaysShort")}</Text>)}
+          {slip.incentives?.map((item, index) => <Text key={index}>{translateSalaryEntryType(item.type)}: {formatMoney(item.amount)}</Text>)}
+          {slip.deductions?.advances?.map((item, index) => <Text key={index}>{translateSalaryEntryType(item.type)}: {formatMoney(item.amount)}</Text>)}
         </View> : null}
 
       </ScrollView> : null}
     </ResponsiveDrawerModal>
 
     <SalaryEntryDrawer visible={Boolean(entryRequest)} storeId={storeId} period={period} employeeId={entryRequest?.employeeId ?? ''} kind={entryRequest?.kind ?? 'advances'} entry={entryRequest?.entry ?? null} onClose={() => setEntryRequest(null)} onAfterClose={() => { setEntryRequest(null); reload(); if (pendingToast) { setToast(pendingToast); setPendingToast(''); } }} onSaved={(message) => { setPendingToast(message); setEntryRequest(null); }} />
-    <ConfirmDrawer visible={Boolean(deleteRequest)} title={t('franchiseSalaryDeleteTitle')} message={t('franchiseSalaryDeleteConfirm', { entry: deleteRequest?.entry.type ?? '' })} confirmLabel={t('adminDelete')} busy={busyDelete} error={deleteError} onDismissError={() => setDeleteError(null)} onAfterClose={() => { if (pendingToast) { setToast(pendingToast); setPendingToast(''); } }} onClose={() => { setDeleteRequest(null); setDeleteError(null); }} onConfirm={removeEntry} />
+    <ConfirmDrawer visible={Boolean(deleteRequest)} title={t('franchiseSalaryDeleteTitle')} message={t('franchiseSalaryDeleteConfirm', { entry: deleteRequest ? translateSalaryEntryType(deleteRequest.entry.type) : '' })} confirmLabel={t('adminDelete')} busy={busyDelete} error={deleteError} onDismissError={() => setDeleteError(null)} onAfterClose={() => { if (pendingToast) { setToast(pendingToast); setPendingToast(''); } }} onClose={() => { setDeleteRequest(null); setDeleteError(null); }} onConfirm={removeEntry} />
     {toast && !entryRequest && !deleteRequest ? <AppToast message={toast} tone="success" onDismiss={() => setToast(null)} /> : null}
   </View>;
 }

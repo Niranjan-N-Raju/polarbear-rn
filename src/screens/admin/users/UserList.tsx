@@ -10,9 +10,9 @@ export function UserList({ users, isTable, isDesktopWeb, footer, onEdit, onDelet
     return (
       <View style={styles.usersTable}>
         <View style={[styles.usersTableRow, styles.usersTableHeader]}>
-          <Text style={[styles.usersTableCell, styles.usersTableHeaderText, styles.usersTableName]}>Name</Text>
-          <Text style={[styles.usersTableCell, styles.usersTableHeaderText, styles.usersTableEmail]}>Email</Text>
-          <Text style={[styles.usersTableCell, styles.usersTableHeaderText, styles.usersTableStores]}>Stores</Text>
+          <Text style={[styles.usersTableCell, styles.usersTableHeaderText, styles.usersTableName]}>{t('adminUsersColumnName')}</Text>
+          <Text style={[styles.usersTableCell, styles.usersTableHeaderText, styles.usersTableEmail]}>{t('adminUsersColumnEmail')}</Text>
+          <Text style={[styles.usersTableCell, styles.usersTableHeaderText, styles.usersTableStores]}>{t('adminUsersColumnStores')}</Text>
           <View style={styles.usersTableActions} />
         </View>
         <ScrollView style={styles.list} contentContainerStyle={styles.listContent}>

@@ -140,7 +140,7 @@ export function AdminProfileScreen({ user: initialUser, onUserUpdated }: AdminPr
   return (
     <ScrollView contentContainerStyle={styles.screenScroll}>
       <View style={styles.screenHeader}>
-        {layout.desktopWeb ? <Text style={[styles.screenEyebrow, styles.screenEyebrowTeal]}>Account settings</Text> : null}
+        {layout.desktopWeb ? <Text style={[styles.screenEyebrow, styles.screenEyebrowTeal]}>{t('adminProfileEyebrow')}</Text> : null}
         <Text style={styles.screenTitle}>{t('adminProfileTitle')}</Text>
         <Text style={styles.screenDescription}>{t('adminManageAccount')}</Text>
       </View>

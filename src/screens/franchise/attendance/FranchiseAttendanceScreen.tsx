@@ -27,6 +27,7 @@ export interface AttendanceEmployee {
 type AttendanceRecord = { employeeId: string; date: string; status: AttendanceStatus; comment: string };
 type Cycle = { from: string; to: string; type?: 'calendar_month' | 'custom'; startDay?: number };
 const statuses: AttendanceStatus[] = ['Present', 'Week Off', 'Absent'];
+const statusLabelKey = { Present: 'franchiseAttendancePresent', 'Week Off': 'franchiseAttendanceWeekOff', Absent: 'franchiseAttendanceAbsent' } as const;
 
 function localDate(date: Date) {
   return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
@@ -268,8 +269,8 @@ export function FranchiseAttendanceScreen({ storeId }: FranchiseAttendanceScreen
                   <View style={local.statusRow}>
                     {statuses.map((status) => {
                       const chosen = record?.status === status;
-                      return <Pressable key={status} accessibilityRole="button" accessibilityLabel={`${employee.name}: ${status}`} accessibilityState={{ selected: chosen, disabled: updatingId === employee._id }} disabled={updatingId === employee._id} onPress={() => updateStatus(employee, status)} style={[local.statusButton, chosen && local.statusButtonSelected, updatingId === employee._id && local.disabled]}>
-                        <Text style={[local.statusText, chosen && local.statusTextSelected]}>{status}</Text>
+                      return <Pressable key={status} accessibilityRole="button" accessibilityLabel={`${employee.name}: ${t(statusLabelKey[status])}`} accessibilityState={{ selected: chosen, disabled: updatingId === employee._id }} disabled={updatingId === employee._id} onPress={() => updateStatus(employee, status)} style={[local.statusButton, chosen && local.statusButtonSelected, updatingId === employee._id && local.disabled]}>
+                        <Text style={[local.statusText, chosen && local.statusTextSelected]}>{t(statusLabelKey[status])}</Text>
                       </Pressable>;
                     })}
                   </View>
