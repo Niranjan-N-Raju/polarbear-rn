@@ -58,37 +58,30 @@ describe('native date input', () => {
     act(() => renderer.unmount());
   });
 
-  it('requires confirmation on iOS, preserves values on cancel, and clears optional dates', () => {
+  it('renders the inline iOS compact picker with bounds and commits selections', () => {
     Object.defineProperty(Platform, 'OS', { configurable: true, value: 'ios' });
     const change = jest.fn();
-    const renderer = render(<DateInput value="2026-10-10" onChangeText={change} accessibilityLabel="Date" />);
-    act(() => buttons(renderer)[0].props.onPress());
-    act(() => renderer.root.findByType(DateTimePicker).props.onValueChange({}, new Date(2026, 9, 20)));
-    expect(change).not.toHaveBeenCalled();
-    act(() => buttons(renderer).find((button) => containsText(button.props.children, t('adminCancel')))!.props.onPress());
-    expect(change).not.toHaveBeenCalled();
-    expect(renderer.root.findAllByType(DateTimePicker)).toHaveLength(0);
-    act(() => buttons(renderer)[0].props.onPress());
-    act(() => renderer.root.findByType(DateTimePicker).props.onValueChange({}, new Date(2026, 9, 21)));
-    act(() => buttons(renderer).find((button) => containsText(button.props.children, t('dateConfirm')))!.props.onPress());
+    const renderer = render(<DateInput value="2026-10-10" onChangeText={change} accessibilityLabel="Date" minimumDate="2026-10-01" maximumDate="2026-10-31" />);
+    const picker = renderer.root.findByType(DateTimePicker);
+    expect(picker.props).toMatchObject({ display: 'compact', mode: 'date', value: parseDateOnly('2026-10-10'), minimumDate: parseDateOnly('2026-10-01'), maximumDate: parseDateOnly('2026-10-31'), disabled: false });
+    act(() => picker.props.onValueChange({}, new Date(2026, 9, 21)));
     expect(change).toHaveBeenLastCalledWith('2026-10-21');
-    act(() => buttons(renderer)[0].props.onPress());
     act(() => buttons(renderer).find((button) => containsText(button.props.children, t('dateClear')))!.props.onPress());
     expect(change).toHaveBeenLastCalledWith('');
     act(() => renderer.unmount());
   });
 
-  it('can confirm the initial date for an empty iOS field and respects disabled fields', () => {
+  it('shows a placeholder for empty iOS fields, clamps the initial date, and respects disabled fields', () => {
     Object.defineProperty(Platform, 'OS', { configurable: true, value: 'ios' });
     const change = jest.fn();
-    const renderer = render(<DateInput value="" onChangeText={change} accessibilityLabel="Date" allowClear={false} />);
-    act(() => buttons(renderer)[0].props.onPress());
-    const initial = renderer.root.findByType(DateTimePicker).props.value;
+    const renderer = render(<DateInput value="" onChangeText={change} accessibilityLabel="Date" maximumDate="2000-01-01" allowClear={false} />);
+    expect(renderer.root.findAll((node) => node.props.children === t('dateSelect')).length).toBeGreaterThan(0);
+    expect(renderer.root.findByType(DateTimePicker).props.value).toEqual(parseDateOnly('2000-01-01'));
     expect(buttons(renderer).some((button) => containsText(button.props.children, t('dateClear')))).toBe(false);
-    act(() => buttons(renderer).find((button) => containsText(button.props.children, t('dateConfirm')))!.props.onPress());
-    expect(change).toHaveBeenCalledWith(formatDateOnly(initial));
-    act(() => renderer.update(<DateInput value="" onChangeText={change} accessibilityLabel="Date" editable={false} />));
-    expect(buttons(renderer)[0].props.disabled).toBe(true);
+    expect(change).not.toHaveBeenCalled();
+    act(() => renderer.update(<DateInput value="2026-10-10" onChangeText={change} accessibilityLabel="Date" editable={false} />));
+    expect(renderer.root.findByType(DateTimePicker).props.disabled).toBe(true);
+    expect(buttons(renderer)).toHaveLength(0);
     act(() => renderer.unmount());
   });
 });
