@@ -105,6 +105,7 @@ export const en = {
   dateSelect: 'Select date',
   dateClear: 'Clear date',
   dateConfirm: 'Done',
+  dateCancel: 'Cancel',
   datePickerFailed: 'Unable to open date picker',
   dateSelectMonth: 'Select month',
   franchiseFrom: 'From',

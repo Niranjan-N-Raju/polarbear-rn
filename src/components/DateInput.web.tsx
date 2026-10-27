@@ -32,5 +32,5 @@ const styles = StyleSheet.create({
 const inputStyle: CSSProperties = {
   boxSizing: 'border-box', width: '100%', minWidth: 0, minHeight: 40, border: 0,
   background: 'transparent', color: theme.colors.ink, fontFamily: 'inherit',
-  fontSize: theme.typography.sm, colorScheme: 'light', accentColor: theme.colors.teal,
+  fontSize: theme.typography.sm, colorScheme: 'light', accentColor: theme.colors.orange,
 };

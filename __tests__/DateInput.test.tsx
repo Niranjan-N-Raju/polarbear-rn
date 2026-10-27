@@ -1,11 +1,13 @@
-import { Alert, Platform } from 'react-native';
+import { Alert, Modal, Platform } from 'react-native';
 import { act } from 'react-test-renderer';
 import DateTimePicker, { DateTimePickerAndroid } from '@react-native-community/datetimepicker';
 import { DateInput } from '../src/components/DateInput';
+import { ResponsiveDrawerModal } from '../src/components/ResponsiveDrawerModal';
 import { DateInput as WebDateInput } from '../src/components/DateInput.web';
 import { t } from '../src/i18n';
 import { formatDateOnly, parseDateOnly } from '../src/utils/dateOnly';
-import { buttons, containsText, render } from './testUtils';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { buttons, containsText, initialMetrics, render, renderSafeArea } from './testUtils';
 
 const originalPlatform = Platform.OS;
 afterEach(() => {
@@ -58,30 +60,58 @@ describe('native date input', () => {
     act(() => renderer.unmount());
   });
 
-  it('renders the inline iOS compact picker with bounds and commits selections', () => {
+  const press = (renderer: ReturnType<typeof render>, label: string) =>
+    act(() => buttons(renderer).find((button) => button.props.accessibilityLabel === label)!.props.onPress());
+
+  it('opens an iOS inline calendar sheet from the field and commits only on Done', () => {
     Object.defineProperty(Platform, 'OS', { configurable: true, value: 'ios' });
     const change = jest.fn();
-    const renderer = render(<DateInput value="2026-10-10" onChangeText={change} accessibilityLabel="Date" minimumDate="2026-10-01" maximumDate="2026-10-31" />);
+    const renderer = renderSafeArea(<DateInput value="2026-10-10" onChangeText={change} accessibilityLabel="Date" minimumDate="2026-10-01" maximumDate="2026-10-31" />);
+    expect(renderer.root.findAllByType(DateTimePicker)).toHaveLength(0);
+    press(renderer, 'Date');
     const picker = renderer.root.findByType(DateTimePicker);
-    expect(picker.props).toMatchObject({ display: 'compact', mode: 'date', value: parseDateOnly('2026-10-10'), minimumDate: parseDateOnly('2026-10-01'), maximumDate: parseDateOnly('2026-10-31'), disabled: false });
+    expect(picker.props).toMatchObject({ display: 'inline', mode: 'date', value: parseDateOnly('2026-10-10'), minimumDate: parseDateOnly('2026-10-01'), maximumDate: parseDateOnly('2026-10-31') });
     act(() => picker.props.onValueChange({}, new Date(2026, 9, 21)));
+    expect(change).not.toHaveBeenCalled();
+    press(renderer, t('dateConfirm'));
     expect(change).toHaveBeenLastCalledWith('2026-10-21');
-    act(() => buttons(renderer).find((button) => containsText(button.props.children, t('dateClear')))!.props.onPress());
+    expect(renderer.root.findAllByType(DateTimePicker)).toHaveLength(0);
+    press(renderer, 'Date');
+    press(renderer, t('dateClear'));
     expect(change).toHaveBeenLastCalledWith('');
     act(() => renderer.unmount());
   });
 
-  it('shows a placeholder for empty iOS fields, clamps the initial date, and respects disabled fields', () => {
+  it('cancels iOS selections, clamps the initial date, hides Clear when required, and respects disabled fields', () => {
     Object.defineProperty(Platform, 'OS', { configurable: true, value: 'ios' });
     const change = jest.fn();
-    const renderer = render(<DateInput value="" onChangeText={change} accessibilityLabel="Date" maximumDate="2000-01-01" allowClear={false} />);
+    const renderer = renderSafeArea(<DateInput value="" onChangeText={change} accessibilityLabel="Date" maximumDate="2000-01-01" allowClear={false} />);
     expect(renderer.root.findAll((node) => node.props.children === t('dateSelect')).length).toBeGreaterThan(0);
-    expect(renderer.root.findByType(DateTimePicker).props.value).toEqual(parseDateOnly('2000-01-01'));
+    press(renderer, 'Date');
+    const picker = renderer.root.findByType(DateTimePicker);
+    expect(picker.props.value).toEqual(parseDateOnly('2000-01-01'));
     expect(buttons(renderer).some((button) => containsText(button.props.children, t('dateClear')))).toBe(false);
+    act(() => picker.props.onValueChange({}, new Date(1999, 0, 1)));
+    press(renderer, t('dateCancel'));
     expect(change).not.toHaveBeenCalled();
-    act(() => renderer.update(<DateInput value="2026-10-10" onChangeText={change} accessibilityLabel="Date" editable={false} />));
-    expect(renderer.root.findByType(DateTimePicker).props.disabled).toBe(true);
-    expect(buttons(renderer)).toHaveLength(0);
+    expect(renderer.root.findAllByType(DateTimePicker)).toHaveLength(0);
+    act(() => renderer.update(<SafeAreaProvider initialMetrics={initialMetrics}><DateInput value="2026-10-10" onChangeText={change} accessibilityLabel="Date" editable={false} /></SafeAreaProvider>));
+    expect(buttons(renderer).find((button) => button.props.accessibilityLabel === 'Date')!.props.disabled).toBe(true);
+    act(() => renderer.unmount());
+  });
+
+  it('renders the iOS sheet through an open drawer instead of stacking a second Modal', () => {
+    Object.defineProperty(Platform, 'OS', { configurable: true, value: 'ios' });
+    const renderer = renderSafeArea(
+      <ResponsiveDrawerModal visible closeLabel="Close" onClose={() => {}}>
+        <DateInput value="2026-10-10" onChangeText={() => {}} accessibilityLabel="Date" />
+      </ResponsiveDrawerModal>,
+    );
+    press(renderer, 'Date');
+    expect(renderer.root.findAllByType(DateTimePicker)).toHaveLength(1);
+    expect(renderer.root.findAllByType(Modal)).toHaveLength(1);
+    press(renderer, t('dateCancel'));
+    expect(renderer.root.findAllByType(DateTimePicker)).toHaveLength(0);
     act(() => renderer.unmount());
   });
 });

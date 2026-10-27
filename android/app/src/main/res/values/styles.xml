@@ -2,6 +2,14 @@
     <style name="AppTheme" parent="Theme.AppCompat.DayNight.NoActionBar">
         <!-- Customize your theme here. -->
         <item name="android:editTextBackground">@drawable/rn_edit_text_material</item>
+        <item name="android:datePickerDialogTheme">@style/BrandDatePickerDialog</item>
+    </style>
+
+    <style name="BrandDatePickerDialog" parent="Theme.AppCompat.Light.Dialog">
+        <item name="colorAccent">@color/brand_orange</item>
+        <item name="android:colorAccent">@color/brand_orange</item>
+        <item name="colorPrimary">@color/brand_orange</item>
+        <item name="android:windowIsFloating">true</item>
     </style>
 
     <style name="BootTheme" parent="Theme.BootSplash">

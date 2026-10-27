@@ -1,5 +1,8 @@
-import { Alert, Platform, Pressable, StyleSheet, Text, View } from 'react-native';
-import DateTimePicker, { DateTimePickerAndroid } from '@react-native-community/datetimepicker';
+import { useEffect, useId, useState } from 'react';
+import { Alert, Modal, Platform, Pressable, StyleSheet, Text } from 'react-native';
+import { DateTimePickerAndroid } from '@react-native-community/datetimepicker';
+import { IosDatePickerSheet } from './IosDatePickerSheet';
+import { useOverlayHost } from './OverlayHost';
 import { CalendarDays } from '../icons';
 import { theme } from '../config/theme';
 import { t } from '../i18n';
@@ -15,7 +18,33 @@ export function DateInput({
   let initial = parseDateOnly(value) ?? new Date();
   if (min && initial < min) initial = min;
   if (max && initial > max) initial = max;
+  const hostOverlay = useOverlayHost();
+  const hostKey = useId();
+  const [iosDraft, setIosDraft] = useState<Date | null>(null);
+  const closeIos = () => setIosDraft(null);
+  const iosSheet = iosDraft ? (
+    <IosDatePickerSheet
+      value={iosDraft}
+      minimumDate={min}
+      maximumDate={max}
+      allowClear={allowClear}
+      onDraftChange={setIosDraft}
+      onCancel={closeIos}
+      onClear={() => { closeIos(); onChangeText(''); }}
+      onConfirm={() => { closeIos(); onChangeText(formatDateOnly(iosDraft)); }}
+    />
+  ) : null;
+  useEffect(() => {
+    hostOverlay?.(hostKey, iosSheet);
+    // iosSheet is derived from iosDraft; re-host only when the draft or bounds change.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [hostOverlay, hostKey, iosDraft, allowClear, minimumDate, maximumDate, onChangeText]);
+  useEffect(() => () => hostOverlay?.(hostKey, null), [hostOverlay, hostKey]);
   const open = () => {
+    if (Platform.OS === 'ios') {
+      setIosDraft(initial);
+      return;
+    }
     DateTimePickerAndroid.open({
       value: initial,
       mode: 'date',
@@ -23,40 +52,17 @@ export function DateInput({
       maximumDate: max,
       onValueChange: (_event, date) => onChangeText(formatDateOnly(date)),
       onError: (error) => Alert.alert(t('datePickerFailed'), error.message),
+      positiveButton: { textColor: theme.colors.orange },
+      negativeButton: { textColor: theme.colors.orange },
       ...(allowClear ? {
-        neutralButton: { label: t('dateClear'), textColor: theme.colors.teal },
+        neutralButton: { label: t('dateClear'), textColor: theme.colors.orange },
         onNeutralButtonPress: () => onChangeText(''),
       } : {}),
     });
   };
-  if (Platform.OS === 'ios') {
-    return (
-      <View style={[styles.input, style, styles.row]}>
-        {value ? null : <Text style={[styles.text, styles.placeholder]} numberOfLines={1}>{placeholder || t('dateSelect')}</Text>}
-        <DateTimePicker
-          testID="ios-date-picker"
-          accessibilityLabel={accessibilityLabel}
-          value={initial}
-          mode="date"
-          display="compact"
-          minimumDate={min}
-          maximumDate={max}
-          themeVariant="light"
-          accentColor={theme.colors.teal}
-          disabled={!editable}
-          style={[styles.compact, !value && styles.compactEmpty]}
-          onValueChange={(_event, date) => onChangeText(formatDateOnly(date))}
-        />
-        {allowClear && value && editable ? (
-          <Pressable accessibilityRole="button" accessibilityLabel={t('dateClear')} onPress={() => onChangeText('')} hitSlop={8}>
-            <Text style={styles.confirm}>{t('dateClear')}</Text>
-          </Pressable>
-        ) : null}
-      </View>
-    );
-  }
   return (
-    <Pressable
+    <>
+      <Pressable
       accessibilityRole="button"
       accessibilityLabel={accessibilityLabel}
       accessibilityValue={{ text: value }}
@@ -68,6 +74,10 @@ export function DateInput({
       <Text style={[styles.text, !value && styles.placeholder]}>{value || placeholder || t('dateSelect')}</Text>
       <CalendarDays color={theme.colors.teal} size={18} />
     </Pressable>
+    {iosSheet && !hostOverlay ? (
+      <Modal visible transparent animationType="slide" onRequestClose={closeIos}>{iosSheet}</Modal>
+    ) : null}
+    </>
   );
 }
 
@@ -76,7 +86,4 @@ const styles = StyleSheet.create({
   row: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: theme.spacing.md },
   text: { color: theme.colors.ink, fontSize: theme.typography.sm, flexShrink: 1 },
   placeholder: { color: theme.colors.placeholder },
-  compact: { flexShrink: 0 },
-  compactEmpty: { opacity: 0.6 },
-  confirm: { color: theme.colors.teal, fontWeight: theme.fontWeight.bold },
 });
