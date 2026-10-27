@@ -27,6 +27,21 @@ describe('AnimatedSplash (native)', () => {
     ReactTestRenderer.act(() => renderer.unmount());
   });
 
+  test('falls back to the static logo when the WebView native module is missing', async () => {
+    const { TurboModuleRegistry } = require('react-native');
+    jest.mocked(TurboModuleRegistry.get).mockReturnValueOnce(null);
+    const warn = jest.spyOn(console, 'warn').mockImplementation(() => {});
+    let renderer!: ReactTestRenderer.ReactTestRenderer;
+    await ReactTestRenderer.act(() => {
+      renderer = ReactTestRenderer.create(<AnimatedSplash onFinish={jest.fn()} />);
+    });
+    expect(renderer.root.findAllByProps({ testID: 'animated-splash-fallback' }).length).toBeGreaterThan(0);
+    expect(renderer.root.findAllByProps({ testID: 'animated-splash-webview' })).toHaveLength(0);
+    expect(BootSplash.hide).toHaveBeenCalledWith({ fade: false });
+    ReactTestRenderer.act(() => renderer.unmount());
+    warn.mockRestore();
+  });
+
   test('finishes after the minimum display time', async () => {
     jest.useFakeTimers();
     const onFinish = jest.fn();

@@ -19,6 +19,14 @@ jest.mock('react-native-webview', () => {
   return { __esModule: true, WebView, default: WebView };
 });
 
+{
+  const { TurboModuleRegistry } = require('react-native');
+  const originalGet = TurboModuleRegistry.get;
+  jest
+    .spyOn(TurboModuleRegistry, 'get')
+    .mockImplementation((name) => (name === 'RNCWebViewModule' ? {} : originalGet(name)));
+}
+
 jest.mock('react-native-config', () => ({
   __esModule: true,
   default: {},

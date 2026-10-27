@@ -13,7 +13,8 @@
     "start": "react-native start",
     "test": "jest",
     "test:coverage": "jest --coverage --runInBand && open coverage/lcov-report/index.html",
-    "sync:splash": "node scripts/sync-splash-svg.js"
+    "sync:splash": "node scripts/sync-splash-svg.js",
+    "icons": "bash scripts/generate-app-icons.sh"
   },
   "dependencies": {
     "@react-native-community/datetimepicker": "^9.2.2",
