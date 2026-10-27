@@ -9,18 +9,23 @@ export type { DashboardCardColor, DashboardStats } from './types';
 export const dashboardStatCards: {
   key: keyof DashboardStats;
   label: TranslationKey;
-  color: DashboardCardColor;
   Icon: typeof Store;
 }[] = [
-  { key: 'totalStores', label: 'adminStoreTotal', color: 'teal', Icon: Store },
-  { key: 'activeStores', label: 'adminActiveStores', color: 'orange', Icon: CircleCheck },
-  { key: 'franchiseStores', label: 'adminFranchiseStores', color: 'teal', Icon: Handshake },
-  { key: 'companyStores', label: 'adminCompanyStores', color: 'orange', Icon: Building2 },
-  { key: 'totalUsers', label: 'adminTotalUsers', color: 'teal', Icon: UsersRound },
-  { key: 'subAdmins', label: 'adminSubAdmins', color: 'orange', Icon: ShieldCheck },
-  { key: 'storeAdmins', label: 'adminStoreAdmins', color: 'teal', Icon: UserRoundCog },
-  { key: 'employees', label: 'adminEmployees', color: 'orange', Icon: UsersRound },
+  { key: 'totalStores', label: 'adminStoreTotal', Icon: Store },
+  { key: 'activeStores', label: 'adminActiveStores', Icon: CircleCheck },
+  { key: 'franchiseStores', label: 'adminFranchiseStores', Icon: Handshake },
+  { key: 'companyStores', label: 'adminCompanyStores', Icon: Building2 },
+  { key: 'totalUsers', label: 'adminTotalUsers', Icon: UsersRound },
+  { key: 'subAdmins', label: 'adminSubAdmins', Icon: ShieldCheck },
+  { key: 'storeAdmins', label: 'adminStoreAdmins', Icon: UserRoundCog },
+  { key: 'employees', label: 'adminEmployees', Icon: UsersRound },
 ];
+
+export function getDashboardCardColor(index: number, perRow: number): DashboardCardColor {
+  const row = Math.floor(index / perRow);
+  const column = index % perRow;
+  return (row + column) % 2 === 0 ? 'teal' : 'orange';
+}
 
 export function getDashboardLayout(width: number) {
   const adminLayout = getAdminLayout(width);

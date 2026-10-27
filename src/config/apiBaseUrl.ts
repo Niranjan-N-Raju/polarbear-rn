@@ -1,7 +1,15 @@
 import Config from 'react-native-config';
+import { Platform, TurboModuleRegistry, type TurboModule } from 'react-native';
 import { resolveApiBaseUrl } from './resolveApiBaseUrl';
+import { developmentApiUrl } from './developmentApiUrl';
 
-// Dev machine LAN IP so simulators, emulators and physical devices can all reach the backend.
-const localApiUrl = 'http://10.135.10.15:4000/api';
+interface SourceCodeModule extends TurboModule {
+  getConstants(): { scriptURL?: string };
+}
 
-export const apiBaseUrl = resolveApiBaseUrl(Config.API_BASE_URL, { isDev: __DEV__, devFallback: localApiUrl });
+export const apiBaseUrl = resolveApiBaseUrl(Config.API_BASE_URL, {
+  isDev: __DEV__,
+  devFallback: __DEV__ && !Config.API_BASE_URL?.trim()
+    ? developmentApiUrl(TurboModuleRegistry.get<SourceCodeModule>('SourceCode')?.getConstants().scriptURL, Platform.OS)
+    : '',
+});

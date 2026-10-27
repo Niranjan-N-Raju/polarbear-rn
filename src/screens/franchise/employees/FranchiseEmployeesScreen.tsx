@@ -183,7 +183,7 @@ export function FranchiseEmployeesScreen({ storeId }: { storeId: string }) {
         <View style={styles.drawerContent}>
           <View style={styles.drawerHeading}><Text style={[styles.modalTitle, styles.drawerHeadingTitle]}>{t('franchiseEmployeesArchiveTitle')}</Text><Pressable accessibilityRole="button" accessibilityLabel={t('adminCloseMenu')} onPress={() => setArchiveTarget(null)} style={styles.userIconAction}><X color={theme.colors.muted} size={18} /></Pressable></View>
           <Text style={styles.screenDescription}>{t('franchiseEmployeesArchiveConfirm')}</Text>
-          <AdminFormField label={t('franchiseEmployeesExitDate')} value={exitDate} onChangeText={setExitDate} placeholder="YYYY-MM-DD" keyboardType="numbers-and-punctuation" />
+          <AdminFormField date label={t('franchiseEmployeesExitDate')} value={exitDate} onChangeText={setExitDate} placeholder="YYYY-MM-DD" />
           <View style={styles.modalActions}>
             <View style={styles.drawerActionSlot}><Pressable onPress={() => setArchiveTarget(null)} style={[styles.secondaryButton, styles.drawerActionButton]}><Text style={styles.secondaryButtonText}>{t('franchiseEmployeesCancel')}</Text></Pressable></View>
             <View style={styles.drawerActionSlot}><Pressable accessibilityRole="button" disabled={busy} onPress={() => archive()} style={[styles.primaryButton, styles.drawerActionButton]}><Text style={styles.primaryButtonText}>{t('franchiseEmployeesConfirmArchive')}</Text></Pressable></View>

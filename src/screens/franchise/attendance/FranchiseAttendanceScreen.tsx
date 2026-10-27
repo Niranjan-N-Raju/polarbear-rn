@@ -12,6 +12,7 @@ import { adminStyles as styles } from '../../../styles/adminStyles';
 import { getAdminLayout } from '../../../utils/adminLayout';
 import { SummaryCards, type SummaryCardItem } from '../../../components/SummaryCards';
 import { MonthStepper } from '../shared/MonthStepper';
+import { DateInput } from '../../../components/DateInput';
 import { attendanceStyles as local } from './attendanceStyles';
 import { WeeklyRosterDrawer } from './WeeklyRosterDrawer';
 
@@ -217,7 +218,16 @@ export function FranchiseAttendanceScreen({ storeId }: FranchiseAttendanceScreen
       {!storeId ? <View style={local.empty}><Text style={local.emptyText}>{t('franchiseAttendanceSelectStore')}</Text></View> : <>
         <View style={local.toolbar}>
           <Pressable accessibilityRole="button" accessibilityLabel={t('franchiseAttendancePreviousDay')} onPress={() => changeDate(-1)} style={local.dateButton}><Text style={styles.secondaryButtonText}>‹</Text></Pressable>
-          <Text accessibilityRole="header" style={local.dateLabel}>{dateLabel(selectedDate, { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}</Text>
+          <View style={local.dateField}>
+            <DateInput
+              accessibilityLabel={t('franchiseAttendanceDate')}
+              value={selectedDate}
+              onChangeText={setSelectedDate}
+              allowClear={false}
+              minimumDate={cycle?.from}
+              maximumDate={cycle?.to}
+            />
+          </View>
           <Pressable accessibilityRole="button" accessibilityLabel={t('franchiseAttendanceNextDay')} onPress={() => changeDate(1)} style={local.dateButton}><Text style={styles.secondaryButtonText}>›</Text></Pressable>
         </View>
         <MonthStepper month={period} onChange={(next) => setPeriod(next)} />

@@ -1,6 +1,8 @@
 import { act } from 'react-test-renderer';
 import * as authApi from '../src/api/auth';
 import { t } from '../src/i18n';
+import { SummaryCards } from '../src/components/SummaryCards';
+import { theme } from '../src/config/theme';
 import { FranchiseDashboardScreen } from '../src/screens/franchise/FranchiseDashboardScreen';
 import { currentMonthRange } from '../src/screens/franchise/dashboardDates';
 import { buttons, flushEffects, render, response } from './testUtils';
@@ -21,6 +23,12 @@ describe('FranchiseDashboardScreen', () => {
     ));
     const renderer = render(<FranchiseDashboardScreen storeId="store-1" />);
     await flushEffects();
+    expect(renderer.root.findByType(SummaryCards).props.cards).toEqual([
+      expect.objectContaining({ label: t('franchiseMyStores'), color: theme.colors.teal }),
+      expect.objectContaining({ label: t('franchiseEmployeeSummary'), color: theme.colors.orange }),
+      expect.objectContaining({ label: t('franchiseMonthlySales'), color: theme.colors.orange }),
+      expect.objectContaining({ label: t('franchiseAttendanceSummary'), color: theme.colors.teal }),
+    ]);
     expect(api.mock.calls.every(([path]) => path.includes('storeId=store-1'))).toBe(true);
     for (const label of [
       'franchiseMyStores', 'franchiseEmployeeSummary', 'franchiseMonthlySales',

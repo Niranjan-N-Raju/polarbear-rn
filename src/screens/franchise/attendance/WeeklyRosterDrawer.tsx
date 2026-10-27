@@ -5,6 +5,7 @@ import { apiRequest } from '../../../api/auth';
 import { AppLoader } from '../../../components/AppLoader';
 import { AppToast } from '../../../components/AppToast';
 import { ResponsiveDrawerModal } from '../../../components/ResponsiveDrawerModal';
+import { DateInput } from '../../../components/DateInput';
 import { theme } from '../../../config/theme';
 import { t } from '../../../i18n';
 import { adminStyles as styles } from '../../../styles/adminStyles';
@@ -123,7 +124,10 @@ export function WeeklyRosterDrawer({ visible, storeId, employees, onClose, onSav
         <Text style={local.drawerSubtitle}>{t('franchiseAttendanceRosterHelp')}</Text>
         <View style={local.toolbar}>
           <Pressable accessibilityRole="button" onPress={() => setWeekStart((value) => shiftWeek(value, -1))} style={local.dateButton}><Text>‹</Text></Pressable>
-          <Text style={local.dateLabel}>{labelDate(weekDates[0])} – {labelDate(weekDates[6])}</Text>
+          <View style={local.dateField}>
+            <Text style={local.dateLabel}>{labelDate(weekDates[0])} – {labelDate(weekDates[6])}</Text>
+            <DateInput accessibilityLabel={t('franchiseAttendanceWeeklyRoster')} value={weekStart} onChangeText={(value) => setWeekStart(monday(value))} allowClear={false} />
+          </View>
           <Pressable accessibilityRole="button" onPress={() => setWeekStart((value) => shiftWeek(value, 1))} style={local.dateButton}><Text>›</Text></Pressable>
         </View>
         {loading ? <AppLoader /> : shifts.length === 0 ? <View style={local.empty}><Text style={local.emptyText}>{t('franchiseAttendanceNoShifts')}</Text></View> : activeEmployees.length === 0 ? <View style={local.empty}><Text style={local.emptyText}>{t('franchiseAttendanceNoEmployees')}</Text></View> : (

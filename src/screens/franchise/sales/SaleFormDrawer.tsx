@@ -176,6 +176,7 @@ export function SaleFormDrawer({
         </View>
         <ScrollView style={styles.drawerFormScroll} keyboardShouldPersistTaps="handled">
           <AdminFormField
+            date
             label={t('franchiseSaleDate')}
             placeholder={t('franchiseDatePlaceholder')}
             value={form.date}

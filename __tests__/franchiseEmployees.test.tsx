@@ -1,6 +1,8 @@
 import { act } from 'react-test-renderer';
 import * as authApi from '../src/api/auth';
 import { FranchiseEmployeesScreen } from '../src/screens/franchise/employees/FranchiseEmployeesScreen';
+import { DateInput } from '../src/components/DateInput';
+import { t } from '../src/i18n';
 import { buttonByLabel, flushEffects, renderSafeArea, response } from './testUtils';
 
 describe('FranchiseEmployeesScreen', () => {
@@ -27,5 +29,10 @@ describe('FranchiseEmployeesScreen', () => {
     await act(async () => { buttonByLabel(renderer, 'Add employee').props.onPress(); });
     expect(renderer.root.findByProps({ children: 'Add employee' })).toBeTruthy();
     expect(renderer.root.findByProps({ children: 'Full name' })).toBeTruthy();
+    expect(renderer.root.findAllByType(DateInput).map((field) => field.props.accessibilityLabel)).toEqual([
+      t('franchiseEmployeesJoined'),
+      t('franchiseEmployeesActualDob'),
+      t('franchiseEmployeesRecordDob'),
+    ]);
   });
 });

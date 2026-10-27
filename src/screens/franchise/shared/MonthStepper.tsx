@@ -2,7 +2,8 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { ChevronLeft, ChevronRight } from '../../../icons';
 import { theme } from '../../../config/theme';
 import { t } from '../../../i18n';
-import { formatMonthLabel, shiftMonth } from './months';
+import { formatMonthLabel, monthRange, shiftMonth } from './months';
+import { DateInput } from '../../../components/DateInput';
 
 interface MonthStepperProps {
   month: string;
@@ -23,7 +24,16 @@ export function MonthStepper({ month, onChange, maxMonth }: MonthStepperProps) {
       >
         <ChevronLeft color={theme.colors.teal} size={18} />
       </Pressable>
-      <Text accessibilityRole="header" style={monthStyles.label}>{formatMonthLabel(month)}</Text>
+      <View style={monthStyles.selection}>
+        <Text accessibilityRole="header" style={monthStyles.label}>{formatMonthLabel(month)}</Text>
+        <DateInput
+          accessibilityLabel={t('dateSelectMonth')}
+          value={`${month}-01`}
+          onChangeText={(value) => onChange(value.slice(0, 7))}
+          allowClear={false}
+          maximumDate={maxMonth ? monthRange(maxMonth).to : undefined}
+        />
+      </View>
       <Pressable
         accessibilityRole="button"
         accessibilityLabel={t('franchiseNextMonth')}
@@ -60,6 +70,7 @@ const monthStyles = StyleSheet.create({
     backgroundColor: theme.colors.paleBackground,
   },
   disabled: { opacity: 0.4 },
+  selection: { flex: 1, marginHorizontal: theme.spacing.md },
   label: {
     color: theme.colors.ink,
     fontSize: 15,

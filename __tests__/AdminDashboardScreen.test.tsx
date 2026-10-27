@@ -2,6 +2,8 @@ import { Platform } from 'react-native';
 import { act } from 'react-test-renderer';
 import * as authApi from '../src/api/auth';
 import { t } from '../src/i18n';
+import { SummaryCards } from '../src/components/SummaryCards';
+import { theme } from '../src/config/theme';
 import { AdminDashboardScreen } from '../src/screens/admin/AdminDashboardScreen';
 import { render, response } from './testUtils';
 
@@ -21,6 +23,16 @@ describe('AdminDashboardScreen', () => {
       let renderer = render(<AdminDashboardScreen />);
       await act(async () => { await new Promise((resolve) => setImmediate(resolve)); });
       expect(apiRequest).toHaveBeenCalledWith('/dashboard');
+      expect(renderer.root.findByType(SummaryCards).props.cards).toEqual([
+        expect.objectContaining({ key: 'totalStores', color: theme.colors.teal }),
+        expect.objectContaining({ key: 'activeStores', color: theme.colors.orange }),
+        expect.objectContaining({ key: 'franchiseStores', color: theme.colors.orange }),
+        expect.objectContaining({ key: 'companyStores', color: theme.colors.teal }),
+        expect.objectContaining({ key: 'totalUsers', color: theme.colors.teal }),
+        expect.objectContaining({ key: 'subAdmins', color: theme.colors.orange }),
+        expect.objectContaining({ key: 'storeAdmins', color: theme.colors.orange }),
+        expect.objectContaining({ key: 'employees', color: theme.colors.teal }),
+      ]);
       expect(renderer.root.findAllByProps({ children: t('adminDashboard') }).length).toBeGreaterThan(0);
       expect(renderer.toJSON()).toBeTruthy();
       act(() => renderer.unmount());

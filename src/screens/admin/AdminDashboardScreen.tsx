@@ -6,12 +6,13 @@ import { theme } from '../../config/theme';
 import { t } from '../../i18n';
 import { adminStyles as styles } from '../../styles/adminStyles';
 import { SummaryCards } from '../../components/SummaryCards';
-import { dashboardStatCards, getDashboardLayout } from '../../utils/dashboardConfig';
+import { dashboardStatCards, getDashboardCardColor, getDashboardLayout } from '../../utils/dashboardConfig';
 import type { DashboardStats } from '../../utils/types';
 
 export function AdminDashboardScreen() {
   const { width } = useWindowDimensions();
   const layout = getDashboardLayout(width);
+  const perRow = layout.dashboardCardsWide ? 4 : layout.dashboardCardsTablet ? 3 : 2;
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [hasError, setHasError] = useState(false);
@@ -50,15 +51,15 @@ export function AdminDashboardScreen() {
         </Text>
       ) : (
         <SummaryCards
-          cards={dashboardStatCards.map((card) => ({
+          cards={dashboardStatCards.map((card, index) => ({
             key: card.key,
             label: t(card.label),
             value: stats[card.key] ?? 0,
-            color: card.color === 'teal' ? theme.colors.teal : theme.colors.orange,
+            color: theme.colors[getDashboardCardColor(index, perRow)],
             Icon: card.Icon,
           }))}
           isWeb={Platform.OS === 'web'}
-          perRow={layout.dashboardCardsWide ? 4 : layout.dashboardCardsTablet ? 3 : 2}
+          perRow={perRow}
         />
       )}
     </ScrollView>

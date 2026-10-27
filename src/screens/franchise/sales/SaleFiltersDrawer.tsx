@@ -75,6 +75,7 @@ export function SaleFiltersDrawer({
             })}
           </View>
           <AdminFormField
+            date
             label={t('franchiseFrom')}
             placeholder={t('franchiseDatePlaceholder')}
             value={draft.from}
@@ -84,6 +85,7 @@ export function SaleFiltersDrawer({
             autoCapitalize="none"
           />
           <AdminFormField
+            date
             label={t('franchiseTo')}
             placeholder={t('franchiseDatePlaceholder')}
             value={draft.to}

@@ -2,6 +2,7 @@ import { act } from 'react-test-renderer';
 import * as authApi from '../src/api/auth';
 import { t } from '../src/i18n';
 import { FranchiseInventoryScreen } from '../src/screens/franchise/inventory/FranchiseInventoryScreen';
+import { DateInput } from '../src/components/DateInput';
 import type { InventoryStockItem } from '../src/screens/franchise/types';
 import { buttonByLabel, buttons, containsText, flushEffects, renderSafeArea, response } from './testUtils';
 
@@ -48,6 +49,7 @@ describe('FranchiseInventoryScreen', () => {
     act(() => buttonByLabel(renderer, t('franchiseInventoryAddStock')).props.onPress());
     await flushEffects();
     expect(buttons(renderer).some((node) => containsText(node.props.children, t('franchiseInventoryAddStock')))).toBe(true);
+    expect(renderer.root.findByType(DateInput).props.accessibilityLabel).toBe(t('franchiseInventoryExpiry'));
     act(() => renderer.unmount());
   });
 

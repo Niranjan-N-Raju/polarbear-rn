@@ -4,6 +4,7 @@ import { theme } from '../config/theme';
 import { t } from '../i18n';
 import { adminStyles as styles } from '../styles/adminStyles';
 import type { AdminFormFieldProps } from './types';
+import { DateInput } from './DateInput';
 
 export function AdminFormField({
   label,
@@ -22,8 +23,22 @@ export function AdminFormField({
   autoCapitalize,
   autoCorrect,
   multiline,
+  date,
+  minimumDate,
+  maximumDate,
 }: AdminFormFieldProps) {
-  const input = (
+  const input = date ? (
+    <DateInput
+      accessibilityLabel={label}
+      value={value}
+      onChangeText={onChangeText}
+      placeholder={placeholder}
+      editable={editable}
+      minimumDate={minimumDate}
+      maximumDate={maximumDate}
+      style={[styles.fieldInput, error && styles.inputError, !editable && styles.fieldInputDisabled]}
+    />
+  ) : (
     <TextInput
       value={value}
       placeholder={placeholder}

@@ -50,6 +50,11 @@ export default defineConfig(({ command, mode }) => {
     plugins: [react(), ...(isBuild ? [contentSecurityPolicy(apiBaseUrl)] : [])],
     define: { global: 'globalThis', __DEV__: JSON.stringify(!isBuild), ...devCredentialDefines },
     envPrefix: ['VITE_'],
+    optimizeDeps: {
+      esbuildOptions: {
+        resolveExtensions: ['.web.tsx', '.web.ts', '.web.jsx', '.web.js', '.tsx', '.ts', '.jsx', '.js', '.json'],
+      },
+    },
     build: { sourcemap: false },
     resolve: {
       alias: [

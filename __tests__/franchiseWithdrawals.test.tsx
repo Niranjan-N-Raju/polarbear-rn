@@ -1,4 +1,5 @@
 import { TextInput } from 'react-native';
+import { DateInput } from '../src/components/DateInput';
 import { act } from 'react-test-renderer';
 import * as authApi from '../src/api/auth';
 import { t } from '../src/i18n';
@@ -55,7 +56,7 @@ describe('FranchiseWithdrawalsScreen', () => {
     await flushEffects();
 
     act(() => buttonByLabel(renderer, t('franchiseWithdrawalsAdd')).props.onPress());
-    const dateInput = renderer.root.findAllByType(TextInput).find((input) => input.props.placeholder === 'YYYY-MM-DD');
+    const dateInput = renderer.root.findAllByType(DateInput).find((input) => input.props.accessibilityLabel === t('franchiseWithdrawalsDate'));
     const amountInput = renderer.root.findAllByType(TextInput).find((input) => input.props.placeholder === '0.00');
     const reasonInput = renderer.root.findAllByType(TextInput).find((input) => input.props.placeholder === t('franchiseWithdrawalsReasonPlaceholder'));
     expect(reasonInput?.props.maxLength).toBe(300);

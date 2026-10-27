@@ -13,6 +13,9 @@ export interface AdminFilterDropdownProps<Value extends string> {
 }
 
 export interface AdminFormFieldProps {
+  date?: boolean;
+  minimumDate?: string;
+  maximumDate?: string;
   label: string;
   value: string;
   onChangeText: (value: string) => void;

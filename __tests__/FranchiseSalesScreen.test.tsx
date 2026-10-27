@@ -1,4 +1,4 @@
-import { TextInput } from 'react-native';
+import { DateInput } from '../src/components/DateInput';
 import { act } from 'react-test-renderer';
 import * as authApi from '../src/api/auth';
 import { t } from '../src/i18n';
@@ -41,11 +41,11 @@ describe('FranchiseSalesScreen', () => {
     expect(texts(renderer, t('franchiseNoSales')).length).toBeGreaterThan(0);
 
     act(() => buttonByLabel(renderer, t('franchiseFilterSales')).props.onPress());
-    const dateInputs = renderer.root.findAllByType(TextInput).filter((input) => input.props.placeholder === t('franchiseDatePlaceholder'));
+    const dateInputs = renderer.root.findAllByType(DateInput).filter((input) => input.props.placeholder === t('franchiseDatePlaceholder'));
     act(() => {
       dateInputs[0].props.onChangeText('2025-12-01');
     });
-    const toInput = renderer.root.findAllByType(TextInput).filter((input) => input.props.placeholder === t('franchiseDatePlaceholder'))[1];
+    const toInput = renderer.root.findAllByType(DateInput).filter((input) => input.props.placeholder === t('franchiseDatePlaceholder'))[1];
     act(() => toInput.props.onChangeText('2025-12-31'));
     const apply = buttons(renderer).find((node) => containsText(node.props.children, t('adminApplyFilters')));
     act(() => apply!.props.onPress());

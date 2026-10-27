@@ -165,6 +165,7 @@ export function StockFormDrawer({ visible, storeId, onClose, onAfterClose, onSav
           {errors.product ? <Text accessibilityRole="alert" style={[salesStyles.dateError, { marginTop: -theme.spacing.sm, marginBottom: theme.spacing.md }]}>{errors.product}</Text> : null}
           <View style={salesStyles.formRow}>
             <AdminFormField
+              date
               label={t('franchiseInventoryExpiry')}
               placeholder={t('franchiseDatePlaceholder')}
               value={expiryDate}

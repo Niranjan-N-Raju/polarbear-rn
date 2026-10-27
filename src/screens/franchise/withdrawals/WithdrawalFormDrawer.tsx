@@ -95,6 +95,8 @@ export function WithdrawalFormDrawer({ visible, storeId, editingRecord, onClose,
         </View>
         <ScrollView style={styles.drawerFormScroll} keyboardShouldPersistTaps="handled">
           <AdminFormField
+            date
+            maximumDate={localDateValue()}
             label={t('franchiseWithdrawalsDate')}
             placeholder="YYYY-MM-DD"
             value={date}

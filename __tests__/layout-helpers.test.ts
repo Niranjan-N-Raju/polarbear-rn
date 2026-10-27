@@ -1,6 +1,6 @@
 import { Platform } from 'react-native';
 import { getAdminLayout, getResponsiveDrawerLayout } from '../src/utils/adminLayout';
-import { dashboardStatCards, getDashboardLayout } from '../src/utils/dashboardConfig';
+import { dashboardStatCards, getDashboardCardColor, getDashboardLayout } from '../src/utils/dashboardConfig';
 
 const originalPlatform = Platform.OS;
 afterAll(() => Object.defineProperty(Platform, 'OS', { configurable: true, value: originalPlatform }));
@@ -19,7 +19,14 @@ describe('layout-helpers', () => {
       expect(getResponsiveDrawerLayout(1300, 800)).toMatchObject({ position: 'right', hiddenOffset: 390 });
       expect(getDashboardLayout(900).dashboardCardsTablet).toBe(true);
       expect(getDashboardLayout(1300).dashboardCardsWide).toBe(true);
-      expect(dashboardStatCards.map((card) => card.color)).toEqual(['teal', 'orange', 'teal', 'orange', 'teal', 'orange', 'teal', 'orange']);
       expect(dashboardStatCards).toHaveLength(8);
     })
+
+  it.each([
+    [2, ['teal', 'orange', 'orange', 'teal', 'teal', 'orange', 'orange', 'teal']],
+    [3, ['teal', 'orange', 'teal', 'orange', 'teal', 'orange', 'teal', 'orange']],
+    [4, ['teal', 'orange', 'teal', 'orange', 'orange', 'teal', 'orange', 'teal']],
+  ])('alternates dashboard colours across rows with %i columns', (perRow, expected) => {
+    expect(dashboardStatCards.map((_, index) => getDashboardCardColor(index, perRow))).toEqual(expected);
+  });
 });

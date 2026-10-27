@@ -1,4 +1,5 @@
 import { TextInput } from 'react-native';
+import { DateInput } from '../src/components/DateInput';
 import { act } from 'react-test-renderer';
 import * as authApi from '../src/api/auth';
 import { t } from '../src/i18n';
@@ -16,12 +17,12 @@ const yesterday = (() => { const d = new Date(); d.setDate(d.getDate() - 1); ret
 function fillForm(renderer: ReturnType<typeof renderSafeArea>, date: string) {
   const inputs = renderer.root.findAllByType(TextInput);
   act(() => {
-    inputs[0].props.onChangeText(date);
-    inputs[1].props.onChangeText('1000');
-    inputs[2].props.onChangeText('100');
-    inputs[3].props.onChangeText('50');
-    inputs[4].props.onChangeText('200');
-    inputs[5].props.onChangeText('2');
+    renderer.root.findByType(DateInput).props.onChangeText(date);
+    inputs[0].props.onChangeText('1000');
+    inputs[1].props.onChangeText('100');
+    inputs[2].props.onChangeText('50');
+    inputs[3].props.onChangeText('200');
+    inputs[4].props.onChangeText('2');
   });
 }
 
@@ -37,7 +38,7 @@ describe('SaleFormDrawer', () => {
     const renderer = renderSafeArea(
       <SaleFormDrawer visible storeId="store-1" editingSale={null} existingDates={[]} onClose={jest.fn()} onSaved={onSaved} />,
     );
-    act(() => renderer.root.findAllByType(TextInput)[0].props.onChangeText(''));
+    act(() => renderer.root.findByType(DateInput).props.onChangeText(''));
     pressText(renderer, t('franchiseSaveSale'));
     await flushEffects();
     expect(api).not.toHaveBeenCalled();
@@ -60,7 +61,7 @@ describe('SaleFormDrawer', () => {
     const body = JSON.parse(api.mock.calls[0][1]!.body as string);
     expect(body).toMatchObject({ storeId: 'store-1', date: yesterday, totalSale: 1000, swiggy: 100, zomato: 50, upi: 200, upiCharge: 2, expenses: [{ name: 'Milk', amount: 40 }] });
     expect(onSaved).toHaveBeenCalledWith(t('franchiseSaleSaved'), true);
-    expect(renderer.root.findAllByType(TextInput)[0].props.value).toBe(nextDay(yesterday));
+    expect(renderer.root.findByType(DateInput).props.value).toBe(nextDay(yesterday));
     expect(renderer.root.findAllByProps({ message: t('franchiseSaleSaved') }).length).toBeGreaterThan(0);
     act(() => renderer.unmount());
   });

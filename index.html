@@ -16,9 +16,29 @@
         margin: 0;
       }
     </style>
+    <style id="bootsplash-style">
+      #bootsplash {
+        position: fixed;
+        inset: 0;
+        z-index: 9999;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #FFFFFF;
+      }
+      #bootsplash img {
+        display: block;
+        width: 128px;
+        max-width: 80vw;
+        height: auto;
+      }
+    </style>
   </head>
   <body>
     <div id="root"></div>
+    <div id="bootsplash" role="status" aria-label="Loading Polar Bear">
+      <img src="/splash-screen.svg" alt="Polar Bear" />
+    </div>
     <script type="module" src="/src/web.tsx"></script>
   </body>
 </html>

@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
-import { Pressable, ScrollView, Text, TextInput, useWindowDimensions, View } from 'react-native';
+import { Pressable, ScrollView, Text, useWindowDimensions, View } from 'react-native';
+import { DateInput } from '../../components/DateInput';
 import { apiRequest } from '../../api/auth';
 import { AppLoader } from '../../components/AppLoader';
 import { theme } from '../../config/theme';
@@ -7,6 +8,7 @@ import { t } from '../../i18n';
 import { SummaryCards } from '../../components/SummaryCards';
 import { CalendarCheck, IndianRupee, Store, UsersRound } from '../../icons';
 import { getAdminLayout } from '../../utils/adminLayout';
+import { getDashboardCardColor } from '../../utils/dashboardConfig';
 import { currentMonthRange, datesBetween, thisWeekRange, validDateRange } from './dashboardDates';
 import { DashboardBars, formatMoney } from './DashboardCharts';
 import { franchiseStyles as styles } from './franchiseStyles';
@@ -15,6 +17,7 @@ import type { DailySale, FranchiseDashboardStats } from './types';
 export function FranchiseDashboardScreen({ storeId }: { storeId: string }) {
   const { width } = useWindowDimensions();
   const layout = getAdminLayout(width);
+  const perRow = layout.desktopWeb ? 4 : 2;
   const [stats, setStats] = useState<FranchiseDashboardStats | null>(null);
   const [sales, setSales] = useState<DailySale[]>([]);
   const [range, setRange] = useState(currentMonthRange);
@@ -70,11 +73,11 @@ export function FranchiseDashboardScreen({ storeId }: { storeId: string }) {
 
   const salesByDate = new Map(sales.map((sale) => [sale.date, sale.totalSale]));
   const summaryCards = stats ? [
-    { label: t('franchiseMyStores'), value: stats.storeCount, color: theme.colors.teal, Icon: Store },
-    { label: t('franchiseEmployeeSummary'), value: stats.employeeSummary, color: theme.colors.orange, Icon: UsersRound },
-    { label: t('franchiseMonthlySales'), value: formatMoney(stats.salesSummary), color: theme.colors.teal, Icon: IndianRupee },
-    { label: t('franchiseAttendanceSummary'), value: stats.attendanceSummary, color: theme.colors.orange, Icon: CalendarCheck },
-  ] : [];
+    { label: t('franchiseMyStores'), value: stats.storeCount, Icon: Store },
+    { label: t('franchiseEmployeeSummary'), value: stats.employeeSummary, Icon: UsersRound },
+    { label: t('franchiseMonthlySales'), value: formatMoney(stats.salesSummary), Icon: IndianRupee },
+    { label: t('franchiseAttendanceSummary'), value: stats.attendanceSummary, Icon: CalendarCheck },
+  ].map((card, index) => ({ ...card, color: theme.colors[getDashboardCardColor(index, perRow)] })) : [];
 
   return (
     <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
@@ -89,7 +92,7 @@ export function FranchiseDashboardScreen({ storeId }: { storeId: string }) {
         <Text accessibilityRole="alert" style={styles.error}>{error}</Text>
       ) : stats ? (
         <>
-          <SummaryCards cards={summaryCards} isWeb={layout.isWeb} perRow={layout.desktopWeb ? 4 : 2} />
+          <SummaryCards cards={summaryCards} isWeb={layout.isWeb} perRow={perRow} />
           <Text style={styles.subtitle}>{t('franchiseAttendancePending')}</Text>
           <View style={styles.card}>
             <Text style={styles.sectionTitle}>{t('franchiseSalesTrend')}</Text>
@@ -97,12 +100,10 @@ export function FranchiseDashboardScreen({ storeId }: { storeId: string }) {
               {(['from', 'to'] as const).map((field) => (
                 <View key={field} style={styles.dateField}>
                   <Text style={styles.body}>{t(field === 'from' ? 'franchiseFrom' : 'franchiseTo')}</Text>
-                  <TextInput
+                  <DateInput
                     accessibilityLabel={t(field === 'from' ? 'franchiseFrom' : 'franchiseTo')}
                     value={range[field]}
                     placeholder="YYYY-MM-DD"
-                    autoCapitalize="none"
-                    maxLength={10}
                     onChangeText={(value) => setRange((current) => ({ ...current, [field]: value }))}
                     style={styles.dateInput}
                   />

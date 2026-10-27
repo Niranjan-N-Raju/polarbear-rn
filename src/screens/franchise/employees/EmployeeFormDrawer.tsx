@@ -96,7 +96,7 @@ export function EmployeeFormDrawer({ visible, storeId, employee, onClose, onAfte
   };
 
   const field = (key: keyof Form, labelKey: string, keyboardType?: 'default' | 'phone-pad' | 'numeric' | 'numbers-and-punctuation') => (
-    <AdminFormField label={t(labelKey as TranslationKey)} value={form[key]} onChangeText={(value) => change(key, value)} keyboardType={keyboardType} autoCapitalize={key === 'bankIfsc' || key === 'panNumber' ? 'characters' : undefined} autoCorrect={false} />
+    <AdminFormField date={key === 'dateOfJoining' || key === 'actualDob' || key === 'dobInRecords'} label={t(labelKey as TranslationKey)} value={form[key]} onChangeText={(value) => change(key, value)} keyboardType={keyboardType} autoCapitalize={key === 'bankIfsc' || key === 'panNumber' ? 'characters' : undefined} autoCorrect={false} />
   );
 
   return (

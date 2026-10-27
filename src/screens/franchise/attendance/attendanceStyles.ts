@@ -3,6 +3,7 @@ import { theme } from '../../../config/theme';
 
 export const attendanceStyles = StyleSheet.create({
   toolbar: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 8, marginBottom: 10 },
+  dateField: { flex: 1 },
   dateButton: { minWidth: 38, height: 38, borderRadius: 10, alignItems: 'center', justifyContent: 'center', backgroundColor: theme.colors.white, borderWidth: 1, borderColor: theme.colors.beige },
   dateLabel: { color: theme.colors.ink, fontSize: 14, fontWeight: '700', textAlign: 'center', flex: 1 },
   dayStrip: { flexDirection: 'row', gap: 8, paddingBottom: 12 },

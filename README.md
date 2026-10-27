@@ -2,6 +2,24 @@ This is a new [**React Native**](https://reactnative.dev) project, bootstrapped 
 
 # Getting Started
 
+## Launch splash screen
+
+Android, iOS, and web display the artwork from `public/splash-screen.svg`
+centered horizontally and vertically on a white background. The native
+launch resources are generated from that SVG; web displays the SVG directly.
+The splash fades out after the React app mounts, without a fixed delay.
+The 128dp logo width fits Android's system splash safe area without cropping.
+
+After changing the SVG, regenerate the native assets:
+
+```sh
+npx react-native-bootsplash generate public/splash-screen.svg --platforms=android,ios --background=FFFFFF --logo-width=128
+```
+
+Run `bundle exec pod install` from `ios/` after installing the splash dependency,
+then rebuild the mobile apps. Reloading JavaScript does not update native
+launch resources.
+
 ## Android release signing
 
 Release builds never fall back to the repository's debug keystore. Supply
@@ -15,6 +33,25 @@ rotation through your distribution provider before publishing an update.
 ## Development login defaults
 
 Copy `.env.example` to `.env`. For native development clients, set `TEST_LOGIN_EMAIL` and `TEST_LOGIN_PASSWORD` to prefill the login form; for the web dev server, use `VITE_TEST_LOGIN_EMAIL` and `VITE_TEST_LOGIN_PASSWORD` (the `TEST_*` keys are accepted as a dev-server fallback). The local `.env` is ignored by Git. Never put real production credentials in these keys.
+
+### Local backend connectivity
+
+Development uses port 4000 on the Metro bundle host (Android/iOS) or the
+browser page hostname (web), with `/api` as the base path. There is no
+hard-coded LAN IP. Without a network bundle URL, Android defaults to the
+standard emulator host `10.0.2.2`; iOS defaults to `localhost`.
+Devices must be on the same reachable network as this Mac. Check
+`http://<development-host>:4000/api/health` before troubleshooting sign-in;
+it should return HTTP 200 with a connected database.
+
+After a LAN address change, reconnect the mobile app to Metro at the new
+address. For a backend running on a separate machine, a nonstandard port,
+or a tunnel, explicitly set `API_BASE_URL` (native) and `VITE_API_BASE_URL`
+(web) in your ignored `.env`. These overrides take precedence over host
+detection. Restart Vite after changing environment variables; native
+environment changes require a rebuild. A router DHCP reservation can keep
+the development machine's address stable.
+Production must continue to use an explicitly configured HTTPS endpoint.
 
 ## Release environment and transport security
 
@@ -40,6 +77,17 @@ issuer/audience token contract requires existing sessions to sign in again
 after rollout.
 
 The dashboard migrates the Next.js summary cards, sales trend (date range, This Week, This Month), employee attrition, weekday sales, top expenses, and payment mix. Dates use `YYYY-MM-DD`; apply the filters after editing. Attendance summary is explicitly marked as not calculated yet, matching Next.js. Loading, empty-data, and request-error states are separate; Refresh retries dashboard requests.
+
+### Date pickers
+
+Date fields use Android system date dialogs, the iOS native date spinner with
+Done/Cancel controls, and browser-native date inputs on web. Month navigation
+also offers a date picker; selecting a day selects its month. Roster selection
+normalizes the selected day to the start of its week. API values remain local
+calendar dates (`YYYY-MM-DD`), without UTC day shifts. Existing form validation
+still applies. After installing dependencies, run `bundle exec pod install`
+from `ios/` and rebuild both native apps to link
+`@react-native-community/datetimepicker`; a Metro reload alone is insufficient.
 
 The full source menu is present: Dashboard; Store (Sales, Inventory, P&L, Withdrawals); Staff (Employees, Attendance, Salary); Profile; and Store Config. Dashboard and the existing shared Profile screen work in this phase. Remaining screens are labeled **Not yet migrated**, rather than displaying fictitious operational data.
 
