@@ -3,27 +3,32 @@
   "version": "0.0.1",
   "private": true,
   "scripts": {
+    "preandroid": "npm run sync:splash",
     "android": "react-native run-android",
+    "preios": "npm run sync:splash",
     "ios": "react-native run-ios",
     "web": "vite --config vite.config.ts",
     "lint": "eslint .",
+    "prestart": "npm run sync:splash",
     "start": "react-native start",
     "test": "jest",
-    "test:coverage": "jest --coverage --runInBand && open coverage/lcov-report/index.html"
+    "test:coverage": "jest --coverage --runInBand && open coverage/lcov-report/index.html",
+    "sync:splash": "node scripts/sync-splash-svg.js"
   },
   "dependencies": {
-    "react-native-bootsplash": "^7.3.4",
     "@react-native-community/datetimepicker": "^9.2.2",
     "@react-native/new-app-screen": "0.88.0",
     "lucide-react": "^1.58.0",
     "lucide-react-native": "^1.58.0",
-    "react-native-config": "^1.7.2",
     "react": "19.3.0",
     "react-dom": "^19.3.0",
     "react-native": "0.88.0",
+    "react-native-bootsplash": "^7.3.4",
+    "react-native-config": "^1.7.2",
     "react-native-safe-area-context": "^5.5.2",
     "react-native-svg": "^15.16.0",
-    "react-native-web": "^0.21.4"
+    "react-native-web": "^0.21.4",
+    "react-native-webview": "^14.0.1"
   },
   "overrides": {
     "body-parser": "^2.4.0"

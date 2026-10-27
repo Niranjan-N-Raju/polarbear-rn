@@ -27,6 +27,6 @@ describe('launch splash configuration', () => {
     expect(activity.indexOf('RNBootSplash.init')).toBeLessThan(activity.indexOf('super.onCreate'));
     const manifest = JSON.parse(read('assets/bootsplash/manifest.json'));
     expect(manifest.background).toBe('#ffffff');
-    expect(manifest.logo.width).toBe(128);
+    expect(manifest.logo.width).toBe(176);
   });
 });

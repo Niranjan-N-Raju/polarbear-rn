@@ -25,7 +25,8 @@ test('renders correctly', async () => {
   await ReactTestRenderer.act(() => {
     renderer = ReactTestRenderer.create(<App />);
   });
-  expect(BootSplash.hide).toHaveBeenCalledWith({ fade: true });
+  expect(BootSplash.hide).toHaveBeenCalledWith({ fade: false });
+  expect(renderer.root.findAllByProps({ testID: 'animated-splash' }).length).toBeGreaterThan(0);
   ReactTestRenderer.act(() => renderer.unmount());
 });
 

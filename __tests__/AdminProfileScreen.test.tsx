@@ -45,6 +45,7 @@ describe('AdminProfileScreen', () => {
       saveName = buttons(renderer).find((button) => button.props.children?.props?.children === t('adminSaveName'));
       await act(async () => { saveName?.props.onPress(); });
       expect(onUserUpdated).toHaveBeenCalledWith(expect.objectContaining({ name: 'Alex Updated' }));
+      expect(renderer.root.findAllByProps({ children: t('adminNameUpdated') }).length).toBeGreaterThan(0);
   
       let updatePassword = buttons(renderer).find((button) => button.props.children?.props?.children === t('adminUpdatePassword'));
       await act(async () => { updatePassword?.props.onPress(); });
@@ -112,11 +113,25 @@ describe('AdminProfileScreen', () => {
       return response(200, {});
     });
     const onUserUpdated = jest.fn();
-    const renderer = renderSafeArea(<AdminProfileScreen user={user} onUserUpdated={onUserUpdated} />);
+    const onToast = jest.fn();
+    const renderer = renderSafeArea(<AdminProfileScreen user={user} onUserUpdated={onUserUpdated} onToast={onToast} />);
     await flushEffects();
 
     const kannadaButton = buttons(renderer).find((button) => containsText(button.props.children, 'ಕನ್ನಡ'));
     await act(async () => { kannadaButton?.props.onPress(); });
+    expect(apiRequest).toHaveBeenCalledTimes(1);
+    expect(getLanguage()).toBe('en');
+    expect(renderer.root.findAllByProps({ children: t('adminChangeLanguageConfirm', { language: 'ಕನ್ನಡ' }) }).length).toBeGreaterThan(0);
+
+    const cancelButton = buttons(renderer).find((button) => containsText(button.props.children, t('adminCancel')));
+    await act(async () => { cancelButton?.props.onPress(); });
+    expect(apiRequest).toHaveBeenCalledTimes(1);
+    expect(getLanguage()).toBe('en');
+
+    const kannadaAgain = buttons(renderer).find((button) => containsText(button.props.children, 'ಕನ್ನಡ'));
+    await act(async () => { kannadaAgain?.props.onPress(); });
+    const confirmButton = buttons(renderer).find((button) => containsText(button.props.children, t('adminChangeLanguageAction')));
+    await act(async () => { confirmButton?.props.onPress(); });
 
     expect(apiRequest).toHaveBeenLastCalledWith('/me', expect.objectContaining({
       method: 'PATCH',
@@ -124,6 +139,7 @@ describe('AdminProfileScreen', () => {
     }));
     expect(getLanguage()).toBe('kn');
     expect(onUserUpdated).toHaveBeenCalledWith(expect.objectContaining({ preferredLanguage: 'kn' }));
+    expect(onToast).toHaveBeenCalledWith(t('adminLanguageUpdated'), 'success');
     act(() => renderer.unmount());
   });
 });

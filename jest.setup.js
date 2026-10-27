@@ -7,6 +7,18 @@ jest.mock('react-native-bootsplash', () => ({
   },
 }));
 
+jest.mock('react-native-webview', () => {
+  const React = require('react');
+  const { View } = require('react-native');
+  const WebView = (props) => {
+    React.useEffect(() => {
+      props.onLoadEnd?.();
+    }, []); // eslint-disable-line react-hooks/exhaustive-deps
+    return React.createElement(View, props);
+  };
+  return { __esModule: true, WebView, default: WebView };
+});
+
 jest.mock('react-native-config', () => ({
   __esModule: true,
   default: {},
