@@ -104,4 +104,10 @@ export const kn: Partial<Record<TranslationKey, string>> = {
   adminPreferredLanguage: 'ಆದ್ಯತೆಯ ಭಾಷೆ',
   adminPreferredLanguageDescription: 'ಈ ಅಪ್ಲಿಕೇಶನ್‌ನಲ್ಲಿ ಬಳಸುವ ಭಾಷೆಯನ್ನು ಆಯ್ಕೆಮಾಡಿ.',
   adminLanguageSaveFailed: 'ಭಾಷೆಯ ಆದ್ಯತೆಯನ್ನು ಉಳಿಸಲು ಸಾಧ್ಯವಾಗಲಿಲ್ಲ. ದಯವಿಟ್ಟು ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.',
+  adminChangeLanguageTitle: 'ಭಾಷೆ ಬದಲಾಯಿಸಿ',
+  adminChangeLanguageConfirm: 'ಅಪ್ಲಿಕೇಶನ್ ಭಾಷೆಯನ್ನು {{language}} ಗೆ ಬದಲಾಯಿಸಬೇಕೇ?',
+  adminChangeLanguageAction: 'ಬದಲಾಯಿಸಿ',
+  adminLanguageUpdated: 'ಭಾಷೆಯನ್ನು ಯಶಸ್ವಿಯಾಗಿ ನವೀಕರಿಸಲಾಗಿದೆ.',
+  adminNameUpdated: 'ಹೆಸರನ್ನು ಯಶಸ್ವಿಯಾಗಿ ನವೀಕರಿಸಲಾಗಿದೆ.',
+  adminPasswordUpdated: 'ಪಾಸ್‌ವರ್ಡ್ ಯಶಸ್ವಿಯಾಗಿ ನವೀಕರಿಸಲಾಗಿದೆ.',
 };

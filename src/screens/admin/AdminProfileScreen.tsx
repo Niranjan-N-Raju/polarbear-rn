@@ -1,9 +1,11 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { Pressable, ScrollView, Text, useWindowDimensions, View } from 'react-native';
 import { apiRequest, setAccessToken } from '../../api/auth';
 import type { AuthenticatedUser } from '../../api/types';
 import { AdminFormField } from '../../components/AdminFormField';
 import { AppLoader } from '../../components/AppLoader';
+import { AppToast } from '../../components/AppToast';
+import { ResponsiveDrawerModal } from '../../components/ResponsiveDrawerModal';
 import { theme } from '../../config/theme';
 import { getLanguage, setLanguage, t, type AppLanguage } from '../../i18n';
 import { adminStyles as styles } from '../../styles/adminStyles';
@@ -11,7 +13,12 @@ import { getAdminLayout } from '../../utils/adminLayout';
 import { ProfileIdentityCard } from './ProfileIdentityCard';
 import type { AdminProfileScreenProps } from './types';
 
-export function AdminProfileScreen({ user: initialUser, onUserUpdated }: AdminProfileScreenProps) {
+const languageOptions = [
+  { value: 'en', label: 'English' },
+  { value: 'kn', label: 'ಕನ್ನಡ' },
+] as const;
+
+export function AdminProfileScreen({ user: initialUser, onUserUpdated, onToast }: AdminProfileScreenProps) {
   const { width } = useWindowDimensions();
   const layout = getAdminLayout(width);
   const [user, setUser] = useState(initialUser);
@@ -33,6 +40,28 @@ export function AdminProfileScreen({ user: initialUser, onUserUpdated }: AdminPr
   const [showCurrentError, setShowCurrentError] = useState('');
   const [isSavingLanguage, setIsSavingLanguage] = useState(false);
   const [languageError, setLanguageError] = useState('');
+  const [pendingLanguage, setPendingLanguage] = useState<AppLanguage | null>(null);
+  const [isLanguageDialogOpen, setIsLanguageDialogOpen] = useState(false);
+  const [localToast, setLocalToast] = useState<{ message: string; tone: 'success' | 'error' } | null>(null);
+  const dismissLocalToast = useCallback(() => setLocalToast(null), []);
+
+  const showToast = useCallback((message: string, tone: 'success' | 'error') => {
+    if (onToast) onToast(message, tone);
+    else setLocalToast({ message, tone });
+  }, [onToast]);
+
+  function requestLanguageChange(language: AppLanguage): void {
+    if (language === getLanguage()) return;
+    setPendingLanguage(language);
+    setIsLanguageDialogOpen(true);
+  }
+
+  async function confirmLanguageChange(): Promise<void> {
+    if (!pendingLanguage) return;
+    const saved = await savePreferredLanguage(pendingLanguage);
+    setIsLanguageDialogOpen(false);
+    if (saved) showToast(t('adminLanguageUpdated'), 'success');
+  }
 
   useEffect(() => {
     let active = true;
@@ -74,6 +103,7 @@ export function AdminProfileScreen({ user: initialUser, onUserUpdated }: AdminPr
       const updated = { ...user, name: name.trim() };
       setUser(updated);
       onUserUpdated(updated);
+      showToast(t('adminNameUpdated'), 'success');
     } catch (error) {
       setNameError(error instanceof Error ? error.message : t('adminSaveFailed'));
     } finally {
@@ -81,8 +111,8 @@ export function AdminProfileScreen({ user: initialUser, onUserUpdated }: AdminPr
     }
   }
 
-  async function savePreferredLanguage(language: AppLanguage): Promise<void> {
-    if (language === getLanguage()) return;
+  async function savePreferredLanguage(language: AppLanguage): Promise<boolean> {
+    if (language === getLanguage()) return false;
     setLanguageError('');
     setIsSavingLanguage(true);
     try {
@@ -98,8 +128,10 @@ export function AdminProfileScreen({ user: initialUser, onUserUpdated }: AdminPr
       setUser(updated);
       onUserUpdated(updated);
       setLanguage(language);
+      return true;
     } catch (error) {
       setLanguageError(error instanceof Error ? error.message : t('adminLanguageSaveFailed'));
+      return false;
     } finally {
       setIsSavingLanguage(false);
     }
@@ -153,6 +185,7 @@ export function AdminProfileScreen({ user: initialUser, onUserUpdated }: AdminPr
       setShowCurrent(false);
       setShowNew(false);
       setShowConfirm(false);
+      showToast(t('adminPasswordUpdated'), 'success');
     } catch (error) {
       setPasswordError(error instanceof Error ? error.message : t('adminNetworkError'));
     } finally {
@@ -164,7 +197,10 @@ export function AdminProfileScreen({ user: initialUser, onUserUpdated }: AdminPr
     return <AppLoader variant="screen" />;
   }
 
+  const pendingLanguageLabel = languageOptions.find((option) => option.value === pendingLanguage)?.label ?? '';
+
   return (
+    <View style={styles.screen}>
     <ScrollView contentContainerStyle={styles.screenScroll}>
       <View style={styles.screenHeader}>
         {layout.desktopWeb ? <Text style={[styles.screenEyebrow, styles.screenEyebrowTeal]}>{t('adminProfileEyebrow')}</Text> : null}
@@ -225,17 +261,14 @@ export function AdminProfileScreen({ user: initialUser, onUserUpdated }: AdminPr
       <View style={styles.profileCard}>
         <Text style={styles.sectionLabel}>{t('adminPreferredLanguage')}</Text>
         <Text style={styles.rowSubtext}>{t('adminPreferredLanguageDescription')}</Text>
-        <View style={styles.typeOptions}>
-          {([
-            { value: 'en', label: 'English' },
-            { value: 'kn', label: 'ಕನ್ನಡ' },
-          ] as const).map((option) => (
+        <View style={[styles.typeOptions, styles.languageOptions]}>
+          {languageOptions.map((option) => (
             <Pressable
               key={option.value}
               accessibilityRole="button"
               accessibilityState={{ disabled: isSavingLanguage, selected: getLanguage() === option.value }}
               disabled={isSavingLanguage}
-              onPress={() => void savePreferredLanguage(option.value)}
+              onPress={() => requestLanguageChange(option.value)}
               style={[styles.secondaryButton, styles.typeOption, getLanguage() === option.value && styles.typeOptionSelected]}
             >
               <Text style={styles.secondaryButtonText}>{option.label}</Text>
@@ -245,5 +278,35 @@ export function AdminProfileScreen({ user: initialUser, onUserUpdated }: AdminPr
         {languageError ? <Text accessibilityRole="alert" style={[styles.formError, styles.stateError]}>{languageError}</Text> : null}
       </View>
     </ScrollView>
+
+      <ResponsiveDrawerModal
+        visible={isLanguageDialogOpen && pendingLanguage !== null}
+        presentation="dialog"
+        closeLabel={t('adminCancel')}
+        onClose={() => setIsLanguageDialogOpen(false)}
+        onAfterClose={() => setPendingLanguage(null)}
+      >
+        <View style={styles.confirmDialogContent}>
+          <View style={styles.confirmDialogHeader}>
+            <Text style={[styles.modalTitle, styles.confirmDialogTitle]}>{t('adminChangeLanguageTitle')}</Text>
+          </View>
+          <View style={styles.confirmDialogBody}>
+            <Text style={styles.screenDescription}>{t('adminChangeLanguageConfirm', { language: pendingLanguageLabel })}</Text>
+            {languageError ? <Text accessibilityRole="alert" style={[styles.formError, styles.stateError]}>{languageError}</Text> : null}
+          </View>
+          <View style={styles.confirmDialogActions}>
+            <View style={styles.confirmDialogActionSlot}>
+              <Pressable disabled={isSavingLanguage} onPress={() => setIsLanguageDialogOpen(false)} style={[styles.secondaryButton, styles.confirmDialogActionButton]}><Text style={styles.secondaryButtonText}>{t('adminCancel')}</Text></Pressable>
+            </View>
+            <View style={styles.confirmDialogActionSlot}>
+              <Pressable disabled={isSavingLanguage} onPress={() => void confirmLanguageChange()} style={[styles.primaryButton, styles.confirmDialogActionButton]}>
+                {isSavingLanguage ? <AppLoader variant="inline" color={theme.colors.white} /> : <Text style={styles.primaryButtonText}>{t('adminChangeLanguageAction')}</Text>}
+              </Pressable>
+            </View>
+          </View>
+        </View>
+      </ResponsiveDrawerModal>
+      {localToast ? <AppToast message={localToast.message} tone={localToast.tone} onDismiss={dismissLocalToast} /> : null}
+    </View>
   );
 }

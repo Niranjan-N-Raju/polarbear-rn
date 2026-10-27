@@ -567,6 +567,9 @@ const baseAdminStyles = StyleSheet.create({
     gap: spacing.sm,
     marginBottom: spacing.lg,
   },
+  languageOptions: {
+    marginTop: spacing.md,
+  },
   typeOption: {
     flex: 1,
   },

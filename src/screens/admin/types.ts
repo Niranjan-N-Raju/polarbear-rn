@@ -10,6 +10,7 @@ export interface AdminHomeScreenProps {
 export interface AdminProfileScreenProps {
   user: AuthenticatedUser;
   onUserUpdated: (user: AuthenticatedUser) => void;
+  onToast?: (message: string, tone: 'success' | 'error') => void;
 }
 
 export interface ProfileIdentityCardProps {
