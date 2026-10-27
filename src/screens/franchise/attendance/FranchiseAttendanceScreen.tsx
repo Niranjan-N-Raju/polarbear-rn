@@ -10,7 +10,7 @@ import { theme } from '../../../config/theme';
 import { t } from '../../../i18n';
 import { adminStyles as styles } from '../../../styles/adminStyles';
 import { getAdminLayout } from '../../../utils/adminLayout';
-import { SummaryCards, type SummaryCardItem } from '../shared/SummaryCards';
+import { SummaryCards, type SummaryCardItem } from '../../../components/SummaryCards';
 import { MonthStepper } from '../shared/MonthStepper';
 import { attendanceStyles as local } from './attendanceStyles';
 import { WeeklyRosterDrawer } from './WeeklyRosterDrawer';

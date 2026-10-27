@@ -1,12 +1,12 @@
 import { useCallback, useEffect, useState } from 'react';
-import { ScrollView, Text, useWindowDimensions, View } from 'react-native';
+import { Platform, ScrollView, Text, useWindowDimensions, View } from 'react-native';
 import { AppLoader } from '../../components/AppLoader';
 import { apiRequest } from '../../api/auth';
 import { theme } from '../../config/theme';
 import { t } from '../../i18n';
 import { adminStyles as styles } from '../../styles/adminStyles';
-import { dashboardStyles as cardStyles } from '../../styles/dashboardStyles';
-import { dashboardStatCards, getDashboardCardColor, getDashboardLayout } from '../../utils/dashboardConfig';
+import { SummaryCards } from '../../components/SummaryCards';
+import { dashboardStatCards, getDashboardLayout } from '../../utils/dashboardConfig';
 import type { DashboardStats } from '../../utils/types';
 
 export function AdminDashboardScreen() {
@@ -49,31 +49,17 @@ export function AdminDashboardScreen() {
           {t('adminLoadFailed')}
         </Text>
       ) : (
-        <View style={cardStyles.cardGrid}>
-          {dashboardStatCards.map((card, index) => {
-            const color = getDashboardCardColor(index, card.color, layout.useWebAlternatingColors);
-            const isTeal = color === 'teal';
-            return (
-              <View
-                key={card.key}
-                style={[
-                  cardStyles.statCard,
-                  isTeal ? cardStyles.statCardTeal : cardStyles.statCardOrange,
-                  layout.dashboardCardsTablet && cardStyles.statCardTablet,
-                  layout.dashboardCardsWide && cardStyles.statCardWide,
-                ]}
-              >
-                <View style={[cardStyles.statIconTile, isTeal ? cardStyles.statIconTeal : cardStyles.statIconOrange]}>
-                  <card.Icon color={isTeal ? theme.colors.teal : theme.colors.orange} size={layout.dashboardIconSize} />
-                </View>
-                <Text style={cardStyles.statLabel}>{t(card.label)}</Text>
-                <Text style={[cardStyles.statValue, isTeal ? cardStyles.statValueTeal : cardStyles.statValueOrange]}>
-                  {stats[card.key] ?? 0}
-                </Text>
-              </View>
-            );
-          })}
-        </View>
+        <SummaryCards
+          cards={dashboardStatCards.map((card) => ({
+            key: card.key,
+            label: t(card.label),
+            value: stats[card.key] ?? 0,
+            color: card.color === 'teal' ? theme.colors.teal : theme.colors.orange,
+            Icon: card.Icon,
+          }))}
+          isWeb={Platform.OS === 'web'}
+          perRow={layout.dashboardCardsWide ? 4 : layout.dashboardCardsTablet ? 3 : 2}
+        />
       )}
     </ScrollView>
   );

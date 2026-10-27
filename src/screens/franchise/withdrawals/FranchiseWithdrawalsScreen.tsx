@@ -12,7 +12,7 @@ import { getAdminLayout } from '../../../utils/adminLayout';
 import { formatMoney } from '../DashboardCharts';
 import { ConfirmDrawer } from '../shared/ConfirmDrawer';
 import { MonthStepper } from '../shared/MonthStepper';
-import { SummaryCards } from '../shared/SummaryCards';
+import { SummaryCards } from '../../../components/SummaryCards';
 import { currentMonthValue, formatShortDate, monthRange } from '../shared/months';
 import { WithdrawalFormDrawer } from './WithdrawalFormDrawer';
 import { withdrawalStyles } from './withdrawalStyles';

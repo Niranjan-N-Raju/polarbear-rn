@@ -4,7 +4,9 @@ import { apiRequest } from '../../api/auth';
 import { AppLoader } from '../../components/AppLoader';
 import { theme } from '../../config/theme';
 import { t } from '../../i18n';
-import { dashboardStyles } from '../../styles/dashboardStyles';
+import { SummaryCards } from '../../components/SummaryCards';
+import { CalendarCheck, IndianRupee, Store, UsersRound } from '../../icons';
+import { getAdminLayout } from '../../utils/adminLayout';
 import { currentMonthRange, datesBetween, thisWeekRange, validDateRange } from './dashboardDates';
 import { DashboardBars, formatMoney } from './DashboardCharts';
 import { franchiseStyles as styles } from './franchiseStyles';
@@ -12,6 +14,7 @@ import type { DailySale, FranchiseDashboardStats } from './types';
 
 export function FranchiseDashboardScreen({ storeId }: { storeId: string }) {
   const { width } = useWindowDimensions();
+  const layout = getAdminLayout(width);
   const [stats, setStats] = useState<FranchiseDashboardStats | null>(null);
   const [sales, setSales] = useState<DailySale[]>([]);
   const [range, setRange] = useState(currentMonthRange);
@@ -67,10 +70,10 @@ export function FranchiseDashboardScreen({ storeId }: { storeId: string }) {
 
   const salesByDate = new Map(sales.map((sale) => [sale.date, sale.totalSale]));
   const summaryCards = stats ? [
-    { label: t('franchiseMyStores'), value: String(stats.storeCount) },
-    { label: t('franchiseEmployeeSummary'), value: String(stats.employeeSummary) },
-    { label: t('franchiseMonthlySales'), value: formatMoney(stats.salesSummary) },
-    { label: t('franchiseAttendanceSummary'), value: String(stats.attendanceSummary) },
+    { label: t('franchiseMyStores'), value: stats.storeCount, color: theme.colors.teal, Icon: Store },
+    { label: t('franchiseEmployeeSummary'), value: stats.employeeSummary, color: theme.colors.orange, Icon: UsersRound },
+    { label: t('franchiseMonthlySales'), value: formatMoney(stats.salesSummary), color: theme.colors.teal, Icon: IndianRupee },
+    { label: t('franchiseAttendanceSummary'), value: stats.attendanceSummary, color: theme.colors.orange, Icon: CalendarCheck },
   ] : [];
 
   return (
@@ -86,18 +89,7 @@ export function FranchiseDashboardScreen({ storeId }: { storeId: string }) {
         <Text accessibilityRole="alert" style={styles.error}>{error}</Text>
       ) : stats ? (
         <>
-          <View style={dashboardStyles.cardGrid}>
-            {summaryCards.map((card, index) => (
-              <View key={card.label} style={[
-                dashboardStyles.statCard,
-                width >= 1200 && dashboardStyles.statCardWide,
-                index % 2 ? dashboardStyles.statCardOrange : dashboardStyles.statCardTeal,
-              ]}>
-                <Text style={dashboardStyles.statLabel}>{card.label}</Text>
-                <Text style={dashboardStyles.statValue}>{card.value}</Text>
-              </View>
-            ))}
-          </View>
+          <SummaryCards cards={summaryCards} isWeb={layout.isWeb} perRow={layout.desktopWeb ? 4 : 2} />
           <Text style={styles.subtitle}>{t('franchiseAttendancePending')}</Text>
           <View style={styles.card}>
             <Text style={styles.sectionTitle}>{t('franchiseSalesTrend')}</Text>

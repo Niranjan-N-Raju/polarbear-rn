@@ -16,58 +16,6 @@ export const salesStyles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingTop: 20,
   },
-  summaryGrid: {
-    gap: spacing.lg,
-    marginBottom: spacing['2xl'],
-  },
-  summaryRow: {
-    flexDirection: 'row',
-    gap: spacing.lg,
-  },
-  summaryCard: {
-    flex: 1,
-    minWidth: 0,
-    minHeight: 96,
-    padding: spacing.lg,
-    backgroundColor: colors.white,
-    borderRadius: theme.radius.small,
-    borderWidth: theme.border.width,
-    borderColor: colors.beige,
-    borderTopWidth: 3,
-  },
-  summaryCardWeb: {
-    padding: spacing['2xl'],
-  },
-  summaryHeader: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    justifyContent: 'space-between',
-    gap: spacing.md,
-  },
-  summaryLabel: {
-    flex: 1,
-    color: colors.muted,
-    fontSize: 11,
-    fontWeight: theme.fontWeight.bold,
-    textTransform: 'uppercase',
-    letterSpacing: 0.8,
-  },
-  summaryIcon: {
-    width: 32,
-    height: 32,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderRadius: 8,
-    backgroundColor: colors.sand,
-  },
-  summaryValue: {
-    marginTop: spacing.md,
-    fontSize: typography.xl,
-    fontWeight: theme.fontWeight.bold,
-  },
-  summaryValueWeb: {
-    fontSize: 22,
-  },
   cardSubtitle: {
     color: colors.muted,
     fontSize: typography.xs,

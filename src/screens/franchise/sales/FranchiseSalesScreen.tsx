@@ -9,12 +9,12 @@ import { theme } from '../../../config/theme';
 import { t } from '../../../i18n';
 import { adminStyles as styles } from '../../../styles/adminStyles';
 import { getAdminLayout } from '../../../utils/adminLayout';
+import { SummaryCards } from '../../../components/SummaryCards';
 import { formatMoney } from '../DashboardCharts';
 import type { SaleRecord } from '../types';
 import { SaleCard } from './SaleCard';
 import { SaleFiltersDrawer } from './SaleFiltersDrawer';
 import { SaleFormDrawer } from './SaleFormDrawer';
-import { salesStyles } from './salesStyles';
 import { defaultSaleRange, type SaleRange, saleRangeError, summarizeSales } from './utils';
 
 const pageSize = 10;
@@ -119,7 +119,6 @@ export function FranchiseSalesScreen({ storeId }: FranchiseSalesScreenProps) {
     { label: t('franchiseTotalExpenses'), value: formatMoney(summary.totalExpenses), color: theme.colors.orange, Icon: Receipt },
     { label: t('franchiseSaleBankingCash'), value: formatMoney(summary.bankingCash), color: theme.colors.teal, Icon: Banknote },
   ];
-  const summaryRows = layout.desktopWeb ? [summaryCards] : [summaryCards.slice(0, 2), summaryCards.slice(2)];
 
   return (
     <View style={styles.screen}>
@@ -160,32 +159,7 @@ export function FranchiseSalesScreen({ storeId }: FranchiseSalesScreenProps) {
           contentContainerStyle={[styles.listContent, !layout.desktopWeb && styles.storeListWithFab]}
         >
           {isLoading ? <AppLoader variant="inline" /> : null}
-          <View style={salesStyles.summaryGrid}>
-            {summaryRows.map((row) => (
-              <View key={row[0].label} style={salesStyles.summaryRow}>
-                {row.map(({ label, value, color, Icon }) => (
-                  <View
-                    key={label}
-                    style={[salesStyles.summaryCard, { borderTopColor: color }, layout.isWeb && salesStyles.summaryCardWeb]}
-                  >
-                    <View style={salesStyles.summaryHeader}>
-                      <Text style={salesStyles.summaryLabel} numberOfLines={2}>{label}</Text>
-                      <View style={salesStyles.summaryIcon}>
-                        <Icon color={color} size={16} />
-                      </View>
-                    </View>
-                    <Text
-                      style={[salesStyles.summaryValue, layout.isWeb && salesStyles.summaryValueWeb, { color }]}
-                      numberOfLines={1}
-                      adjustsFontSizeToFit
-                    >
-                      {value}
-                    </Text>
-                  </View>
-                ))}
-              </View>
-            ))}
-          </View>
+          <SummaryCards cards={summaryCards} isWeb={layout.isWeb} perRow={layout.desktopWeb ? 4 : 2} />
 
           {sales.length === 0 ? <Text style={styles.stateMessage}>{t('franchiseNoSales')}</Text> : null}
 

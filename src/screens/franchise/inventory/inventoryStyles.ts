@@ -4,10 +4,6 @@ import { theme } from '../../../config/theme';
 const { colors, spacing, typography } = theme;
 
 export const inventoryStyles = StyleSheet.create({
-  summaryCardSelected: {
-    borderColor: colors.teal,
-    backgroundColor: colors.paleBackground,
-  },
   headerIconButton: {
     width: 40,
     height: 40,

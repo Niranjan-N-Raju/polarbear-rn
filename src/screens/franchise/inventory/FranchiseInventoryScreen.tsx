@@ -9,7 +9,7 @@ import { theme } from '../../../config/theme';
 import { t } from '../../../i18n';
 import { adminStyles as styles } from '../../../styles/adminStyles';
 import { getAdminLayout } from '../../../utils/adminLayout';
-import { salesStyles } from '../sales/salesStyles';
+import { SummaryCards } from '../../../components/SummaryCards';
 import type { InventoryStockItem } from '../types';
 import { InventoryActionDrawer } from './InventoryActionDrawer';
 import { type InventoryAction, InventoryCard } from './InventoryCard';
@@ -130,7 +130,6 @@ export function FranchiseInventoryScreen({ storeId }: FranchiseInventoryScreenPr
     { key: 'sevenDays', label: t('franchiseInventorySummarySevenDays'), value: summary.sevenDays, color: theme.colors.teal, Icon: CalendarClock },
     { key: 'thirtyDays', label: t('franchiseInventorySummaryThirtyDays'), value: summary.thirtyDays, color: theme.colors.orange, Icon: CalendarClock },
   ];
-  const summaryRows = layout.desktopWeb ? [summaryCards] : [summaryCards.slice(0, 2), summaryCards.slice(2)];
 
   return (
     <View style={styles.screen}>
@@ -194,45 +193,11 @@ export function FranchiseInventoryScreen({ storeId }: FranchiseInventoryScreenPr
           contentContainerStyle={[styles.listContent, !layout.desktopWeb && styles.storeListWithFab]}
         >
           {isLoading ? <AppLoader variant="inline" /> : null}
-          <View style={salesStyles.summaryGrid}>
-            {summaryRows.map((row) => (
-              <View key={row[0].key} style={salesStyles.summaryRow}>
-                {row.map(({ key, label, value, color, Icon }) => {
-                  const selected = filters.status === key;
-                  return (
-                    <Pressable
-                      key={key}
-                      accessibilityRole="button"
-                      accessibilityState={{ selected }}
-                      accessibilityLabel={`${label}: ${value}`}
-                      onPress={() => toggleStatus(key)}
-                      style={[
-                        salesStyles.summaryCard,
-                        { borderTopColor: color },
-                        layout.isWeb && salesStyles.summaryCardWeb,
-                        selected && inventoryStyles.summaryCardSelected,
-                        selected && { borderTopColor: color },
-                      ]}
-                    >
-                      <View style={salesStyles.summaryHeader}>
-                        <Text style={salesStyles.summaryLabel} numberOfLines={2}>{label}</Text>
-                        <View style={salesStyles.summaryIcon}>
-                          <Icon color={color} size={16} />
-                        </View>
-                      </View>
-                      <Text
-                        style={[salesStyles.summaryValue, layout.isWeb && salesStyles.summaryValueWeb, { color }]}
-                        numberOfLines={1}
-                        adjustsFontSizeToFit
-                      >
-                        {value}
-                      </Text>
-                    </Pressable>
-                  );
-                })}
-              </View>
-            ))}
-          </View>
+          <SummaryCards
+            cards={summaryCards.map((card) => ({ ...card, selected: filters.status === card.key, onPress: () => toggleStatus(card.key) }))}
+            isWeb={layout.isWeb}
+            perRow={layout.desktopWeb ? 4 : 2}
+          />
 
           {filteredItems.length === 0 ? (
             <Text style={styles.stateMessage}>

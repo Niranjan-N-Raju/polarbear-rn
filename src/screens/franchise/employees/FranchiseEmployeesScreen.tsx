@@ -12,7 +12,7 @@ import { t } from '../../../i18n';
 import { adminStyles as styles } from '../../../styles/adminStyles';
 import { getAdminLayout } from '../../../utils/adminLayout';
 import { localDateValue } from '../dashboardDates';
-import { SummaryCards } from '../shared/SummaryCards';
+import { SummaryCards } from '../../../components/SummaryCards';
 import { EmployeeFiltersDrawer, type EmployeeStatusFilter } from './EmployeeFiltersDrawer';
 import { EmployeeFormDrawer } from './EmployeeFormDrawer';
 import { employeeStyles } from './employeeStyles';

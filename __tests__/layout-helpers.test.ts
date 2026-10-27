@@ -1,6 +1,6 @@
 import { Platform } from 'react-native';
 import { getAdminLayout, getResponsiveDrawerLayout } from '../src/utils/adminLayout';
-import { dashboardStatCards, getDashboardCardColor, getDashboardLayout } from '../src/utils/dashboardConfig';
+import { dashboardStatCards, getDashboardLayout } from '../src/utils/dashboardConfig';
 
 const originalPlatform = Platform.OS;
 afterAll(() => Object.defineProperty(Platform, 'OS', { configurable: true, value: originalPlatform }));
@@ -19,9 +19,7 @@ describe('layout-helpers', () => {
       expect(getResponsiveDrawerLayout(1300, 800)).toMatchObject({ position: 'right', hiddenOffset: 390 });
       expect(getDashboardLayout(900).dashboardCardsTablet).toBe(true);
       expect(getDashboardLayout(1300).dashboardCardsWide).toBe(true);
-      expect(getDashboardCardColor(0, 'orange', true)).toBe('teal');
-      expect(getDashboardCardColor(1, 'teal', true)).toBe('orange');
-      expect(getDashboardCardColor(1, 'teal', false)).toBe('teal');
+      expect(dashboardStatCards.map((card) => card.color)).toEqual(['teal', 'orange', 'teal', 'orange', 'teal', 'orange', 'teal', 'orange']);
       expect(dashboardStatCards).toHaveLength(8);
     })
 });

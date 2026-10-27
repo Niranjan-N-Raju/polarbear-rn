@@ -13,7 +13,7 @@ import { getAdminLayout } from '../../../utils/adminLayout';
 import { formatMoney } from '../DashboardCharts';
 import { ConfirmDrawer } from '../shared/ConfirmDrawer';
 import { MonthStepper } from '../shared/MonthStepper';
-import { SummaryCards } from '../shared/SummaryCards';
+import { SummaryCards } from '../../../components/SummaryCards';
 import { SalaryEntryDrawer, type SalaryEntry, type SalaryEntryKind } from './SalaryEntryDrawer';
 
 interface Projection {

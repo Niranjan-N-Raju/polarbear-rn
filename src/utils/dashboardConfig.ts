@@ -14,18 +14,13 @@ export const dashboardStatCards: {
 }[] = [
   { key: 'totalStores', label: 'adminStoreTotal', color: 'teal', Icon: Store },
   { key: 'activeStores', label: 'adminActiveStores', color: 'orange', Icon: CircleCheck },
-  { key: 'franchiseStores', label: 'adminFranchiseStores', color: 'orange', Icon: Handshake },
-  { key: 'companyStores', label: 'adminCompanyStores', color: 'teal', Icon: Building2 },
+  { key: 'franchiseStores', label: 'adminFranchiseStores', color: 'teal', Icon: Handshake },
+  { key: 'companyStores', label: 'adminCompanyStores', color: 'orange', Icon: Building2 },
   { key: 'totalUsers', label: 'adminTotalUsers', color: 'teal', Icon: UsersRound },
   { key: 'subAdmins', label: 'adminSubAdmins', color: 'orange', Icon: ShieldCheck },
-  { key: 'storeAdmins', label: 'adminStoreAdmins', color: 'orange', Icon: UserRoundCog },
-  { key: 'employees', label: 'adminEmployees', color: 'teal', Icon: UsersRound },
+  { key: 'storeAdmins', label: 'adminStoreAdmins', color: 'teal', Icon: UserRoundCog },
+  { key: 'employees', label: 'adminEmployees', color: 'orange', Icon: UsersRound },
 ];
-
-export function getDashboardCardColor(index: number, nativeColor: DashboardCardColor, useWebAlternatingColors: boolean): DashboardCardColor {
-  if (!useWebAlternatingColors) return nativeColor;
-  return index % 2 === 0 ? 'teal' : 'orange';
-}
 
 export function getDashboardLayout(width: number) {
   const adminLayout = getAdminLayout(width);
@@ -34,6 +29,5 @@ export function getDashboardLayout(width: number) {
     dashboardCardsWide: adminLayout.hasSidebar,
     dashboardEyebrow: !adminLayout.isWeb || adminLayout.desktopWeb,
     dashboardIconSize: adminLayout.isWeb ? 16 : theme.layout.iconSize,
-    useWebAlternatingColors: adminLayout.isWeb && width >= 768,
   } as const;
 }
