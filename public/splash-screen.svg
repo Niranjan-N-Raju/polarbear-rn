@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<svg id="Layer_2" data-name="Layer 2" xmlns="http://www.w3.org/2000/svg" viewBox="0 -5 290.68 85.09">
+<svg id="Layer_2" data-name="Layer 2" xmlns="http://www.w3.org/2000/svg" viewBox="0 -15 290.68 105.09">
   <defs>
     <style>
       .cls-1 {
@@ -37,16 +37,16 @@
       }
       @keyframes logo-float {
         0%, 100% { transform: translateY(0); }
-        50% { transform: translateY(-1.8px); }
+        50% { transform: translateY(-8px); }
       }
       @keyframes icon-bob {
         0%, 100% { transform: translateY(0) rotate(0deg); }
-        35% { transform: translateY(-1.2px) rotate(-1deg); }
-        70% { transform: translateY(0.5px) rotate(1deg); }
+        35% { transform: translateY(-5px) rotate(-4deg); }
+        70% { transform: translateY(2px) rotate(4deg); }
       }
       @keyframes blue-pulse {
         0%, 100% { opacity: 1; }
-        50% { opacity: 0.78; }
+        50% { opacity: 0.45; }
       }
       @media (prefers-reduced-motion: reduce) {
         #Layer_1-2 > g,

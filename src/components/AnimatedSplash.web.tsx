@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react';
 import BootSplash from 'react-native-bootsplash';
 
-export const MIN_SPLASH_MS = 1800;
+export const MIN_SPLASH_MS = 4000;
 
 type Props = { onFinish: () => void };
 
