@@ -8,6 +8,11 @@ export const API_REQUEST_TIMEOUT_MS = 30_000;
 
 let accessToken: string | null = null;
 let unauthorizedHandler: (() => void) | null = null;
+let passwordChangeRequiredHandler: (() => void) | null = null;
+
+export function setPasswordChangeRequiredHandler(handler: (() => void) | null): void {
+  passwordChangeRequiredHandler = handler;
+}
 let hasHandledUnauthorized = false;
 
 export function setUnauthorizedHandler(handler: (() => void) | null): void {
@@ -38,6 +43,10 @@ export async function apiRequest(path: string, init: RequestInit = {}): Promise<
     hasHandledUnauthorized = true;
     accessToken = null;
     unauthorizedHandler?.();
+  }
+  if (response.status === 403 && accessToken && passwordChangeRequiredHandler && typeof response.clone === 'function') {
+    const body = (await response.clone().json().catch(() => null)) as { code?: string } | null;
+    if (body?.code === 'PASSWORD_CHANGE_REQUIRED') passwordChangeRequiredHandler();
   }
   return response;
 }

@@ -14,12 +14,13 @@ import { Eye, EyeOff, LockKeyhole, Mail } from '../icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { AppToast } from '../components/AppToast';
 import { AppLoader } from '../components/AppLoader';
-import { setUnauthorizedHandler } from '../api/auth';
+import { setPasswordChangeRequiredHandler, setUnauthorizedHandler } from '../api/auth';
 import { theme } from '../config/theme';
 import { useLogin } from '../hooks/useLogin';
 import { t } from '../i18n';
 import { FranchiseHomeScreen } from './franchise/FranchiseHomeScreen';
 import { AdminHomeScreen } from './admin/AdminHomeScreen';
+import { ForcePasswordChangeScreen } from './ForcePasswordChangeScreen';
 import {
   getLoginSafeAreaStyles,
   getSignInButtonStyle,
@@ -47,6 +48,12 @@ export function LoginScreen() {
     setUnauthorizedHandler(handleUnauthorized);
     return () => setUnauthorizedHandler(null);
   }, [handleUnauthorized]);
+
+  const requirePasswordChange = loginState.requirePasswordChange;
+  useEffect(() => {
+    setPasswordChangeRequiredHandler(requirePasswordChange);
+    return () => setPasswordChangeRequiredHandler(null);
+  }, [requirePasswordChange]);
   const safeAreaStyles = getLoginSafeAreaStyles(
     safeAreaInsets.top,
     safeAreaInsets.bottom,
@@ -54,6 +61,18 @@ export function LoginScreen() {
   );
 
   if (loginState.session) {
+    if (loginState.session.user.mustChangePassword === true) {
+      return (
+        <>
+          <ForcePasswordChangeScreen
+            onCompleted={loginState.completePasswordChange}
+            onSignOut={loginState.signOut}
+          />
+          {authToastMessage ? <AppToast message={authToastMessage} onDismiss={dismissAuthToast} /> : null}
+        </>
+      );
+    }
+
     if (loginState.session.user.role === 'franchise_admin') {
       return (
         <>

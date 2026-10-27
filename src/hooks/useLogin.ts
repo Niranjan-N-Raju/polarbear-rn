@@ -55,6 +55,14 @@ export function useLogin() {
     setFormError('');
   }
 
+  const completePasswordChange = useCallback((): void => {
+    setSession((current) => current ? { ...current, user: { ...current.user, mustChangePassword: false } } : current);
+  }, []);
+
+  const requirePasswordChange = useCallback((): void => {
+    setSession((current) => current ? { ...current, user: { ...current.user, mustChangePassword: true } } : current);
+  }, []);
+
   const signOut = useCallback((): void => {
     setAccessToken(null);
     setSession(null);
@@ -74,5 +82,7 @@ export function useLogin() {
     updatePassword,
     submit,
     signOut,
+    completePasswordChange,
+    requirePasswordChange,
   };
 }
