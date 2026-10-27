@@ -1,17 +1,25 @@
 #!/usr/bin/env bash
-# Generates iOS and Android launcher icons from a single square PNG (macOS `sips`).
-# Usage: scripts/generate-app-icons.sh [source.png]   (defaults to public/favicon.png)
+# Generates iOS and Android launcher icons from a single square SVG or PNG (macOS `qlmanage`/`sips`).
+# Usage: scripts/generate-app-icons.sh [source.svg|source.png]   (defaults to public/app-icon.svg)
 set -euo pipefail
 
 cd "$(dirname "$0")/.."
-SRC="${1:-public/favicon.png}"
+SRC="${1:-public/app-icon.svg}"
 IOS_DIR="ios/reactnative/Images.xcassets/AppIcon.appiconset"
 ANDROID_RES="android/app/src/main/res"
 TMP="$(mktemp -d)"
 trap 'rm -rf "$TMP"' EXIT
 
+if [[ "$SRC" == *.svg ]]; then
+  qlmanage -t -s 1024 -o "$TMP" "$SRC" >/dev/null 2>&1
+  RASTER="$TMP/$(basename "$SRC").png"
+  [[ -f "$RASTER" ]] || { echo "Failed to rasterize $SRC" >&2; exit 1; }
+else
+  RASTER="$SRC"
+fi
+
 # iOS icons must not contain an alpha channel; round-tripping through JPEG flattens it onto white.
-sips -z 1024 1024 "$SRC" --out "$TMP/big.png" >/dev/null
+sips -z 1024 1024 "$RASTER" --out "$TMP/big.png" >/dev/null
 sips -s format jpeg "$TMP/big.png" --out "$TMP/flat.jpg" >/dev/null
 sips -s format png "$TMP/flat.jpg" --out "$TMP/ios-1024.png" >/dev/null
 
