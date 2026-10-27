@@ -1,5 +1,5 @@
 import { Alert, Modal, Platform } from 'react-native';
-import { act } from 'react-test-renderer';
+import TestRenderer, { act } from 'react-test-renderer';
 import DateTimePicker, { DateTimePickerAndroid } from '@react-native-community/datetimepicker';
 import { DateInput } from '../src/components/DateInput';
 import { ResponsiveDrawerModal } from '../src/components/ResponsiveDrawerModal';
@@ -117,25 +117,54 @@ describe('native date input', () => {
 });
 
 describe('browser date input', () => {
-  it('uses the browser-native date control with labels, bounds, selection, and clearing', () => {
+  const renderWeb = (element: React.ReactElement) => {
+    let renderer!: TestRenderer.ReactTestRenderer;
+    act(() => {
+      renderer = TestRenderer.create(element, {
+        createNodeMock: () => ({ measureInWindow: (callback: (x: number, y: number, w: number, h: number) => void) => callback(10, 20, 200, 40) }),
+      });
+    });
+    return renderer;
+  };
+  const pressables = (renderer: ReturnType<typeof render>) =>
+    renderer.root.findAll((node) => typeof node.props.onPress === 'function' && node.props.accessibilityRole === 'button');
+  const findButton = (renderer: ReturnType<typeof render>, label: string) =>
+    pressables(renderer).find((node) => node.props.accessibilityLabel === label)
+    ?? pressables(renderer).find((node) => containsText(node, label));
+  const press = (renderer: ReturnType<typeof render>, label: string) => act(() => findButton(renderer, label)!.props.onPress());
+
+  it('opens a themed calendar popover with bounds, selection, and clearing', () => {
     const change = jest.fn();
-    const renderer = render(<WebDateInput value="2026-10-10" onChangeText={change} accessibilityLabel="Date" minimumDate="2026-10-01" maximumDate="2026-10-31" />);
-    const input = renderer.root.findByType('input');
-    expect(input.props).toMatchObject({ type: 'date', 'aria-label': 'Date', min: '2026-10-01', max: '2026-10-31' });
-    act(() => input.props.onChange({ currentTarget: { value: '2026-10-20' } }));
+    const renderer = renderWeb(<WebDateInput value="2026-10-10" onChangeText={change} accessibilityLabel="Date" minimumDate="2026-10-05" maximumDate="2026-10-25" />);
+    expect(renderer.root.findAllByType('input')).toHaveLength(0);
+    press(renderer, 'Date');
+    expect(renderer.root.findAllByType(Modal)).toHaveLength(1);
+    expect(findButton(renderer, '2026-10-10')!.props.accessibilityState).toMatchObject({ selected: true });
+    expect(findButton(renderer, '2026-10-01')!.props.disabled).toBe(true);
+    expect(findButton(renderer, '2026-10-26')!.props.disabled).toBe(true);
+    press(renderer, '2026-10-20');
     expect(change).toHaveBeenLastCalledWith('2026-10-20');
-    act(() => input.props.onChange({ currentTarget: { value: '' } }));
+    expect(renderer.root.findAllByType(Modal)).toHaveLength(0);
+    press(renderer, 'Date');
+    press(renderer, t('dateClear'));
     expect(change).toHaveBeenLastCalledWith('');
     act(() => renderer.unmount());
   });
 
-  it('prevents clearing required navigation dates and disables read-only fields', () => {
+  it('navigates months and hides clearing for required dates', () => {
     const change = jest.fn();
-    const renderer = render(<WebDateInput value="2026-10-10" onChangeText={change} accessibilityLabel="Date" allowClear={false} editable={false} />);
-    const input = renderer.root.findByType('input');
-    expect(input.props).toMatchObject({ required: true, disabled: true });
-    act(() => input.props.onChange({ currentTarget: { value: '' } }));
-    expect(change).not.toHaveBeenCalled();
+    const renderer = renderWeb(<WebDateInput value="2026-10-10" onChangeText={change} accessibilityLabel="Date" allowClear={false} />);
+    press(renderer, 'Date');
+    expect(findButton(renderer, t('dateClear'))).toBeUndefined();
+    press(renderer, t('dateNextMonth'));
+    press(renderer, '2026-11-03');
+    expect(change).toHaveBeenLastCalledWith('2026-11-03');
+    act(() => renderer.unmount());
+  });
+
+  it('disables read-only fields', () => {
+    const renderer = renderWeb(<WebDateInput value="2026-10-10" onChangeText={() => {}} accessibilityLabel="Date" editable={false} />);
+    expect(findButton(renderer, 'Date')!.props.disabled).toBe(true);
     act(() => renderer.unmount());
   });
 });
