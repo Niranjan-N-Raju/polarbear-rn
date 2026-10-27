@@ -174,7 +174,12 @@ export function SaleFormDrawer({
             <X color={theme.colors.muted} size={18} />
           </Pressable>
         </View>
-        <ScrollView style={styles.drawerFormScroll} keyboardShouldPersistTaps="handled">
+        <ScrollView
+          style={styles.drawerFormScroll}
+          automaticallyAdjustKeyboardInsets
+          keyboardDismissMode="on-drag"
+          keyboardShouldPersistTaps="handled"
+        >
           <AdminFormField
             date
             label={t('franchiseSaleDate')}

@@ -158,7 +158,8 @@ export const salesStyles = StyleSheet.create({
   expenseEditorActions: {
     flexDirection: 'row',
     justifyContent: 'flex-end',
-    gap: spacing.sm,
+    gap: spacing.lg,
+    marginTop: spacing.lg,
   },
   smallButton: {
     minHeight: 36,

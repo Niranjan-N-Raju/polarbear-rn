@@ -87,7 +87,7 @@ describe('FranchiseHomeScreen', () => {
     await flushEffects();
     expect(renderer.root.findByType(FranchiseDashboardScreen).props.storeId).toBe('store-1');
     const safeArea = renderer.root.findByType(SafeAreaView);
-    expect(StyleSheet.flatten(safeArea.props.style).backgroundColor).toBe(theme.colors.white);
+    expect(StyleSheet.flatten(safeArea.props.style).backgroundColor).toBe(theme.colors.paleBackground);
     act(() => renderer.root.findByProps({ accessibilityLabel: t('adminOpenMenu') }).props.onPress());
     expect(renderer.root.findAllByProps({ accessibilityLabel: t('franchiseSwitchStore') })).toHaveLength(0);
     const groupButton = (label: string) => renderer.root.findByProps({ accessibilityLabel: label });

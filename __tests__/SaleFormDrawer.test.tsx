@@ -1,4 +1,4 @@
-import { TextInput } from 'react-native';
+import { ScrollView, StyleSheet, TextInput } from 'react-native';
 import { DateInput } from '../src/components/DateInput';
 import { act } from 'react-test-renderer';
 import * as authApi from '../src/api/auth';
@@ -32,6 +32,29 @@ const pressText = (renderer: ReturnType<typeof renderSafeArea>, text: string) =>
 };
 
 describe('SaleFormDrawer', () => {
+  it('keeps expense inputs scrollable above the keyboard and spaces the editor actions', () => {
+    const renderer = renderSafeArea(
+      <SaleFormDrawer visible storeId="store-1" editingSale={null} existingDates={[]} onClose={jest.fn()} onSaved={jest.fn()} />,
+    );
+    const scroll = renderer.root.findByType(ScrollView);
+    expect(scroll.props.automaticallyAdjustKeyboardInsets).toBe(true);
+    expect(scroll.props.keyboardDismissMode).toBe('on-drag');
+    expect(scroll.props.keyboardShouldPersistTaps).toBe('handled');
+
+    act(() => buttonByLabel(renderer, t('franchiseAddExpense')).props.onPress());
+    const saveButton = buttonByLabel(renderer, t('franchiseSaveExpense'));
+    const actions = StyleSheet.flatten(saveButton.parent!.props.style);
+    expect(actions.marginTop).toBeGreaterThanOrEqual(12);
+    expect(actions.gap).toBeGreaterThanOrEqual(12);
+    expect(scroll.findAllByType(TextInput)).toEqual(expect.arrayContaining([
+      renderer.root.findByProps({ accessibilityLabel: t('franchiseExpenseName') }),
+      renderer.root.findByProps({ accessibilityLabel: t('franchiseExpenseAmount') }),
+    ]));
+    act(() => buttonByLabel(renderer, t('adminCancel')).props.onPress());
+    expect(renderer.root.findAllByProps({ accessibilityLabel: t('franchiseExpenseName') })).toHaveLength(0);
+    act(() => renderer.unmount());
+  });
+
   it('validates required fields, manages expenses, and posts a new sale with save & next day', async () => {
     const api = jest.spyOn(authApi, 'apiRequest').mockResolvedValue(response(201, {}));
     const onSaved = jest.fn();
