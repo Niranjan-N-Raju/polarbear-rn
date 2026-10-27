@@ -4,6 +4,7 @@ export interface AuthenticatedUser {
   email: string;
   role: string;
   mustChangePassword?: boolean;
+  preferredLanguage?: 'en' | 'kn';
 }
 
 export interface LoginResponse {

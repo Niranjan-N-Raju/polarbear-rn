@@ -1,11 +1,30 @@
 import { en } from './locales/en';
+import { kn } from './locales/kn';
 import type { TranslationKey, TranslationParams } from './types';
 
 export type { TranslationKey, TranslationParams } from './types';
+export type AppLanguage = 'en' | 'kn';
 
 export const defaultLanguage = 'en' as const;
 
-const locales = { en } as const;
+const locales: Record<AppLanguage, Partial<Record<TranslationKey, string>>> = { en, kn };
+let currentLanguage: AppLanguage = defaultLanguage;
+const listeners = new Set<() => void>();
+
+export function getLanguage(): AppLanguage {
+  return currentLanguage;
+}
+
+export function setLanguage(language: AppLanguage): void {
+  if (currentLanguage === language) return;
+  currentLanguage = language;
+  listeners.forEach((listener) => listener());
+}
+
+export function subscribeToLanguageChanges(listener: () => void): () => void {
+  listeners.add(listener);
+  return () => listeners.delete(listener);
+}
 
 const roleTranslationKeys: Record<string, TranslationKey> = {
   admin: 'roleAdmin',
@@ -15,7 +34,7 @@ const roleTranslationKeys: Record<string, TranslationKey> = {
 };
 
 export function t(key: TranslationKey, params: TranslationParams = {}): string {
-  const template: string = locales[defaultLanguage][key];
+  const template = locales[currentLanguage][key] ?? locales[defaultLanguage][key] ?? key;
   return template.replace(/\{\{(\w+)\}\}/g, (_match, name: string) =>
     String(params[name] ?? ''),
   );

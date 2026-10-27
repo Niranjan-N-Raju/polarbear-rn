@@ -5,7 +5,7 @@ import type { AuthenticatedUser } from '../../api/types';
 import { AdminFormField } from '../../components/AdminFormField';
 import { AppLoader } from '../../components/AppLoader';
 import { theme } from '../../config/theme';
-import { t } from '../../i18n';
+import { getLanguage, setLanguage, t, type AppLanguage } from '../../i18n';
 import { adminStyles as styles } from '../../styles/adminStyles';
 import { getAdminLayout } from '../../utils/adminLayout';
 import { ProfileIdentityCard } from './ProfileIdentityCard';
@@ -31,6 +31,8 @@ export function AdminProfileScreen({ user: initialUser, onUserUpdated }: AdminPr
   const [showNew, setShowNew] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
   const [showCurrentError, setShowCurrentError] = useState('');
+  const [isSavingLanguage, setIsSavingLanguage] = useState(false);
+  const [languageError, setLanguageError] = useState('');
 
   useEffect(() => {
     let active = true;
@@ -41,6 +43,7 @@ export function AdminProfileScreen({ user: initialUser, onUserUpdated }: AdminPr
         if (!active) return;
         setUser(data);
         setName(data.name);
+        setLanguage(data.preferredLanguage ?? 'en');
         onUserUpdated(data);
       })
       .catch((error) => {
@@ -75,6 +78,30 @@ export function AdminProfileScreen({ user: initialUser, onUserUpdated }: AdminPr
       setNameError(error instanceof Error ? error.message : t('adminSaveFailed'));
     } finally {
       setIsSavingName(false);
+    }
+  }
+
+  async function savePreferredLanguage(language: AppLanguage): Promise<void> {
+    if (language === getLanguage()) return;
+    setLanguageError('');
+    setIsSavingLanguage(true);
+    try {
+      const response = await apiRequest('/me', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ preferredLanguage: language }),
+      });
+      const data = await response.json() as { message?: string; token?: string };
+      if (!response.ok) throw new Error(data.message ?? t('adminLanguageSaveFailed'));
+      if (data.token) setAccessToken(data.token);
+      const updated = { ...user, preferredLanguage: language };
+      setUser(updated);
+      onUserUpdated(updated);
+      setLanguage(language);
+    } catch (error) {
+      setLanguageError(error instanceof Error ? error.message : t('adminLanguageSaveFailed'));
+    } finally {
+      setIsSavingLanguage(false);
     }
   }
 
@@ -195,6 +222,28 @@ export function AdminProfileScreen({ user: initialUser, onUserUpdated }: AdminPr
           </View>
         </>
       )}
+      <View style={styles.profileCard}>
+        <Text style={styles.sectionLabel}>{t('adminPreferredLanguage')}</Text>
+        <Text style={styles.rowSubtext}>{t('adminPreferredLanguageDescription')}</Text>
+        <View style={styles.typeOptions}>
+          {([
+            { value: 'en', label: 'English' },
+            { value: 'kn', label: 'ಕನ್ನಡ' },
+          ] as const).map((option) => (
+            <Pressable
+              key={option.value}
+              accessibilityRole="button"
+              accessibilityState={{ disabled: isSavingLanguage, selected: getLanguage() === option.value }}
+              disabled={isSavingLanguage}
+              onPress={() => void savePreferredLanguage(option.value)}
+              style={[styles.secondaryButton, styles.typeOption, getLanguage() === option.value && styles.typeOptionSelected]}
+            >
+              <Text style={styles.secondaryButtonText}>{option.label}</Text>
+            </Pressable>
+          ))}
+        </View>
+        {languageError ? <Text accessibilityRole="alert" style={[styles.formError, styles.stateError]}>{languageError}</Text> : null}
+      </View>
     </ScrollView>
   );
 }

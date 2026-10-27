@@ -1,12 +1,13 @@
 import { Platform, TextInput } from 'react-native';
 import { act } from 'react-test-renderer';
 import * as authApi from '../src/api/auth';
-import { t } from '../src/i18n';
+import { getLanguage, setLanguage, t } from '../src/i18n';
 import { AdminProfileScreen } from '../src/screens/admin/AdminProfileScreen';
 import { renderSafeArea, buttons, containsText, flushEffects, response } from './testUtils';
 
 const originalPlatform = Platform.OS;
 afterEach(() => {
+  setLanguage('en');
   jest.restoreAllMocks();
   Object.defineProperty(Platform, 'OS', { configurable: true, value: originalPlatform });
 });
@@ -101,6 +102,28 @@ describe('AdminProfileScreen', () => {
     await act(async () => { saveName?.props.onPress(); });
     expect(apiRequest).toHaveBeenCalledWith('/me', expect.objectContaining({ method: 'PATCH' }));
     expect(renderer.root.findAllByProps({ children: 'Name update rejected' }).length).toBeGreaterThan(0);
+    act(() => renderer.unmount());
+  });
+
+  it('saves and applies the preferred language selected in the profile', async () => {
+    const user = { id: 'admin-1', name: 'Alex', email: 'alex@example.com', role: 'admin' };
+    const apiRequest = jest.spyOn(authApi, 'apiRequest').mockImplementation(async (_path, options) => {
+      if (!options) return response(200, user);
+      return response(200, {});
+    });
+    const onUserUpdated = jest.fn();
+    const renderer = renderSafeArea(<AdminProfileScreen user={user} onUserUpdated={onUserUpdated} />);
+    await flushEffects();
+
+    const kannadaButton = buttons(renderer).find((button) => containsText(button.props.children, 'ಕನ್ನಡ'));
+    await act(async () => { kannadaButton?.props.onPress(); });
+
+    expect(apiRequest).toHaveBeenLastCalledWith('/me', expect.objectContaining({
+      method: 'PATCH',
+      body: JSON.stringify({ preferredLanguage: 'kn' }),
+    }));
+    expect(getLanguage()).toBe('kn');
+    expect(onUserUpdated).toHaveBeenCalledWith(expect.objectContaining({ preferredLanguage: 'kn' }));
     act(() => renderer.unmount());
   });
 });

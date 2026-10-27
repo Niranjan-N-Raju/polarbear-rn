@@ -36,21 +36,16 @@ Copy `.env.example` to `.env`. For native development clients, set `TEST_LOGIN_E
 
 ### Local backend connectivity
 
-Development uses port 4000 on the Metro bundle host (Android/iOS) or the
-browser page hostname (web), with `/api` as the base path. There is no
-hard-coded LAN IP. Without a network bundle URL, Android defaults to the
-standard emulator host `10.0.2.2`; iOS defaults to `localhost`.
-Devices must be on the same reachable network as this Mac. Check
+Development defaults to `http://192.168.1.2:4000/api` on native and web.
+Devices must be able to reach that address and be on the same network as the
+backend. Check
 `http://<development-host>:4000/api/health` before troubleshooting sign-in;
 it should return HTTP 200 with a connected database.
 
-After a LAN address change, reconnect the mobile app to Metro at the new
-address. For a backend running on a separate machine, a nonstandard port,
-or a tunnel, explicitly set `API_BASE_URL` (native) and `VITE_API_BASE_URL`
-(web) in your ignored `.env`. These overrides take precedence over host
-detection. Restart Vite after changing environment variables; native
-environment changes require a rebuild. A router DHCP reservation can keep
-the development machine's address stable.
+If the backend address or port changes, explicitly set `API_BASE_URL`
+(native) and `VITE_API_BASE_URL` (web) in your ignored `.env`. These overrides
+take precedence over the development default. Restart Vite after changing
+environment variables; native environment changes require a rebuild.
 Production must continue to use an explicitly configured HTTPS endpoint.
 
 ## Release environment and transport security

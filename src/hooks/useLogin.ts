@@ -2,7 +2,7 @@ import { useCallback, useState } from 'react';
 import { Keyboard } from 'react-native';
 import { login, setAccessToken } from '../api/auth';
 import { defaultLoginCredentials } from '../config/testLoginCredentials';
-import { t } from '../i18n';
+import { defaultLanguage, setLanguage, t } from '../i18n';
 
 export function useLogin() {
   const [email, setEmail] = useState(defaultLoginCredentials.email);
@@ -29,6 +29,7 @@ export function useLogin() {
         setFormError(t('mobileRoleNotSupported'));
         return;
       }
+      setLanguage(result.user.preferredLanguage ?? defaultLanguage);
       Keyboard.dismiss();
       setSession(result);
     } catch (error) {
