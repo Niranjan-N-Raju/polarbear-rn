@@ -1,10 +1,18 @@
-import { useCallback, useEffect, useRef } from 'react';
-import { Animated, Platform, Pressable, StyleSheet, Text, View } from 'react-native';
+import { useCallback, useEffect, useId, useMemo, useRef } from 'react';
+import {
+  Animated,
+  Platform,
+  Pressable,
+  StyleSheet,
+  Text,
+  View,
+} from 'react-native';
 import { X } from '../icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { theme } from '../config/theme';
 import { t } from '../i18n';
 import type { AppToastProps } from './types';
+import { useOverlayHost } from './OverlayHost';
 
 const styles = StyleSheet.create({
   viewport: {
@@ -55,19 +63,28 @@ const styles = StyleSheet.create({
   },
 });
 
-export function AppToast({ message, tone = 'error', onDismiss, durationMs = 4000 }: AppToastProps) {
+export function AppToast({
+  message,
+  tone = 'error',
+  onDismiss,
+  durationMs = 4000,
+}: AppToastProps) {
   const insets = useSafeAreaInsets();
+  const hostOverlay = useOverlayHost();
+  const hostKey = useId();
   const animation = useRef(new Animated.Value(0)).current;
   const isDismissing = useRef(false);
   const isWeb = Platform.OS === 'web';
   const useNativeDriver = !isWeb;
-  const translateX = animation.interpolate({ inputRange: [0, 1], outputRange: isWeb ? [32, 0] : [0, 0] });
-  const translateY = animation.interpolate({ inputRange: [0, 1], outputRange: isWeb ? [0, 0] : [-12, 0] });
 
   const dismiss = useCallback(() => {
     if (isDismissing.current) return;
     isDismissing.current = true;
-    Animated.timing(animation, { toValue: 0, duration: 160, useNativeDriver }).start(({ finished }) => {
+    Animated.timing(animation, {
+      toValue: 0,
+      duration: 160,
+      useNativeDriver,
+    }).start(({ finished }) => {
       if (finished) onDismiss();
     });
   }, [animation, onDismiss, useNativeDriver]);
@@ -75,7 +92,11 @@ export function AppToast({ message, tone = 'error', onDismiss, durationMs = 4000
   useEffect(() => {
     isDismissing.current = false;
     animation.setValue(0);
-    const enterAnimation = Animated.timing(animation, { toValue: 1, duration: 200, useNativeDriver });
+    const enterAnimation = Animated.timing(animation, {
+      toValue: 1,
+      duration: 200,
+      useNativeDriver,
+    });
     enterAnimation.start();
     const timeout = setTimeout(dismiss, durationMs);
     return () => {
@@ -84,24 +105,63 @@ export function AppToast({ message, tone = 'error', onDismiss, durationMs = 4000
     };
   }, [animation, dismiss, durationMs, message, useNativeDriver]);
 
-  return (
-    <View pointerEvents="box-none" style={[styles.viewport, { top: insets.top + theme.spacing.lg, alignItems: 'flex-end' }]}>
-      <Animated.View
-        accessibilityRole="alert"
-        style={[
-          styles.toast,
-          tone === 'success' ? styles.success : styles.error,
-          {
-            opacity: animation,
-            transform: [{ translateX }, { translateY }],
-          },
-        ]}
+  const content = useMemo(
+    () => (
+      <View
+        testID="app-toast-top"
+        pointerEvents="box-none"
+        style={[styles.viewport, { top: insets.top + theme.spacing['2xl'] }]}
       >
-        <Text style={[styles.message, tone === 'success' ? styles.successText : styles.errorText]}>{message}</Text>
-        <Pressable accessibilityRole="button" accessibilityLabel={t('adminDismissToast')} onPress={dismiss} style={styles.dismissButton}>
-          <X color={tone === 'success' ? theme.colors.teal : theme.colors.error} size={18} />
-        </Pressable>
-      </Animated.View>
-    </View>
+        <Animated.View
+          accessibilityRole="alert"
+          style={[
+            styles.toast,
+            tone === 'success' ? styles.success : styles.error,
+            {
+              opacity: animation,
+              transform: [
+                {
+                  translateY: animation.interpolate({
+                    inputRange: [0, 1],
+                    outputRange: [-12, 0],
+                  }),
+                },
+              ],
+            },
+          ]}
+        >
+          <Text
+            style={[
+              styles.message,
+              tone === 'success' ? styles.successText : styles.errorText,
+            ]}
+          >
+            {message}
+          </Text>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel={t('adminDismissToast')}
+            onPress={dismiss}
+            style={styles.dismissButton}
+          >
+            <X
+              color={
+                tone === 'success' ? theme.colors.teal : theme.colors.error
+              }
+              size={18}
+            />
+          </Pressable>
+        </Animated.View>
+      </View>
+    ),
+    [animation, dismiss, insets.top, message, tone],
   );
+
+  useEffect(() => {
+    if (!hostOverlay) return undefined;
+    hostOverlay(hostKey, content);
+    return () => hostOverlay(hostKey, null);
+  }, [content, hostKey, hostOverlay]);
+
+  return hostOverlay ? null : content;
 }

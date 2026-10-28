@@ -4,6 +4,7 @@ import { AppLoaderProvider } from './src/components/AppLoader';
 import { useState, useSyncExternalStore } from 'react';
 import { AnimatedSplash } from './src/components/AnimatedSplash';
 import { getLanguage, subscribeToLanguageChanges } from './src/i18n';
+import { OverlayHostProvider } from './src/components/OverlayHost';
 
 function App() {
   useSyncExternalStore(subscribeToLanguageChanges, getLanguage, getLanguage);
@@ -14,7 +15,9 @@ function App() {
     <>
       <SafeAreaProvider>
         <AppLoaderProvider>
-          <LoginScreen />
+          <OverlayHostProvider>
+            <LoginScreen />
+          </OverlayHostProvider>
         </AppLoaderProvider>
       </SafeAreaProvider>
       {splashVisible && <AnimatedSplash onFinish={() => setSplashVisible(false)} />}

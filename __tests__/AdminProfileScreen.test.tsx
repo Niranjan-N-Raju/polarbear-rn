@@ -1,8 +1,9 @@
-import { Platform, TextInput } from 'react-native';
+import { Platform, ScrollView, StyleSheet, TextInput } from 'react-native';
 import { act } from 'react-test-renderer';
 import * as authApi from '../src/api/auth';
 import { getLanguage, setLanguage, t } from '../src/i18n';
 import { AdminProfileScreen } from '../src/screens/admin/AdminProfileScreen';
+import { adminStyles } from '../src/styles/adminStyles';
 import { renderSafeArea, buttons, containsText, flushEffects, response } from './testUtils';
 
 const originalPlatform = Platform.OS;
@@ -13,6 +14,21 @@ afterEach(() => {
 });
 
 describe('AdminProfileScreen', () => {
+  it.each(['admin', 'franchise_admin'])('uses the standard screen gutters without nested horizontal padding for %s', async (role) => {
+    const user = { id: 'user-1', name: 'Alex', email: 'alex@example.com', role };
+    jest.spyOn(authApi, 'apiRequest').mockResolvedValue(response(200, user));
+    const renderer = renderSafeArea(<AdminProfileScreen user={user} onUserUpdated={jest.fn()} />);
+    await flushEffects();
+
+    const scroll = renderer.root.findByType(ScrollView);
+    const screenStyle = StyleSheet.flatten(scroll.parent!.props.style);
+    const contentStyle = StyleSheet.flatten(scroll.props.contentContainerStyle);
+    expect(screenStyle.paddingHorizontal).toBe(adminStyles.screen.paddingHorizontal);
+    expect(contentStyle.paddingHorizontal).toBe(0);
+    expect(screenStyle.paddingHorizontal + contentStyle.paddingHorizontal).toBe(16);
+    act(() => renderer.unmount());
+  });
+
   it('loads profile, validates and updates a name, and validates password changes', async () => {
       const initialUser = {
         id: 'admin-1',

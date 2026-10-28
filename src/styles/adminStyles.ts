@@ -852,6 +852,9 @@ const baseAdminStyles = StyleSheet.create({
     color: colors.ink,
     fontSize: typography.xs,
   },
+  profileScroll: {
+    paddingHorizontal: 0,
+  },
   profileCard: {
     marginBottom: spacing['2xl'],
     padding: spacing['2xl'],
