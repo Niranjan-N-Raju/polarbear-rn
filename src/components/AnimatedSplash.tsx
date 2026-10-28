@@ -6,11 +6,13 @@ import type { WebViewMessageEvent, WebViewProps } from 'react-native-webview';
 import manifest from '../../assets/bootsplash/manifest.json';
 import { SPLASH_SVG } from '../assets/splashSvg';
 
-export const MIN_SPLASH_MS = 4000;
+export const MIN_SPLASH_MS = 1500;
 export const SPLASH_LOGO_WIDTH = 320;
 // If the WebView never reports its first paint, stop waiting this long after it finished loading.
 export const PAINT_FALLBACK_MS = 1000;
 export const PAINTED_MESSAGE = 'splash-painted';
+// Upper bound on how long the static launch screen may wait for the animation to appear.
+export const LAUNCH_SCREEN_MAX_MS = 5000;
 
 // react-native-svg can't run the SVG's CSS @keyframes, so the exact SVG is rendered in a WebView.
 // The inline script reports after two animation frames, i.e. once the SVG has actually been drawn;
@@ -47,9 +49,11 @@ export function AnimatedSplash({ onFinish }: Props) {
   const onFinishRef = useRef(onFinish);
   onFinishRef.current = onFinish;
   const launchHidden = useRef(false);
+  const finishTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const WebView = useRef(loadWebView()).current;
 
   // Keep the static OS launch screen until the WebView has painted, to avoid a blank flash.
+  // The minimum display time starts only once the animation is visible, so it always plays fully.
   const hideLaunchScreen = useCallback(() => {
     if (launchHidden.current) {
       return;
@@ -58,7 +62,14 @@ export function AnimatedSplash({ onFinish }: Props) {
     BootSplash.hide({ fade: false }).catch((error: unknown) =>
       console.error('Unable to dismiss launch splash:', error),
     );
-  }, []);
+    finishTimer.current = setTimeout(() => {
+      Animated.timing(opacity, {
+        toValue: 0,
+        duration: 300,
+        useNativeDriver: true,
+      }).start(() => onFinishRef.current());
+    }, MIN_SPLASH_MS);
+  }, [opacity]);
 
   useEffect(() => {
     if (!WebView) {
@@ -93,16 +104,14 @@ export function AnimatedSplash({ onFinish }: Props) {
   );
 
   useEffect(() => {
-    const timer = setTimeout(() => {
-      hideLaunchScreen();
-      Animated.timing(opacity, {
-        toValue: 0,
-        duration: 300,
-        useNativeDriver: true,
-      }).start(() => onFinishRef.current());
-    }, MIN_SPLASH_MS);
-    return () => clearTimeout(timer);
-  }, [hideLaunchScreen, opacity]);
+    const safety = setTimeout(hideLaunchScreen, LAUNCH_SCREEN_MAX_MS);
+    return () => {
+      clearTimeout(safety);
+      if (finishTimer.current) {
+        clearTimeout(finishTimer.current);
+      }
+    };
+  }, [hideLaunchScreen]);
 
   return (
     <Animated.View
