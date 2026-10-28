@@ -30,7 +30,7 @@ describe('AdminStoresScreen', () => {
       const onToast = jest.fn();
       const renderer = renderSafeArea(<AdminStoresScreen userId="admin-1" onToast={onToast} />);
       await flushEffects();
-      expect(apiRequest).toHaveBeenCalledWith(expect.stringContaining('limit=9'));
+      expect(apiRequest).toHaveBeenCalledWith(expect.stringContaining('limit=9'), expect.objectContaining({ signal: expect.any(AbortSignal) }));
       expect(renderer.root.findAllByProps({ children: 'Central' }).length).toBeGreaterThan(0);
   
       act(() => buttonByLabel(renderer, t('adminAddStore')).props.onPress());
@@ -93,12 +93,12 @@ describe('AdminStoresScreen', () => {
       act(() => franchiseOption?.props.onPress());
       let apply = buttons(renderer).find((button) => containsText(button.props.children, t('adminApplyFilters')));
       await act(async () => { apply?.props.onPress(); });
-      expect(apiRequest).toHaveBeenCalledWith(expect.stringContaining('status=archived&type=franchise'));
+      expect(apiRequest).toHaveBeenCalledWith(expect.stringContaining('status=archived&type=franchise'), expect.objectContaining({ signal: expect.any(AbortSignal) }));
   
       act(() => buttonByLabel(renderer, t('adminOpenFilters')).props.onPress());
       const clear = buttons(renderer).find((button) => containsText(button.props.children, t('adminClearFilters')));
       await act(async () => { clear?.props.onPress(); });
-      expect(apiRequest).toHaveBeenCalledWith(expect.stringContaining('status=active&type=all'));
+      expect(apiRequest).toHaveBeenCalledWith(expect.stringContaining('status=active&type=all'), expect.objectContaining({ signal: expect.any(AbortSignal) }));
   
       act(() => buttonByLabel(renderer, `${t('adminEditStore')} Central`).props.onPress());
       const input = (placeholder: string) => renderer.root.find((node) => node.type === TextInput && node.props.placeholder === placeholder);

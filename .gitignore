@@ -89,6 +89,7 @@ dist/
 .turbo/
 .eslintcache
 *.tsbuildinfo
+/production-repro-tests/
 
 # Additional package manager logs
 npm-debug.log*

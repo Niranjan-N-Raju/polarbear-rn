@@ -6,13 +6,14 @@ import { AppToast } from '../../../components/AppToast';
 import { ResponsiveDrawerModal } from '../../../components/ResponsiveDrawerModal';
 import { SummaryCards } from '../../../components/SummaryCards';
 import { theme } from '../../../config/theme';
-import { t } from '../../../i18n';
+import { getLocale, t } from '../../../i18n';
 import { Archive, Filter, Pencil, Plus, RotateCcw, X } from '../../../icons';
 import { adminStyles as styles } from '../../../styles/adminStyles';
 import { EmployeeFiltersDrawer } from './EmployeeFiltersDrawer';
 import { EmployeeFormDrawer } from './EmployeeFormDrawer';
 import { employeeStyles } from './employeeStyles';
 import { pageSize, useFranchiseEmployees } from './useFranchiseEmployees';
+import { businessDate } from '../../../utils/businessDate';
 
 
 export function FranchiseEmployeesScreen({ storeId }: { storeId: string; }) {
@@ -87,14 +88,14 @@ export function FranchiseEmployeesScreen({ storeId }: { storeId: string; }) {
                   <Pressable accessibilityRole="button" accessibilityLabel={`${t('franchiseEmployeesEdit')} ${employee.name}`} onPress={() => openEdit(employee)} style={styles.userIconAction}><Pencil color={theme.colors.teal} size={16} /></Pressable>
                   {employee.isActive === false
                     ? <Pressable accessibilityRole="button" accessibilityLabel={`${t('franchiseEmployeesRestore')} ${employee.name}`} onPress={() => restore(employee)} style={styles.userIconAction}><RotateCcw color={theme.colors.teal} size={16} /></Pressable>
-                    : <Pressable accessibilityRole="button" accessibilityLabel={`${t('franchiseEmployeesArchive')} ${employee.name}`} onPress={() => { setExitDate(new Date().toISOString().slice(0, 10)); setArchiveTarget(employee); }} style={styles.userIconAction}><Archive color={theme.colors.orange} size={16} /></Pressable>}
+                    : <Pressable accessibilityRole="button" accessibilityLabel={`${t('franchiseEmployeesArchive')} ${employee.name}`} onPress={() => { setExitDate(businessDate()); setArchiveTarget(employee); }} style={styles.userIconAction}><Archive color={theme.colors.orange} size={16} /></Pressable>}
                 </View>
               </View>
               <View style={styles.storeCardBody}>
                 {employee.phone ? <Text style={employeeStyles.detail}>{employee.phone}</Text> : null}
-                <View style={employeeStyles.metrics}><Text style={employeeStyles.detail}>{t('franchiseEmployeesSalaryLabel')}: {employee.salary === undefined ? '—' : `₹${employee.salary.toLocaleString('en-IN')}`}</Text><Text style={employeeStyles.detail}>{t('franchiseEmployeesJoinedLabel')}: {employee.dateOfJoining ? new Date(employee.dateOfJoining).toLocaleDateString() : '—'}</Text></View>
+                <View style={employeeStyles.metrics}><Text style={employeeStyles.detail}>{t('franchiseEmployeesSalaryLabel')}: {employee.salary == null ? '—' : `₹${employee.salary.toLocaleString(getLocale())}`}</Text><Text style={employeeStyles.detail}>{t('franchiseEmployeesJoinedLabel')}: {employee.dateOfJoining ? new Date(employee.dateOfJoining).toLocaleDateString(getLocale()) : '—'}</Text></View>
                 <View style={[employeeStyles.badge, employee.isActive === false ? employeeStyles.inactiveBadge : employeeStyles.activeBadge]}><Text style={employeeStyles.badgeText}>{t(employee.isActive === false ? 'franchiseEmployeesArchived' : 'franchiseEmployeesActive')}</Text></View>
-                {employee.isActive === false && employee.archivedAt ? <Text style={employeeStyles.detail}>{t('franchiseEmployeesExitDateLabel')}: {new Date(employee.archivedAt).toLocaleDateString()}</Text> : null}
+                {employee.isActive === false && employee.archivedAt ? <Text style={employeeStyles.detail}>{t('franchiseEmployeesExitDateLabel')}: {new Date(employee.archivedAt).toLocaleDateString(getLocale())}</Text> : null}
               </View>
             </View>
           ))}

@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Alert, useWindowDimensions } from 'react-native';
+import { useWindowDimensions } from 'react-native';
 import { apiRequest } from '../../../api/auth';
 import { type SummaryCardItem } from '../../../components/SummaryCards';
 import { theme } from '../../../config/theme';
@@ -7,6 +7,7 @@ import { t } from '../../../i18n';
 import { CalendarDays, CircleCheck, CircleX } from '../../../icons';
 import { getAdminLayout } from '../../../utils/adminLayout';
 import { AttendanceEmployee, AttendanceRecord, AttendanceStatus, currentMonth, Cycle, datesBetween, isActiveOn, localDate, statuses } from './attendanceUtils';
+import { businessDate } from '../../../utils/businessDate';
 export interface FranchiseAttendanceScreenProps { storeId: string; }
 export function useFranchiseAttendance({ storeId }: FranchiseAttendanceScreenProps) {
   const { width } = useWindowDimensions();
@@ -15,7 +16,7 @@ export function useFranchiseAttendance({ storeId }: FranchiseAttendanceScreenPro
   const [cycle, setCycle] = useState<Cycle | null>(null);
   const [employees, setEmployees] = useState<AttendanceEmployee[]>([]);
   const [records, setRecords] = useState<AttendanceRecord[]>([]);
-  const [selectedDate, setSelectedDate] = useState(localDate(new Date()));
+  const [selectedDate, setSelectedDate] = useState(() => businessDate());
   // Read the latest selected day after loading without making day navigation refetch the whole cycle.
   const selectedDateRef = useRef(selectedDate);
   selectedDateRef.current = selectedDate;
@@ -60,7 +61,7 @@ export function useFranchiseAttendance({ storeId }: FranchiseAttendanceScreenPro
       setCycle(nextCycle);
       setRecords(attendanceData.records ?? []);
       if (selectedDateRef.current < nextCycle.from || selectedDateRef.current > nextCycle.to) {
-        const today = localDate(new Date());
+        const today = businessDate();
         setSelectedDate(today >= nextCycle.from && today <= nextCycle.to ? today : nextCycle.from);
       }
     } catch (loadError) {
@@ -121,23 +122,38 @@ export function useFranchiseAttendance({ storeId }: FranchiseAttendanceScreenPro
       setToast(saveError instanceof Error ? saveError.message : t('adminNetworkError'));
     } finally { setUpdatingId(null); }
   }
+  // Alert.alert buttons are no-ops on react-native-web, so removal is confirmed through ConfirmDrawer.
+  const [removeRequest, setRemoveRequest] = useState<{ employee: AttendanceEmployee; date: string } | null>(null);
+  const [removing, setRemoving] = useState(false);
+  const [removeError, setRemoveError] = useState<string | null>(null);
   function removeRecord(employee: AttendanceEmployee) {
-    Alert.alert(t('franchiseAttendanceRemove'), employee.name, [
-      { text: t('adminCancel'), style: 'cancel' },
-      {
-        text: t('franchiseAttendanceRemove'), style: 'destructive', onPress: async () => {
-          try {
-            const query = new URLSearchParams({ storeId, date: selectedDate, employeeId: employee._id });
-            const response = await apiRequest(`/attendance?${query.toString()}`, { method: 'DELETE' });
-            const data = await response.json().catch(() => ({})) as { message?: string; };
-            if (!response.ok) throw new Error(data.message || t('adminSaveFailed'));
-            setRecords((current) => current.filter((record) => !(record.date === selectedDate && record.employeeId === employee._id)));
-            setToastTone('success');
-            setToast(data.message || t('franchiseAttendanceRemoved'));
-          } catch (removeError) { setToastTone('error'); setToast(removeError instanceof Error ? removeError.message : t('adminNetworkError')); }
-        }
-      },
-    ]);
+    setRemoveError(null);
+    setRemoveRequest({ employee, date: selectedDate });
+  }
+  function cancelRemove() {
+    if (removing) return;
+    setRemoveRequest(null);
+    setRemoveError(null);
+  }
+  async function confirmRemove() {
+    if (!removeRequest || removing) return;
+    const { employee, date } = removeRequest;
+    setRemoving(true);
+    setRemoveError(null);
+    try {
+      const query = new URLSearchParams({ storeId, date, employeeId: employee._id });
+      const response = await apiRequest(`/attendance?${query.toString()}`, { method: 'DELETE' });
+      const data = await response.json().catch(() => ({})) as { message?: string; };
+      if (!response.ok) throw new Error(data.message || t('adminSaveFailed'));
+      setRecords((current) => current.filter((record) => !(record.date === date && record.employeeId === employee._id)));
+      setRemoveRequest(null);
+      setToastTone('success');
+      setToast(data.message || t('franchiseAttendanceRemoved'));
+    } catch (removeFailure) {
+      setRemoveError(removeFailure instanceof Error ? removeFailure.message : t('adminNetworkError'));
+    } finally {
+      setRemoving(false);
+    }
   }
   return {
     layout,
@@ -166,5 +182,11 @@ export function useFranchiseAttendance({ storeId }: FranchiseAttendanceScreenPro
     changeDate,
     updateStatus,
     removeRecord,
+    removeRequest,
+    removing,
+    removeError,
+    setRemoveError,
+    cancelRemove,
+    confirmRemove,
   };
 }

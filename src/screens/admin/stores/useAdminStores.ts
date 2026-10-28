@@ -42,7 +42,21 @@ export function useAdminStores({ onToast }: AdminStoresScreenProps) {
     setToastTone('error');
     setToastMessage(message);
   }
+  // Only the latest list request may publish results; unmount aborts the request in flight.
+  const listControllerRef = useRef<AbortController | null>(null);
+  const isMountedRef = useRef(true);
+  useEffect(() => {
+    isMountedRef.current = true;
+    return () => {
+      isMountedRef.current = false;
+      listControllerRef.current?.abort();
+    };
+  }, []);
   const loadStores = useCallback(async (page: number, filters: StoreListFilters, append = false): Promise<boolean> => {
+    listControllerRef.current?.abort();
+    const controller = new AbortController();
+    listControllerRef.current = controller;
+    const isCurrent = () => listControllerRef.current === controller && !controller.signal.aborted;
     if (append) setIsLoadingMore(true);
     else setIsRefreshing(true);
     setError('');
@@ -54,8 +68,9 @@ export function useAdminStores({ onToast }: AdminStoresScreenProps) {
         type: filters.type,
       });
       if (filters.search.trim()) query.set('search', filters.search.trim());
-      const response = await apiRequest(`/stores?${query.toString()}`);
-      const data = await response.json() as { franchises?: StoreRecord[]; pagination?: PageInfo; message?: string; };
+      const response = await apiRequest(`/stores?${query.toString()}`, { signal: controller.signal });
+      const data = await response.json().catch(() => ({})) as { franchises?: StoreRecord[]; pagination?: PageInfo; message?: string; };
+      if (!isCurrent()) return false;
       if (!response.ok) throw new Error(data.message ?? t('adminLoadFailed'));
       const loadedStores = data.franchises ?? [];
       setStores((current) => append ? [...current, ...loadedStores] : loadedStores);
@@ -63,16 +78,19 @@ export function useAdminStores({ onToast }: AdminStoresScreenProps) {
       initialLoadComplete.current = true;
       return true;
     } catch (loadError) {
+      if (!isCurrent()) return false;
       const message = loadError instanceof Error ? loadError.message : t('adminLoadFailed');
       // Keep an already-loaded list usable; only the initial failure replaces it with an error state.
       if (append || initialLoadComplete.current) onToast(message, 'error');
       else setError(message);
       return false;
     } finally {
-      if (append) setIsLoadingMore(false);
-      else {
-        setIsLoading(false);
-        setIsRefreshing(false);
+      if (isMountedRef.current) {
+        if (append) setIsLoadingMore(false);
+        else if (listControllerRef.current === controller) {
+          setIsLoading(false);
+          setIsRefreshing(false);
+        }
       }
     }
   }, [onToast]);
@@ -197,7 +215,7 @@ export function useAdminStores({ onToast }: AdminStoresScreenProps) {
           }),
         },
       );
-      const data = await response.json() as { message?: string; };
+      const data = await response.json().catch(() => ({})) as { message?: string; };
       if (!response.ok) {
         showErrorToast(data.message ?? t('adminSaveFailed'));
         return;
@@ -209,7 +227,7 @@ export function useAdminStores({ onToast }: AdminStoresScreenProps) {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ archived: formIsArchived }),
         });
-        const archiveData = await archiveResponse.json() as { message?: string; };
+        const archiveData = await archiveResponse.json().catch(() => ({})) as { message?: string; };
         if (!archiveResponse.ok) {
           showErrorToast(archiveData.message ?? t('adminSaveFailed'));
           return;
@@ -238,7 +256,7 @@ export function useAdminStores({ onToast }: AdminStoresScreenProps) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ archived }),
       });
-      const data = await response.json() as { message?: string; };
+      const data = await response.json().catch(() => ({})) as { message?: string; };
       if (!response.ok) {
         showErrorToast(data.message ?? t('adminSaveFailed'));
         return;

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useWindowDimensions } from 'react-native';
 import { apiRequest } from '../../api/auth';
 import { getDashboardLayout } from '../../utils/dashboardConfig';
@@ -12,22 +12,25 @@ export function useAdminDashboard() {
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [hasError, setHasError] = useState(false);
-  const loadStats = useCallback(async () => {
+  useEffect(() => {
+    // Abort on unmount so a late response cannot update an unmounted dashboard.
+    const controller = new AbortController();
     setIsLoading(true);
     setHasError(false);
-    try {
-      const response = await apiRequest('/dashboard');
-      if (!response.ok) throw new Error('dashboard request failed');
-      setStats((await response.json()) as DashboardStats);
-    } catch {
-      setHasError(true);
-    } finally {
-      setIsLoading(false);
-    }
+    (async () => {
+      try {
+        const response = await apiRequest('/dashboard', { signal: controller.signal });
+        if (!response.ok) throw new Error('dashboard request failed');
+        const data = (await response.json()) as DashboardStats;
+        if (!controller.signal.aborted) setStats(data);
+      } catch {
+        if (!controller.signal.aborted) setHasError(true);
+      } finally {
+        if (!controller.signal.aborted) setIsLoading(false);
+      }
+    })();
+    return () => controller.abort();
   }, []);
-  useEffect(() => {
-    void loadStats();
-  }, [loadStats]);
   return {
     layout,
     perRow,

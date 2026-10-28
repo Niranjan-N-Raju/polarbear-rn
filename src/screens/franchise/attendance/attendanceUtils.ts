@@ -1,3 +1,4 @@
+import { getLocale } from '../../../i18n';
 export type AttendanceStatus = 'Present' | 'Week Off' | 'Absent';
 export interface AttendanceEmployee {
   _id: string;
@@ -34,8 +35,9 @@ export function isActiveOn(employee: AttendanceEmployee, date: string) {
 }
 export function dateLabel(value: string, options: Intl.DateTimeFormatOptions = { weekday: 'short', day: 'numeric', month: 'short' }) {
   if (!value) return '';
-  return new Intl.DateTimeFormat('en-IN', options).format(new Date(`${value}T00:00:00`));
+  return new Intl.DateTimeFormat(getLocale(), options).format(new Date(`${value}T00:00:00`));
 }
 import { localDateValue as localDate } from '../dashboardDates';
 export { localDateValue as localDate } from '../dashboardDates';
 export { currentMonthValue as currentMonth } from '../shared/months';
+

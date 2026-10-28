@@ -69,6 +69,13 @@ export function useLogin() {
     // Tokens and session state stay in memory; workspace callers handle remote revocation first.
     setAccessToken(null);
     setSession(null);
+    // Never leave the previous user's credentials (or dev defaults) in the form after a real sign-out.
+    setEmail('');
+    setPassword('');
+    setShowPassword(false);
+    setEmailError('');
+    setPasswordError('');
+    setFormError('');
   }, []);
 
   return {

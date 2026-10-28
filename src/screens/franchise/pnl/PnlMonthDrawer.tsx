@@ -1,8 +1,9 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Pressable, ScrollView, Text, View } from 'react-native';
 import { X } from '../../../icons';
 import { apiRequest } from '../../../api/auth';
 import { AdminFormField } from '../../../components/AdminFormField';
+import { AppErrorState } from '../../../components/AppErrorState';
 import { AppLoader } from '../../../components/AppLoader';
 import { AppToast } from '../../../components/AppToast';
 import { ResponsiveDrawerModal } from '../../../components/ResponsiveDrawerModal';
@@ -62,11 +63,18 @@ export function PnlMonthDrawer({ visible, storeId, month, onClose, onAfterClose,
   const [saving, setSaving] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
   const [toastTone, setToastTone] = useState<'error' | 'success'>('error');
+  const [loadError, setLoadError] = useState<string | null>(null);
+  const [reloadKey, setReloadKey] = useState(0);
+  // Saving only touches keys that were loaded (or prefilled) or edited, so a partial load never zeroes server data.
+  const touchedKeys = useRef(new Set<string>());
 
   useEffect(() => {
     if (!visible) return undefined;
     const controller = new AbortController();
     setLoading(true);
+    setLoadError(null);
+    setValues({});
+    touchedKeys.current = new Set();
     setToast(null);
     const query = new URLSearchParams({ storeId, period: month.period });
     apiRequest(`/pnl/inputs?${query.toString()}`, { signal: controller.signal })
@@ -78,23 +86,27 @@ export function PnlMonthDrawer({ visible, storeId, month, onClose, onAfterClose,
         if (nextValues.netSales === undefined) nextValues.netSales = String(Math.round((month.revenue || 0) * 0.95 * 100) / 100);
         if (nextValues.swiggyFee === undefined) nextValues.swiggyFee = String(Math.round((month.swiggyRevenue || 0) * 0.185 * 100) / 100);
         if (nextValues.zomatoFee === undefined) nextValues.zomatoFee = String(Math.round((month.zomatoRevenue || 0) * 0.18 * 100) / 100);
+        if (controller.signal.aborted) return;
+        touchedKeys.current = new Set(Object.keys(nextValues));
         setValues(nextValues);
       })
       .catch((error: unknown) => {
         if (!controller.signal.aborted) {
-          setToast(error instanceof Error ? error.message : t('franchisePnlLoadInputsFailed'));
-          setToastTone('error');
+          setLoadError(error instanceof Error ? error.message : t('franchisePnlLoadInputsFailed'));
         }
       })
       .finally(() => { if (!controller.signal.aborted) setLoading(false); });
     return () => controller.abort();
-  }, [visible, storeId, month]);
+  }, [visible, storeId, month, reloadKey]);
 
   const get = (key: string) => values[key] ?? '';
-  const update = (key: string, value: string) => setValues((current) => ({
-    ...current,
-    [key]: value.replace(/[^\d.]/g, ''),
-  }));
+  const update = (key: string, value: string) => {
+    touchedKeys.current.add(key);
+    setValues((current) => ({
+      ...current,
+      [key]: value.replace(/[^\d.]/g, ''),
+    }));
+  };
   const grossProfit = amount(values, 'netSales') - pnlCostOfGoodsKeys.reduce((sum, key) => sum + amount(values, key), 0);
   const actualFoodCost = amount(values, 'food') + amount(values, 'localPurchase') + amount(values, 'packaging');
   const foodCostPercent = amount(values, 'netSales') > 0 ? actualFoodCost / amount(values, 'netSales') * 100 : 0;
@@ -111,11 +123,13 @@ export function PnlMonthDrawer({ visible, storeId, month, onClose, onAfterClose,
   const groupedSections = pnlFieldGroups;
 
   async function save() {
-    if (saving || loading) return;
+    if (saving || loading || loadError) return;
     setSaving(true);
     setToast(null);
     const payload: Record<string, number> = {};
-    for (const key of pnlAllInputKeys) payload[key] = amount(values, key);
+    for (const key of pnlAllInputKeys) {
+      if (touchedKeys.current.has(key)) payload[key] = amount(values, key);
+    }
     try {
       const response = await apiRequest('/pnl/inputs', {
         method: 'PUT',
@@ -175,7 +189,9 @@ export function PnlMonthDrawer({ visible, storeId, month, onClose, onAfterClose,
             <X color={theme.colors.muted} size={18} />
           </Pressable>
         </View>
-        {loading ? <AppLoader /> : (
+        {loading ? <AppLoader /> : loadError ? (
+          <AppErrorState message={loadError} onRetry={() => setReloadKey((key) => key + 1)} />
+        ) : (
           <ScrollView style={styles.drawerFormScroll} contentContainerStyle={pnlStyles.scrollContent} keyboardShouldPersistTaps="handled">
             {summary('franchisePnlSales', <>
               {row('franchisePnlGrossSales', money(month.revenue))}
@@ -223,7 +239,7 @@ export function PnlMonthDrawer({ visible, storeId, month, onClose, onAfterClose,
             </Pressable>
           </View>
           <View style={styles.drawerActionSlot}>
-            <Pressable accessibilityRole="button" accessibilityState={{ disabled: saving || loading }} disabled={saving || loading} onPress={() => save()} style={[styles.primaryButton, styles.drawerActionButton]}>
+            <Pressable accessibilityRole="button" accessibilityState={{ disabled: saving || loading || Boolean(loadError) }} disabled={saving || loading || Boolean(loadError)} onPress={() => save()} style={[styles.primaryButton, styles.drawerActionButton]}>
               <Text style={styles.primaryButtonText}>{saving ? t('franchisePnlSaving') : t('adminSave')}</Text>
             </Pressable>
           </View>

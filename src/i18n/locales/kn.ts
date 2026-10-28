@@ -110,4 +110,7 @@ export const kn: Partial<Record<TranslationKey, string>> = {
   adminLanguageUpdated: 'ಭಾಷೆಯನ್ನು ಯಶಸ್ವಿಯಾಗಿ ನವೀಕರಿಸಲಾಗಿದೆ.',
   adminNameUpdated: 'ಹೆಸರನ್ನು ಯಶಸ್ವಿಯಾಗಿ ನವೀಕರಿಸಲಾಗಿದೆ.',
   adminPasswordUpdated: 'ಪಾಸ್‌ವರ್ಡ್ ಯಶಸ್ವಿಯಾಗಿ ನವೀಕರಿಸಲಾಗಿದೆ.',
+  franchiseAttendanceRemove: 'ಹಾಜರಾತಿ ತೆಗೆದುಹಾಕಿ',
+  franchiseAttendanceRemoveConfirm: '{{date}} ರಂದು {{name}} ಅವರ ಹಾಜರಾತಿ ದಾಖಲೆಯನ್ನು ತೆಗೆದುಹಾಕಬೇಕೆ?',
+  franchiseEmployeesSalaryInvalid: 'ಮಾನ್ಯವಾದ ಋಣಾತ್ಮಕವಲ್ಲದ ಸಂಬಳವನ್ನು ನಮೂದಿಸಿ.',
 };

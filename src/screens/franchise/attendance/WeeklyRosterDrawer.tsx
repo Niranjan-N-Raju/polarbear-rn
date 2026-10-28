@@ -2,15 +2,17 @@ import { useEffect, useMemo, useState } from 'react';
 import { Pressable, ScrollView, Text, View } from 'react-native';
 import { X } from '../../../icons';
 import { apiRequest } from '../../../api/auth';
+import { AppErrorState } from '../../../components/AppErrorState';
 import { AppLoader } from '../../../components/AppLoader';
 import { AppToast } from '../../../components/AppToast';
 import { ResponsiveDrawerModal } from '../../../components/ResponsiveDrawerModal';
 import { DateInput } from '../../../components/DateInput';
 import { theme } from '../../../config/theme';
-import { t } from '../../../i18n';
+import { getLocale, t } from '../../../i18n';
 import { adminStyles as styles } from '../../../styles/adminStyles';
 import type { AttendanceEmployee } from './FranchiseAttendanceScreen';
 import { attendanceStyles as local } from './attendanceStyles';
+import { businessDate } from '../../../utils/businessDate';
 
 type Shift = { id: string; name: string; startTime: string; endTime: string };
 type RosterDay = { date: string; shift: string };
@@ -30,7 +32,7 @@ function shiftWeek(value: string, amount: number) {
   return localDate(date);
 }
 function labelDate(value: string) {
-  return new Intl.DateTimeFormat('en-IN', { weekday: 'short', day: 'numeric', month: 'short' }).format(new Date(`${value}T00:00:00`));
+  return new Intl.DateTimeFormat(getLocale(), { weekday: 'short', day: 'numeric', month: 'short' }).format(new Date(`${value}T00:00:00`));
 }
 
 interface WeeklyRosterDrawerProps {
@@ -43,7 +45,7 @@ interface WeeklyRosterDrawerProps {
 
 export function WeeklyRosterDrawer({ visible, storeId, employees, onClose, onSaved }: WeeklyRosterDrawerProps) {
   const [weekStart, setWeekStart] = useState(() => {
-    const nextMonday = new Date(`${monday(localDate(new Date()))}T00:00:00`);
+    const nextMonday = new Date(`${monday(businessDate())}T00:00:00`);
     nextMonday.setDate(nextMonday.getDate() + 7);
     return localDate(nextMonday);
   });
@@ -58,6 +60,10 @@ export function WeeklyRosterDrawer({ visible, storeId, employees, onClose, onSav
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
+  // Schedules are only saveable for the week they were loaded for; a failed load must not reuse another week's data.
+  const [loadedWeek, setLoadedWeek] = useState<string | null>(null);
+  const [loadError, setLoadError] = useState<string | null>(null);
+  const [reloadKey, setReloadKey] = useState(0);
 
   useEffect(() => {
     if (!visible) return;
@@ -65,6 +71,9 @@ export function WeeklyRosterDrawer({ visible, storeId, employees, onClose, onSav
     let active = true;
     setLoading(true);
     setToast(null);
+    setLoadError(null);
+    setLoadedWeek(null);
+    setSchedules([]);
     const query = new URLSearchParams({ storeId, weekStart });
     apiRequest(`/attendance/weekly-roster?${query.toString()}`, { signal: controller.signal })
       .then(async (response) => {
@@ -78,13 +87,15 @@ export function WeeklyRosterDrawer({ visible, storeId, employees, onClose, onSav
           const byDate = new Map((saved.get(employee._id) ?? []).map((day) => [day.date, day.shift]));
           return { employeeId: employee._id, days: weekDates.map((date) => ({ date, shift: byDate.get(date) ?? available[0]?.id ?? '' })) };
         }));
+        setLoadedWeek(weekStart);
       })
-      .catch((loadError) => {
-        if (active && !controller.signal.aborted) setToast(loadError instanceof Error ? loadError.message : t('adminNetworkError'));
+      .catch((failure) => {
+        if (active && !controller.signal.aborted) setLoadError(failure instanceof Error ? failure.message : t('adminNetworkError'));
       })
       .finally(() => { if (active) setLoading(false); });
     return () => { active = false; controller.abort(); };
-  }, [activeEmployees, storeId, visible, weekDates, weekStart]);
+  }, [activeEmployees, storeId, visible, weekDates, weekStart, reloadKey]);
+  const isLoaded = loadedWeek === weekStart && !loading && !loadError;
 
   function update(employeeId: string, date: string, value: string) {
     setSchedules((current) => current.map((schedule) => schedule.employeeId !== employeeId ? schedule : {
@@ -94,7 +105,7 @@ export function WeeklyRosterDrawer({ visible, storeId, employees, onClose, onSav
   }
 
   async function save() {
-    if (saving) return;
+    if (saving || !isLoaded) return;
     if (!shifts.length) { setToast(t('franchiseAttendanceNoShifts')); return; }
     if (schedules.some((schedule) => schedule.days.some((day) => day.shift !== 'off' && !shifts.some((shift) => shift.id === day.shift)))) {
       setToast(t('franchiseAttendanceNoShifts'));
@@ -130,7 +141,7 @@ export function WeeklyRosterDrawer({ visible, storeId, employees, onClose, onSav
           </View>
           <Pressable accessibilityRole="button" onPress={() => setWeekStart((value) => shiftWeek(value, 1))} style={local.dateButton}><Text>›</Text></Pressable>
         </View>
-        {loading ? <AppLoader /> : shifts.length === 0 ? <View style={local.empty}><Text style={local.emptyText}>{t('franchiseAttendanceNoShifts')}</Text></View> : activeEmployees.length === 0 ? <View style={local.empty}><Text style={local.emptyText}>{t('franchiseAttendanceNoEmployees')}</Text></View> : (
+        {loading ? <AppLoader /> : loadError ? <AppErrorState message={loadError} onRetry={() => setReloadKey((key) => key + 1)} /> : shifts.length === 0 ? <View style={local.empty}><Text style={local.emptyText}>{t('franchiseAttendanceNoShifts')}</Text></View> : activeEmployees.length === 0 ? <View style={local.empty}><Text style={local.emptyText}>{t('franchiseAttendanceNoEmployees')}</Text></View> : (
           <ScrollView style={local.rosterScroll} contentContainerStyle={local.rosterScrollContent}>
             {activeEmployees.map((employee) => {
               const schedule = schedules.find((item) => item.employeeId === employee._id);
@@ -154,7 +165,7 @@ export function WeeklyRosterDrawer({ visible, storeId, employees, onClose, onSav
           </ScrollView>
         )}
         <View style={local.drawerFooter}>
-          <Pressable accessibilityRole="button" disabled={saving || loading || activeEmployees.length === 0} onPress={() => save()} style={[local.primaryButton, (saving || loading || activeEmployees.length === 0) && local.disabled]}>
+          <Pressable accessibilityRole="button" accessibilityState={{ disabled: saving || !isLoaded || activeEmployees.length === 0 }} disabled={saving || !isLoaded || activeEmployees.length === 0} onPress={() => save()} style={[local.primaryButton, (saving || !isLoaded || activeEmployees.length === 0) && local.disabled]}>
             {saving ? <AppLoader variant="inline" color={theme.colors.white} /> : <Text style={local.primaryButtonText}>{t('franchiseAttendanceSaveRoster')}</Text>}
           </Pressable>
         </View>

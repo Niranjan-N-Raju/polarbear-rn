@@ -28,7 +28,7 @@ export function useFranchiseDashboard(storeId: string) {
     apiRequest(`/dashboard?storeId=${encodeURIComponent(storeId)}`, { signal: controller.signal })
       .then(async (response) => {
         if (!response.ok) throw new Error(t('adminLoadFailed'));
-        const data: FranchiseDashboardStats = await response.json();
+        const data = await response.json().catch(() => { throw new Error(t('adminLoadFailed')); }) as FranchiseDashboardStats;
         if (active) setStats(data);
       })
       .catch((reason: unknown) => {
@@ -48,7 +48,7 @@ export function useFranchiseDashboard(storeId: string) {
     apiRequest(`/sales?storeId=${encodeURIComponent(storeId)}&from=${appliedRange.from}&to=${appliedRange.to}`, { signal: controller.signal })
       .then(async (response) => {
         if (!response.ok) throw new Error(t('franchiseSalesLoadFailed'));
-        const data: { sales: DailySale[] } = await response.json();
+        const data = await response.json().catch(() => { throw new Error(t('franchiseSalesLoadFailed')); }) as { sales: DailySale[] };
         if (active) setSales(data.sales);
       })
       .catch((reason: unknown) => {

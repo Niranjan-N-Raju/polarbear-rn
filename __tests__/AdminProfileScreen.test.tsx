@@ -3,6 +3,8 @@ import { act } from 'react-test-renderer';
 import * as authApi from '../src/api/auth';
 import { getLanguage, setLanguage, t } from '../src/i18n';
 import { AdminProfileScreen } from '../src/screens/admin/AdminProfileScreen';
+import { useAdminProfile } from '../src/screens/admin/useAdminProfile';
+import { render } from './testUtils';
 import { adminStyles } from '../src/styles/adminStyles';
 import { renderSafeArea, buttons, containsText, flushEffects, response } from './testUtils';
 
@@ -47,7 +49,7 @@ describe('AdminProfileScreen', () => {
       const onUserUpdated = jest.fn();
       const renderer = renderSafeArea(<AdminProfileScreen user={initialUser} onUserUpdated={onUserUpdated} />);
       await flushEffects();
-      expect(apiRequest).toHaveBeenCalledWith('/me');
+      expect(apiRequest).toHaveBeenCalledWith('/me', expect.objectContaining({ signal: expect.any(AbortSignal) }));
       expect(renderer.root.findAllByProps({ children: 'Alex' }).length).toBeGreaterThan(0);
   
       const nameInput = renderer.root.find((node) => node.type === TextInput && node.props.value === 'Alex');
@@ -156,6 +158,35 @@ describe('AdminProfileScreen', () => {
     expect(getLanguage()).toBe('kn');
     expect(onUserUpdated).toHaveBeenCalledWith(expect.objectContaining({ preferredLanguage: 'kn' }));
     expect(onToast).toHaveBeenCalledWith(t('adminLanguageUpdated'), 'success');
+    act(() => renderer.unmount());
+  });
+
+  it('routes password validation errors to the right field in Kannada', async () => {
+    const user = { id: 'user-1', name: 'Alex', email: 'alex@example.com', role: 'admin', preferredLanguage: 'kn' as const };
+    const api = jest.spyOn(authApi, 'apiRequest').mockResolvedValue(response(200, user));
+    setLanguage('kn');
+    const onUserUpdated = jest.fn();
+    let state!: ReturnType<typeof useAdminProfile>;
+    function Harness() { state = useAdminProfile({ user, onUserUpdated }); return null; }
+    const renderer = render(<Harness />);
+    await flushEffects();
+    expect(getLanguage()).toBe('kn');
+
+    const attempt = async (current: string, next: string, confirm: string) => {
+      act(() => { state.setCurrentPassword(current); state.setNewPassword(next); state.setConfirmPassword(confirm); });
+      await act(async () => { await state.changePassword(); });
+      return { current: state.currentPasswordError, next: state.newPasswordError, confirm: state.confirmPasswordError };
+    };
+    expect(await attempt('Current#Pass1', 'lowercase#pass1', 'lowercase#pass1')).toEqual({ current: '', next: t('adminPasswordUppercase'), confirm: '' });
+    expect(await attempt('Current#Pass1', 'UPPERCASE#PASS1', 'UPPERCASE#PASS1')).toEqual({ current: '', next: t('adminPasswordLowercase'), confirm: '' });
+    expect(await attempt('Current#Pass1', 'Mixedcase1234', 'Mixedcase1234')).toEqual({ current: '', next: t('adminPasswordSpecial'), confirm: '' });
+    expect(await attempt('Current#Pass1', 'Mixed#casepass', 'Mixed#casepass')).toEqual({ current: '', next: t('adminPasswordNumber'), confirm: '' });
+    expect(await attempt('Current#Pass1', 'Current#Pass1', 'Current#Pass1')).toEqual({ current: '', next: t('adminPasswordSame'), confirm: '' });
+    expect(await attempt('Current#Pass1', 'Short#1A', 'Short#1A')).toEqual({ current: '', next: t('adminPasswordLength'), confirm: '' });
+    expect(await attempt('Current#Pass1', 'Another#Pass12', 'Different#Pass12')).toEqual({ current: '', next: '', confirm: t('adminPasswordMismatch') });
+    expect(await attempt('', 'Another#Pass12', 'Another#Pass12')).toEqual({ current: t('adminPasswordRequired'), next: '', confirm: '' });
+    expect(t('adminPasswordUppercase')).not.toMatch(/uppercase/i);
+    expect(api).toHaveBeenCalledTimes(1);
     act(() => renderer.unmount());
   });
 });

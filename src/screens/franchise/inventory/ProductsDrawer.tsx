@@ -32,7 +32,7 @@ export function ProductsDrawer({ visible, storeId, onClose, onAfterClose }: Prod
     setError('');
     apiRequest(`/products?storeId=${encodeURIComponent(storeId)}`, { signal: controller.signal })
       .then(async (response) => {
-        const data: { products?: InventoryProduct[]; message?: string } = await response.json();
+        const data = await response.json().catch(() => ({})) as { products?: InventoryProduct[]; message?: string };
         if (!response.ok || !Array.isArray(data.products)) {
           throw new Error(data.message || t('adminLoadFailed'));
         }

@@ -1,4 +1,4 @@
-import { getLanguage, setLanguage, t, translateRole } from '../src/i18n';
+import { getLanguage, getLocale, setLanguage, t, translateRole } from '../src/i18n';
 
 describe('i18n', () => {
   afterEach(() => setLanguage('en'));
@@ -36,5 +36,17 @@ describe('Kannada localization', () => {
   it('falls back to English for strings not yet translated', () => {
     setLanguage('kn');
     expect(t('signIn')).toBe('Sign in');
+  });
+
+  it('exposes the formatting locale and translates newly added strings', () => {
+    expect(getLocale()).toBe('en-IN');
+    setLanguage('kn');
+    expect(getLocale()).toBe('kn-IN');
+    const kannada = [t('franchiseAttendanceRemoveConfirm', { name: 'Asha', date: '5' }), t('franchiseEmployeesSalaryInvalid')];
+    setLanguage('en');
+    const english = [t('franchiseAttendanceRemoveConfirm', { name: 'Asha', date: '5' }), t('franchiseEmployeesSalaryInvalid')];
+    expect(kannada[0]).toContain('Asha');
+    expect(kannada[0]).not.toBe(english[0]);
+    expect(kannada[1]).not.toBe(english[1]);
   });
 });

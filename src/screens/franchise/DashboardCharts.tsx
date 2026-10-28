@@ -1,9 +1,10 @@
+import { getLocale } from '../../i18n';
 import { ScrollView, Text, View } from 'react-native';
 import { theme } from '../../config/theme';
 import { franchiseStyles as styles } from './franchiseStyles';
 
 export function formatMoney(amount: number): string {
-  return new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(amount);
+  return new Intl.NumberFormat(getLocale(), { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(amount);
 }
 
 interface ChartItem {
@@ -33,3 +34,4 @@ export function DashboardBars({ items, colors = [theme.colors.teal] }: { items: 
     </ScrollView>
   );
 }
+

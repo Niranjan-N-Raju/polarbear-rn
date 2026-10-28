@@ -11,6 +11,8 @@ function LoginStateHarness({ setState }: { setState: (state: ReturnType<typeof u
 }
 
 describe('useLogin', () => {
+  afterEach(() => jest.restoreAllMocks());
+
   it('validates, authenticates administrators, and clears the session on sign out', async () => {
       const loginMock = jest.spyOn(authApi, 'login').mockResolvedValue({
         token: 'session-token',
@@ -57,6 +59,10 @@ describe('useLogin', () => {
       await act(async () => state.submit());
       expect(state.session?.user.role).toBe('franchise_admin');
       act(() => state.signOut());
+      act(() => {
+        state.updateEmail('alex@example.com');
+        state.updatePassword('valid-password');
+      });
 
       loginMock.mockResolvedValueOnce({
         token: 'wrong-role-token',
@@ -74,6 +80,32 @@ describe('useLogin', () => {
       loginMock.mockRejectedValueOnce('unexpected');
       await act(async () => state.submit());
       expect(state.formError).toBe(t('loginFailed'));
+      act(() => renderer.unmount());
+    })
+
+  it('clears credentials, visibility, and errors on sign out', async () => {
+      jest.spyOn(authApi, 'login').mockResolvedValue({
+        token: 'session-token',
+        user: { id: 'owner-1', name: 'Owner', email: 'owner@example.com', role: 'franchise_admin' },
+      });
+      let state!: ReturnType<typeof useLogin>;
+      const renderer = render(<LoginStateHarness setState={(next) => { state = next; }} />);
+      act(() => {
+        state.updateEmail('owner@example.com');
+        state.updatePassword('Secret#123');
+        state.setShowPassword(true);
+      });
+      await act(async () => state.submit());
+      expect(state.session).not.toBeNull();
+
+      act(() => state.signOut());
+      expect(state.session).toBeNull();
+      expect(state.email).toBe('');
+      expect(state.password).toBe('');
+      expect(state.showPassword).toBe(false);
+      expect(state.emailError).toBe('');
+      expect(state.passwordError).toBe('');
+      expect(state.formError).toBe('');
       act(() => renderer.unmount());
     })
 });

@@ -59,4 +59,50 @@ describe('FranchisePnlScreen', () => {
     expect(api).toHaveBeenCalledTimes(4);
     act(() => renderer.unmount());
   });
+
+  it('only saves loaded, prefilled, or edited fields', async () => {
+    const api = jest.spyOn(authApi, 'apiRequest')
+      .mockResolvedValueOnce(response(200, pnlData))
+      .mockResolvedValueOnce(response(200, { input: { period, values: { rent: 100, food: 0 } } }))
+      .mockResolvedValueOnce(response(200, { message: 'P&L inputs saved.' }))
+      .mockResolvedValueOnce(response(200, pnlData));
+    const renderer = renderSafeArea(<FranchisePnlScreen storeId="store-1" />);
+    await flushEffects();
+    act(() => renderer.root.findAll((node) => node.props.accessibilityLabel === t('franchisePnlViewPeriod', { period }))[0].props.onPress());
+    await flushEffects();
+    const wastage = renderer.root.findAll((node) => node.props.label === t('franchisePnlWastage'))[0];
+    act(() => wastage.props.onChangeText('12'));
+    const save = buttons(renderer).find((node) => containsText(node.props.children, t('adminSave')));
+    await act(async () => { await save!.props.onPress(); });
+    await flushEffects();
+
+    const body = JSON.parse(api.mock.calls[2][1]!.body as string) as { values: Record<string, number> };
+    expect(body.values).toEqual({ rent: 100, food: 0, wastage: 12, netSales: 950, swiggyFee: 18.5, zomatoFee: 18 });
+    act(() => renderer.unmount());
+  });
+
+  it('disables save and offers a retry when inputs fail to load', async () => {
+    const api = jest.spyOn(authApi, 'apiRequest')
+      .mockResolvedValueOnce(response(200, pnlData))
+      .mockResolvedValueOnce(response(500, { message: 'Inputs unavailable' }))
+      .mockResolvedValueOnce(response(200, { input: { period, values: { rent: 100 } } }));
+    const renderer = renderSafeArea(<FranchisePnlScreen storeId="store-1" />);
+    await flushEffects();
+    act(() => renderer.root.findAll((node) => node.props.accessibilityLabel === t('franchisePnlViewPeriod', { period }))[0].props.onPress());
+    await flushEffects();
+
+    expect(texts(renderer, 'Inputs unavailable').length).toBeGreaterThan(0);
+    const save = buttons(renderer).find((node) => containsText(node.props.children, t('adminSave')));
+    expect(save!.props.disabled).toBe(true);
+    await act(async () => { await save!.props.onPress(); });
+    expect(api.mock.calls.some(([path]) => path === '/pnl/inputs')).toBe(false);
+
+    const retry = buttons(renderer).find((node) => containsText(node.props.children, t('adminRefresh')));
+    act(() => retry!.props.onPress());
+    await flushEffects();
+    expect(api).toHaveBeenCalledTimes(3);
+    expect(renderer.root.findAllByType(TextInput).some((input) => input.props.value === '100')).toBe(true);
+    expect(buttons(renderer).find((node) => containsText(node.props.children, t('adminSave')))!.props.disabled).toBe(false);
+    act(() => renderer.unmount());
+  });
 });

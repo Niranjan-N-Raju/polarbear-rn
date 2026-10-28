@@ -60,4 +60,31 @@ describe('FranchiseSalaryScreen', () => {
     expect(JSON.parse(String(api.mock.calls[1][1]?.body))).toMatchObject({ storeId: 'store-1', employeeId: 'employee-1', period: expect.any(String), amount: 75 });
     act(() => renderer.unmount());
   });
+
+  it('ignores a salary slip response that arrives after the drawer was closed', async () => {
+    let resolveSlip!: (value: Response) => void;
+    let slipSignal: AbortSignal | undefined;
+    const api = jest.spyOn(authApi, 'apiRequest').mockImplementation((path, init) => {
+      if (path.startsWith('/salary/slip?')) {
+        slipSignal = init?.signal ?? undefined;
+        return new Promise<Response>((resolve) => { resolveSlip = resolve; });
+      }
+      return Promise.resolve(response(200, data));
+    });
+    const renderer = renderSafeArea(<FranchiseSalaryScreen storeId="store-1" />);
+    await flushEffects();
+    act(() => buttonByLabel(renderer, t('franchiseSalaryDetails')).props.onPress());
+    await flushEffects();
+    let pending!: Promise<void>;
+    act(() => { pending = buttonByLabel(renderer, t('franchiseSalaryViewSlip')).props.onPress(); });
+    act(() => renderer.root.findAll((node) => node.props.accessibilityLabel === t('adminCloseMenu') && typeof node.props.onPress === 'function')[0].props.onPress());
+    expect(slipSignal?.aborted).toBe(true);
+    await act(async () => {
+      resolveSlip(response(200, { periodLabel: 'Stale slip', netPay: 999 }));
+      await pending;
+    });
+    expect(containsText(renderer.root.findAllByType(Text).map((node) => node.props.children), 'Stale slip')).toBe(false);
+    expect(api.mock.calls.filter(([path]) => path.startsWith('/salary/slip?'))).toHaveLength(1);
+    act(() => renderer.unmount());
+  });
 });

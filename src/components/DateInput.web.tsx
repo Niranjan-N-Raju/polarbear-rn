@@ -2,9 +2,10 @@ import { useRef, useState, type ComponentRef } from 'react';
 import { Modal, Pressable, StyleSheet, Text, View, useWindowDimensions } from 'react-native';
 import { CalendarDays, ChevronLeft, ChevronRight } from '../icons';
 import { theme } from '../config/theme';
-import { t } from '../i18n';
+import { getLocale, t } from '../i18n';
 import { formatDateOnly, parseDateOnly } from '../utils/dateOnly';
 import type { DateInputProps } from './DateInput.types';
+import { businessDate } from '../utils/businessDate';
 
 const POPOVER_WIDTH = 296;
 const POPOVER_HEIGHT = 360;
@@ -21,7 +22,7 @@ export function DateInput({
   const [month, setMonth] = useState(() => startOfMonth(parseDateOnly(value) ?? new Date()));
   const window = useWindowDimensions();
   const selected = parseDateOnly(value) ? value : '';
-  const today = formatDateOnly(new Date());
+  const today = businessDate();
 
   const open = () => {
     setMonth(startOfMonth(parseDateOnly(value) ?? parseDateOnly(maximumDate ?? '') ?? new Date()));
@@ -64,7 +65,7 @@ export function DateInput({
               <Pressable accessibilityRole="button" accessibilityLabel={t('datePreviousMonth')} onPress={() => shiftMonth(-1)} style={styles.navButton}>
                 <ChevronLeft color={theme.colors.orange} size={18} />
               </Pressable>
-              <Text style={styles.monthLabel}>{month.toLocaleDateString(undefined, { month: 'long', year: 'numeric' })}</Text>
+              <Text style={styles.monthLabel}>{month.toLocaleDateString(getLocale(), { month: 'long', year: 'numeric' })}</Text>
               <Pressable accessibilityRole="button" accessibilityLabel={t('dateNextMonth')} onPress={() => shiftMonth(1)} style={styles.navButton}>
                 <ChevronRight color={theme.colors.orange} size={18} />
               </Pressable>

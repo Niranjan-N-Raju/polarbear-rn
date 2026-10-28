@@ -1,7 +1,8 @@
-import { localDateValue } from '../dashboardDates';
+import { getLocale } from '../../../i18n';
+import { businessMonth } from '../../../utils/businessDate';
 
 export function currentMonthValue(now = new Date()): string {
-  return localDateValue(now).slice(0, 7);
+  return businessMonth(now);
 }
 
 export function shiftMonth(month: string, delta: number): string {
@@ -20,11 +21,12 @@ export function formatMonthLabel(month: string): string {
   const [year, monthIndex] = month.split('-').map(Number);
   const date = new Date(year, monthIndex - 1, 1);
   if (Number.isNaN(date.getTime())) return month;
-  return date.toLocaleDateString('en-IN', { month: 'long', year: 'numeric' });
+  return date.toLocaleDateString(getLocale(), { month: 'long', year: 'numeric' });
 }
 
 export function formatShortDate(date: string): string {
   const value = new Date(`${date}T00:00:00`);
   if (Number.isNaN(value.getTime())) return date;
-  return value.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
+  return value.toLocaleDateString(getLocale(), { day: '2-digit', month: 'short', year: 'numeric' });
 }
+

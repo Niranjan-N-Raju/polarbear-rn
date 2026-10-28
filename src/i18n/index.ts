@@ -15,6 +15,13 @@ export function getLanguage(): AppLanguage {
   return currentLanguage;
 }
 
+const languageLocales: Record<AppLanguage, string> = { en: 'en-IN', kn: 'kn-IN' };
+
+/** BCP 47 locale for Intl date/number formatting in the current app language. */
+export function getLocale(): string {
+  return languageLocales[currentLanguage];
+}
+
 export function setLanguage(language: AppLanguage): void {
   if (currentLanguage === language) return;
   currentLanguage = language;

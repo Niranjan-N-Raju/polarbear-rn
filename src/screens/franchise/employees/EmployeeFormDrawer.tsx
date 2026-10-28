@@ -20,7 +20,7 @@ interface Employee {
   dateOfJoining?: string;
   actualDob?: string;
   dobInRecords?: string;
-  salary?: number;
+  salary?: number | null;
   bankAccountNumber?: string;
   bankName?: string;
   bankIfsc?: string;
@@ -52,14 +52,17 @@ export function EmployeeFormDrawer({ visible, storeId, employee, onClose, onAfte
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
+  // Editing sends '' for empty fields, so never save over details that failed to load.
+  const [loadFailed, setLoadFailed] = useState(false);
   const [section, setSection] = useState<'personal' | 'bank' | 'emergency' | 'documents'>('personal');
 
   useEffect(() => {
     if (!visible) return;
-    setForm({ ...emptyForm, name: employee?.name ?? '', phone: employee?.phone ?? '', position: employee?.position ?? '', employmentType: employee?.employmentType ?? '', dateOfJoining: dateField(employee?.dateOfJoining), actualDob: dateField(employee?.actualDob), dobInRecords: dateField(employee?.dobInRecords), salary: employee?.salary === undefined ? '' : String(employee.salary), bankAccountNumber: employee?.bankAccountNumber ?? '', bankName: employee?.bankName ?? '', bankIfsc: employee?.bankIfsc ?? '', bankBranch: employee?.bankBranch ?? '', emergencyContactName: employee?.emergencyContactName ?? '', emergencyContactPhone: employee?.emergencyContactPhone ?? '', emergencyContactRelationship: employee?.emergencyContactRelationship ?? '', aadharNumber: employee?.aadharNumber ?? '', panNumber: employee?.panNumber ?? '' });
+    setForm({ ...emptyForm, name: employee?.name ?? '', phone: employee?.phone ?? '', position: employee?.position ?? '', employmentType: employee?.employmentType ?? '', dateOfJoining: dateField(employee?.dateOfJoining), actualDob: dateField(employee?.actualDob), dobInRecords: dateField(employee?.dobInRecords), salary: employee?.salary == null ? '' : String(employee.salary), bankAccountNumber: employee?.bankAccountNumber ?? '', bankName: employee?.bankName ?? '', bankIfsc: employee?.bankIfsc ?? '', bankBranch: employee?.bankBranch ?? '', emergencyContactName: employee?.emergencyContactName ?? '', emergencyContactPhone: employee?.emergencyContactPhone ?? '', emergencyContactRelationship: employee?.emergencyContactRelationship ?? '', aadharNumber: employee?.aadharNumber ?? '', panNumber: employee?.panNumber ?? '' });
     setDocuments({ aadhar: Boolean(employee?.aadharDocument), pan: Boolean(employee?.panDocument) });
     setSection('personal');
     setError('');
+    setLoadFailed(false);
     if (!employee) return;
     const controller = new AbortController();
     setLoading(true);
@@ -68,23 +71,35 @@ export function EmployeeFormDrawer({ visible, storeId, employee, onClose, onAfte
         const data = await response.json().catch(() => ({})) as { user?: Employee; message?: string };
         if (!response.ok || !data.user) throw new Error(data.message ?? t('adminLoadFailed'));
         const details = data.user;
-        setForm({ ...emptyForm, name: details.name ?? '', phone: details.phone ?? '', position: details.position ?? '', employmentType: details.employmentType ?? '', dateOfJoining: dateField(details.dateOfJoining), actualDob: dateField(details.actualDob), dobInRecords: dateField(details.dobInRecords), salary: details.salary === undefined ? '' : String(details.salary), bankAccountNumber: details.bankAccountNumber ?? '', bankName: details.bankName ?? '', bankIfsc: details.bankIfsc ?? '', bankBranch: details.bankBranch ?? '', emergencyContactName: details.emergencyContactName ?? '', emergencyContactPhone: details.emergencyContactPhone ?? '', emergencyContactRelationship: details.emergencyContactRelationship ?? '', aadharNumber: details.aadharNumber ?? '', panNumber: details.panNumber ?? '' });
+        setForm({ ...emptyForm, name: details.name ?? '', phone: details.phone ?? '', position: details.position ?? '', employmentType: details.employmentType ?? '', dateOfJoining: dateField(details.dateOfJoining), actualDob: dateField(details.actualDob), dobInRecords: dateField(details.dobInRecords), salary: details.salary == null ? '' : String(details.salary), bankAccountNumber: details.bankAccountNumber ?? '', bankName: details.bankName ?? '', bankIfsc: details.bankIfsc ?? '', bankBranch: details.bankBranch ?? '', emergencyContactName: details.emergencyContactName ?? '', emergencyContactPhone: details.emergencyContactPhone ?? '', emergencyContactRelationship: details.emergencyContactRelationship ?? '', aadharNumber: details.aadharNumber ?? '', panNumber: details.panNumber ?? '' });
         setDocuments({ aadhar: Boolean(details.aadharDocument), pan: Boolean(details.panDocument) });
       })
-      .catch((failure) => { if (!controller.signal.aborted) setError(failure instanceof Error ? failure.message : t('adminLoadFailed')); })
+      .catch((failure) => {
+        if (controller.signal.aborted) return;
+        setLoadFailed(true);
+        setError(failure instanceof Error ? failure.message : t('adminLoadFailed'));
+      })
       .finally(() => { if (!controller.signal.aborted) setLoading(false); });
     return () => controller.abort();
   }, [visible, employee, storeId]);
 
   const change = (key: keyof Form, value: string) => setForm((current) => ({ ...current, [key]: value }));
   const save = async () => {
+    if (loading || loadFailed) return;
     if (!form.name.trim()) { setError(t('franchiseEmployeesNameRequired')); return; }
     if (form.phone && !/^\d{10}$/.test(form.phone.trim())) { setError(t('franchiseEmployeesPhoneInvalid')); return; }
     if (form.emergencyContactPhone && !/^\d{10}$/.test(form.emergencyContactPhone.trim())) { setError(t('franchiseEmployeesPhoneInvalid')); return; }
+    const salaryText = form.salary.trim();
+    const salary = salaryText ? Number(salaryText) : null;
+    // Number('') / Number('abc') and web numeric inputs can yield NaN; never submit a non-finite salary.
+    if (salary !== null && (!Number.isFinite(salary) || salary < 0)) { setError(t('franchiseEmployeesSalaryInvalid')); return; }
     setSaving(true);
     setError('');
     try {
-      const values: Record<string, unknown> = { name: form.name.trim(), phone: form.phone.trim() || undefined, position: form.position.trim() || undefined, employmentType: form.employmentType || undefined, dateOfJoining: form.dateOfJoining || undefined, actualDob: form.actualDob || undefined, dobInRecords: form.dobInRecords || undefined, salary: form.salary ? Number(form.salary) : undefined, bankAccountNumber: form.bankAccountNumber.trim() || undefined, bankName: form.bankName.trim() || undefined, bankIfsc: form.bankIfsc.trim() || undefined, bankBranch: form.bankBranch.trim() || undefined, emergencyContactName: form.emergencyContactName.trim() || undefined, emergencyContactPhone: form.emergencyContactPhone.trim() || undefined, emergencyContactRelationship: form.emergencyContactRelationship.trim() || undefined, aadharNumber: form.aadharNumber.trim() || undefined, panNumber: form.panNumber.trim() || undefined };
+      // On edit, a cleared optional field is sent as '' (backend stores '' for text and null for dates) and salary as null.
+      const cleared = employee ? '' : undefined;
+      const text = (value: string) => value.trim() || cleared;
+      const values: Record<string, unknown> = { name: form.name.trim(), phone: text(form.phone), position: text(form.position), employmentType: form.employmentType || undefined, dateOfJoining: form.dateOfJoining || cleared, actualDob: form.actualDob || cleared, dobInRecords: form.dobInRecords || cleared, salary: salary ?? (employee ? null : undefined), bankAccountNumber: text(form.bankAccountNumber), bankName: text(form.bankName), bankIfsc: text(form.bankIfsc), bankBranch: text(form.bankBranch), emergencyContactName: text(form.emergencyContactName), emergencyContactPhone: text(form.emergencyContactPhone), emergencyContactRelationship: text(form.emergencyContactRelationship), aadharNumber: text(form.aadharNumber), panNumber: text(form.panNumber) };
       const url = employee ? `/users/${encodeURIComponent(employee._id)}?storeId=${encodeURIComponent(storeId)}` : `/users?storeId=${encodeURIComponent(storeId)}`;
       const response = await apiRequest(url, { method: employee ? 'PATCH' : 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(employee ? values : { ...values, storeId, role: 'employee', franchiseIds: [storeId] }) });
       const data = await response.json().catch(() => ({})) as { message?: string };
@@ -125,7 +140,7 @@ export function EmployeeFormDrawer({ visible, storeId, employee, onClose, onAfte
         </ScrollView>}
         <View style={styles.modalActions}>
           <View style={styles.drawerActionSlot}><Pressable onPress={onClose} style={[styles.secondaryButton, styles.drawerActionButton]}><Text style={styles.secondaryButtonText}>{t('franchiseEmployeesCancel')}</Text></Pressable></View>
-          <View style={styles.drawerActionSlot}><Pressable accessibilityRole="button" disabled={saving || loading} onPress={() => save()} style={[styles.primaryButton, styles.drawerActionButton]}>{saving ? <AppLoader variant="inline" color={theme.colors.white} /> : <Text style={styles.primaryButtonText}>{t('franchiseEmployeesSave')}</Text>}</Pressable></View>
+          <View style={styles.drawerActionSlot}><Pressable accessibilityRole="button" accessibilityState={{ disabled: saving || loading || loadFailed }} disabled={saving || loading || loadFailed} onPress={() => save()} style={[styles.primaryButton, styles.drawerActionButton]}>{saving ? <AppLoader variant="inline" color={theme.colors.white} /> : <Text style={styles.primaryButtonText}>{t('franchiseEmployeesSave')}</Text>}</Pressable></View>
         </View>
       </View>
     </ResponsiveDrawerModal>

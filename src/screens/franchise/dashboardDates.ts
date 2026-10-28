@@ -1,20 +1,21 @@
+import { addDays, businessDate, dayOfWeek } from '../../utils/businessDate';
+
 export function localDateValue(date = new Date()): string {
   // API dates are local calendar days; toISOString() could shift them across a timezone boundary.
   return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
 }
 
-export function currentMonthRange() {
-  const now = new Date();
-  return {
-    from: localDateValue(new Date(now.getFullYear(), now.getMonth(), 1)),
-    to: localDateValue(new Date(now.getFullYear(), now.getMonth() + 1, 0)),
-  };
+// Default ranges follow the Asia/Kolkata business day rather than the device time zone.
+export function currentMonthRange(now = new Date()) {
+  const [year, month] = businessDate(now).split('-').map(Number);
+  const lastDay = new Date(Date.UTC(year, month, 0)).getUTCDate();
+  const prefix = `${year}-${String(month).padStart(2, '0')}`;
+  return { from: `${prefix}-01`, to: `${prefix}-${String(lastDay).padStart(2, '0')}` };
 }
 
 export function thisWeekRange(now = new Date()) {
-  const start = new Date(now);
-  start.setDate(start.getDate() - start.getDay());
-  return { from: localDateValue(start), to: localDateValue(now) };
+  const today = businessDate(now);
+  return { from: addDays(today, -dayOfWeek(today)), to: today };
 }
 
 export function validDateRange(from: string, to: string): boolean {

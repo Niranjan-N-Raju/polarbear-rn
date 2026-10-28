@@ -47,7 +47,7 @@ export function useFranchiseHome({ user: initialUser, onLogout }: FranchiseHomeS
     apiRequest('/stores', { signal: controller.signal })
       .then(async (response) => {
         if (!response.ok) throw new Error(t('franchiseStoresLoadFailed'));
-        const data: { franchises: FranchiseStore[]; } = await response.json();
+        const data = await response.json().catch(() => { throw new Error(t('franchiseStoresLoadFailed')); }) as { franchises: FranchiseStore[]; };
         if (!active) return;
         setStores(data.franchises);
         // Refresh preserves an accessible selection; multiple stores require an explicit choice.

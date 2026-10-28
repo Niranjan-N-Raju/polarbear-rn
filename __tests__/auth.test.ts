@@ -1,4 +1,4 @@
-import { apiRequest, login, setAccessToken, setUnauthorizedHandler } from '../src/api/auth';
+import { apiRequest, login, setAccessToken, setPasswordChangeRequiredHandler, setUnauthorizedHandler } from '../src/api/auth';
 import { t } from '../src/i18n';
 import { response } from './testUtils';
 
@@ -10,7 +10,14 @@ beforeEach(() => {
 afterAll(() => {
   setAccessToken(null);
   setUnauthorizedHandler(null);
+  setPasswordChangeRequiredHandler(null);
 });
+
+function deferred<T>() {
+  let resolve!: (value: T) => void;
+  const promise = new Promise<T>((done) => { resolve = done; });
+  return { promise, resolve };
+}
 
 describe('auth', () => {
   it('adds bearer auth and handles a single unauthorized response', async () => {
@@ -58,5 +65,46 @@ describe('auth', () => {
   
       global.fetch = jest.fn().mockResolvedValue(response(418, { message: 'custom rejection' }));
       await expect(login('admin@example.com', 'password')).rejects.toThrow('custom rejection');
+    })
+
+  it('ignores a late 401 for a request sent with a previous token', async () => {
+      setAccessToken('old-token');
+      const handler = jest.fn();
+      setUnauthorizedHandler(handler);
+      const pending = deferred<Response>();
+      global.fetch = jest.fn().mockReturnValue(pending.promise);
+
+      const request = apiRequest('/users');
+      setAccessToken('new-token');
+      pending.resolve(response(401, {}));
+      await request;
+      expect(handler).not.toHaveBeenCalled();
+
+      global.fetch = jest.fn().mockResolvedValue(response(401, {}));
+      await apiRequest('/users');
+      expect(handler).toHaveBeenCalledTimes(1);
+    })
+
+  it('only requires a password change for the token that received the 403', async () => {
+      const handler = jest.fn();
+      setPasswordChangeRequiredHandler(handler);
+      const forbidden = () => ({
+        ...response(403, { code: 'PASSWORD_CHANGE_REQUIRED' }),
+        clone: () => response(403, { code: 'PASSWORD_CHANGE_REQUIRED' }),
+      }) as unknown as Response;
+
+      setAccessToken('old-token');
+      const pending = deferred<Response>();
+      global.fetch = jest.fn().mockReturnValue(pending.promise);
+      const request = apiRequest('/stores');
+      setAccessToken('new-token');
+      pending.resolve(forbidden());
+      await request;
+      expect(handler).not.toHaveBeenCalled();
+
+      global.fetch = jest.fn().mockResolvedValue(forbidden());
+      await apiRequest('/stores');
+      expect(handler).toHaveBeenCalledTimes(1);
+      setPasswordChangeRequiredHandler(null);
     })
 });

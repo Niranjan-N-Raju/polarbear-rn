@@ -13,6 +13,6 @@ describe('dashboard calendar date handling', () => {
   });
 
   it('uses Sunday as the start of this week like the Next.js dashboard', () => {
-    expect(thisWeekRange(new Date(2026, 9, 24, 12))).toEqual({ from: '2026-10-18', to: '2026-10-24' });
+    expect(thisWeekRange(new Date('2026-10-24T06:30:00Z'))).toEqual({ from: '2026-10-18', to: '2026-10-24' });
   });
 });

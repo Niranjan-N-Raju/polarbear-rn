@@ -31,4 +31,5 @@ export const attendanceEn = {
   franchiseAttendanceAll: 'All',
   franchiseAttendanceComment: 'Comment',
   franchiseAttendanceRemove: 'Remove attendance',
+  franchiseAttendanceRemoveConfirm: 'Remove the attendance record for {{name}} on {{date}}?',
 } as const;

@@ -9,6 +9,7 @@ import { theme } from '../../../config/theme';
 import { t } from '../../../i18n';
 import { CalendarDays, Filter } from '../../../icons';
 import { adminStyles as styles } from '../../../styles/adminStyles';
+import { ConfirmDrawer } from '../shared/ConfirmDrawer';
 import { MonthStepper } from '../shared/MonthStepper';
 import { attendanceStyles as local } from './attendanceStyles';
 import { dateLabel, statuses, statusLabelKey } from './attendanceUtils';
@@ -44,6 +45,12 @@ export function FranchiseAttendanceScreen({ storeId }: FranchiseAttendanceScreen
     changeDate,
     updateStatus,
     removeRecord,
+    removeRequest,
+    removing,
+    removeError,
+    setRemoveError,
+    cancelRemove,
+    confirmRemove,
   } = useFranchiseAttendance({ storeId });
   return (
     <View style={styles.screen}>
@@ -131,7 +138,7 @@ export function FranchiseAttendanceScreen({ storeId }: FranchiseAttendanceScreen
           </>
         )}
       </>}
-      {toast ? <AppToast message={toast} tone={toastTone} onDismiss={() => setToast(null)} /> : null}
+      {toast && !removeRequest ? <AppToast message={toast} tone={toastTone} onDismiss={() => setToast(null)} /> : null}
       <ResponsiveDrawerModal visible={drawer === 'filters'} closeLabel={t('franchiseAttendanceClose')} onClose={() => setDrawer(null)}>
         <View style={local.drawerContent}>
           <Text style={local.drawerTitle}>{t('franchiseAttendanceFilterEmployees')}</Text>
@@ -146,6 +153,17 @@ export function FranchiseAttendanceScreen({ storeId }: FranchiseAttendanceScreen
         </View>
       </ResponsiveDrawerModal>
       <WeeklyRosterDrawer visible={drawer === 'roster'} storeId={storeId} employees={employees} onClose={() => setDrawer(null)} onSaved={(message) => { setDrawer(null); setToastTone('success'); setToast(message); setReloadKey((key) => key + 1); }} />
+      <ConfirmDrawer
+        visible={Boolean(removeRequest)}
+        title={t('franchiseAttendanceRemove')}
+        message={removeRequest ? t('franchiseAttendanceRemoveConfirm', { name: removeRequest.employee.name, date: dateLabel(removeRequest.date) }) : ''}
+        confirmLabel={t('franchiseAttendanceRemove')}
+        busy={removing}
+        error={removeError}
+        onDismissError={() => setRemoveError(null)}
+        onClose={cancelRemove}
+        onConfirm={confirmRemove}
+      />
     </View>
   );
 }

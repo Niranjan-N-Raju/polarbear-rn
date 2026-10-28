@@ -1,6 +1,7 @@
-import { t } from '../../../i18n';
+import { getLocale, t } from '../../../i18n';
 import { currentMonthRange, localDateValue, thisWeekRange, validDateRange } from '../dashboardDates';
 import type { SaleExpense, SaleRecord } from '../types';
+import { businessDate } from '../../../utils/businessDate';
 
 export const saleAmountFields = ['totalSale', 'swiggy', 'zomato', 'upi', 'upiCharge'] as const;
 export type SaleAmountField = typeof saleAmountFields[number];
@@ -19,7 +20,7 @@ export type SaleFormErrors = Partial<Record<'date' | SaleAmountField, string>>;
 
 const numberPattern = /^\d*\.?\d*$/;
 
-export function emptySaleForm(date = localDateValue()): SaleForm {
+export function emptySaleForm(date = businessDate()): SaleForm {
   return { date, totalSale: '', swiggy: '', zomato: '', upi: '', upiCharge: '', expenses: [] };
 }
 
@@ -82,7 +83,7 @@ export function validateSaleForm(
   form: SaleForm,
   existingDates: string[],
   editingDate: string | null,
-  today = localDateValue(),
+  today = businessDate(),
 ): SaleFormErrors {
   const errors: SaleFormErrors = {};
   if (!form.date.trim()) errors.date = t('franchiseFieldRequired');
@@ -120,7 +121,7 @@ export function salePayload(storeId: string, form: SaleForm) {
 export function formatSaleDate(date: string): string {
   const value = new Date(`${date}T00:00:00`);
   if (Number.isNaN(value.getTime())) return date;
-  return value.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric', weekday: 'short' });
+  return value.toLocaleDateString(getLocale(), { day: '2-digit', month: 'short', year: 'numeric', weekday: 'short' });
 }
 
 export interface SaleRange {
@@ -131,10 +132,10 @@ export interface SaleRange {
 export type SalePreset = 'today' | 'week' | 'month';
 
 export function salePresetRange(preset: SalePreset, now = new Date()): SaleRange {
-  const today = localDateValue(now);
+  const today = businessDate(now);
   if (preset === 'today') return { from: today, to: today };
   if (preset === 'week') return thisWeekRange(now);
-  const month = currentMonthRange();
+  const month = currentMonthRange(now);
   return { from: month.from, to: month.to > today ? today : month.to };
 }
 
@@ -142,7 +143,7 @@ export function defaultSaleRange(): SaleRange {
   return salePresetRange('month');
 }
 
-export function saleRangeError(range: SaleRange, today = localDateValue()): string | null {
+export function saleRangeError(range: SaleRange, today = businessDate()): string | null {
   if (!validDateRange(range.from.trim(), range.to.trim())) return t('franchiseInvalidDates');
   if (range.to.trim() > today) return t('franchiseSaleFutureDate');
   return null;

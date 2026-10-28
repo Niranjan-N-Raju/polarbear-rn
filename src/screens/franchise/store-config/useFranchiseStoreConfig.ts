@@ -41,7 +41,7 @@ export function useFranchiseStoreConfig({ storeId }: { storeId: string; }) {
       const responses = await Promise.all(paths.map((path) => apiRequest(path)));
       // Publish a combined configuration only when every section has loaded successfully.
       const results = await Promise.all(responses.map(async (response) => {
-        const data = await response.json() as { message?: string; store?: { name?: string; hasLogo?: boolean; }; cycle?: { configured?: boolean; type?: StoreConfigValues['cycleType']; startDay?: number; endDay?: number; }; positions?: string[]; shifts?: StoreShift[]; };
+        const data = await response.json().catch(() => ({})) as { message?: string; store?: { name?: string; hasLogo?: boolean; }; cycle?: { configured?: boolean; type?: StoreConfigValues['cycleType']; startDay?: number; endDay?: number; }; positions?: string[]; shifts?: StoreShift[]; };
         if (!response.ok) throw new Error(data.message ?? t('franchiseStoreConfigLoadFailed'));
         return data;
       }));
@@ -80,7 +80,7 @@ export function useFranchiseStoreConfig({ storeId }: { storeId: string; }) {
     setBusy(true);
     try {
       const response = await apiRequest(path, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ storeId, ...payload }) });
-      const result = await response.json() as { message?: string; };
+      const result = await response.json().catch(() => ({})) as { message?: string; };
       if (!response.ok) throw new Error(result.message ?? t('franchiseStoreConfigSaveFailed'));
       setSection(null);
       setToast({ message: result.message ?? t('franchiseStoreConfigSaved'), tone: 'success' });
@@ -93,7 +93,7 @@ export function useFranchiseStoreConfig({ storeId }: { storeId: string; }) {
     setBusy(true);
     try {
       const response = await apiRequest(`/stores/logo?storeId=${encodeURIComponent(storeId)}`, { method: 'DELETE' });
-      const result = await response.json() as { message?: string; };
+      const result = await response.json().catch(() => ({})) as { message?: string; };
       if (!response.ok) throw new Error(result.message ?? t('franchiseStoreConfigSaveFailed'));
       setSection(null);
       setValue((current) => ({ ...current, hasLogo: false }));

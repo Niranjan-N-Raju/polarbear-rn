@@ -26,6 +26,7 @@ export const employeesEn = {
   franchiseEmployeesActualDob: 'Date of birth',
   franchiseEmployeesRecordDob: 'Date of birth in records',
   franchiseEmployeesSalary: 'Salary',
+  franchiseEmployeesSalaryInvalid: 'Enter a valid non-negative salary.',
   franchiseEmployeesBankAccount: 'Bank account number',
   franchiseEmployeesBankName: 'Bank name',
   franchiseEmployeesBankIfsc: 'Bank IFSC',

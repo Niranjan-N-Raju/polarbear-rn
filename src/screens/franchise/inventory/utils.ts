@@ -1,3 +1,4 @@
+import { getLocale } from '../../../i18n';
 import { localDateValue } from '../dashboardDates';
 import type { InventoryStockItem } from '../types';
 
@@ -25,7 +26,7 @@ export function daysUntil(expiryDate: string, today = new Date()): number {
 export function formatInventoryDate(value: string): string {
   const date = dateOnly(value);
   if (Number.isNaN(date.getTime())) return value;
-  return date.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
+  return date.toLocaleDateString(getLocale(), { day: 'numeric', month: 'short', year: 'numeric' });
 }
 
 export function isValidDateValue(value: string): boolean {
@@ -65,3 +66,4 @@ export function summarizeInventory(items: InventoryStockItem[], today = new Date
 export function digitsOnly(value: string): string {
   return value.replace(/\D/g, '');
 }
+

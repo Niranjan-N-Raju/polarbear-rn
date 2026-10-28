@@ -51,7 +51,23 @@ export function useAdminUsers({ onToast }: AdminUsersScreenProps) {
   const initialLoadComplete = useRef(false);
   const dismissToast = useCallback(() => setToastMessage(''), []);
   const showErrorToast = useCallback((message: string) => setToastMessage(message), []);
+  // Only the latest list request may publish results; unmount aborts everything in flight.
+  const listControllerRef = useRef<AbortController | null>(null);
+  const storesControllerRef = useRef<AbortController | null>(null);
+  const isMountedRef = useRef(true);
+  useEffect(() => {
+    isMountedRef.current = true;
+    return () => {
+      isMountedRef.current = false;
+      listControllerRef.current?.abort();
+      storesControllerRef.current?.abort();
+    };
+  }, []);
   const load = useCallback(async (page: number, filters: UserListFilters, append = false): Promise<boolean> => {
+    listControllerRef.current?.abort();
+    const controller = new AbortController();
+    listControllerRef.current = controller;
+    const isCurrent = () => listControllerRef.current === controller && !controller.signal.aborted;
     if (append) setIsLoadingMore(true);
     else setIsRefreshing(true);
     setLoadError('');
@@ -66,12 +82,13 @@ export function useAdminUsers({ onToast }: AdminUsersScreenProps) {
       if (filters.search.trim()) query.set('search', filters.search.trim());
       if (filters.franchiseId) query.set('franchiseId', filters.franchiseId);
       if (filters.role !== 'all') query.set('role', filters.role);
-      const usersResponse = await apiRequest(`/users?${query.toString()}`);
-      const usersData = await usersResponse.json() as {
+      const usersResponse = await apiRequest(`/users?${query.toString()}`, { signal: controller.signal });
+      const usersData = await usersResponse.json().catch(() => ({})) as {
         users?: AdminUser[];
         pagination?: PageInfo;
         message?: string;
       };
+      if (!isCurrent()) return false;
       if (!usersResponse.ok) throw new Error(usersData.message ?? t('adminLoadFailed'));
       const loadedUsers = usersData.users ?? [];
       setUsers((current) => append ? [...current, ...loadedUsers] : loadedUsers);
@@ -85,15 +102,18 @@ export function useAdminUsers({ onToast }: AdminUsersScreenProps) {
       });
       return true;
     } catch (error) {
+      if (!isCurrent()) return false;
       const message = error instanceof Error ? error.message : t('adminLoadFailed');
       if (append || initialLoadComplete.current) onToast(message, 'error');
       else setLoadError(message);
       return false;
     } finally {
-      if (append) setIsLoadingMore(false);
-      else {
-        setIsLoading(false);
-        setIsRefreshing(false);
+      if (isMountedRef.current) {
+        if (append) setIsLoadingMore(false);
+        else if (listControllerRef.current === controller) {
+          setIsLoading(false);
+          setIsRefreshing(false);
+        }
       }
     }
   }, [onToast]);
@@ -155,16 +175,19 @@ export function useAdminUsers({ onToast }: AdminUsersScreenProps) {
   const loadStores = useCallback(async () => {
     if (hasLoadedStores || isLoadingStores) return;
     setIsLoadingStores(true);
+    const controller = new AbortController();
+    storesControllerRef.current = controller;
     try {
-      const response = await apiRequest('/stores?limit=100');
-      const data = await response.json() as { franchises?: StoreOption[]; message?: string; };
+      const response = await apiRequest('/stores?limit=100', { signal: controller.signal });
+      const data = await response.json().catch(() => ({})) as { franchises?: StoreOption[]; message?: string; };
+      if (controller.signal.aborted) return;
       if (!response.ok) throw new Error(data.message ?? t('adminLoadFailed'));
       setStores(data.franchises ?? []);
       setHasLoadedStores(true);
     } catch (error) {
-      showErrorToast(error instanceof Error ? error.message : t('adminLoadFailed'));
+      if (!controller.signal.aborted) showErrorToast(error instanceof Error ? error.message : t('adminLoadFailed'));
     } finally {
-      setIsLoadingStores(false);
+      if (!controller.signal.aborted) setIsLoadingStores(false);
     }
   }, [hasLoadedStores, isLoadingStores, showErrorToast]);
   useEffect(() => {
@@ -249,7 +272,7 @@ export function useAdminUsers({ onToast }: AdminUsersScreenProps) {
             : { name: form.name.trim(), email: form.email.trim(), password: form.password, role: form.role, franchiseIds: form.role === 'sub_admin' ? [] : form.franchiseIds }),
         },
       );
-      const data = await response.json() as { message?: string; };
+      const data = await response.json().catch(() => ({})) as { message?: string; };
       if (!response.ok) {
         showErrorToast(data.message ?? t('adminSaveFailed'));
         return;
@@ -268,7 +291,7 @@ export function useAdminUsers({ onToast }: AdminUsersScreenProps) {
     setIsDeleting(true);
     try {
       const response = await apiRequest(`/users/${encodeURIComponent(pendingDelete._id)}`, { method: 'DELETE' });
-      const data = await response.json() as { message?: string; };
+      const data = await response.json().catch(() => ({})) as { message?: string; };
       if (!response.ok) {
         showErrorToast(data.message ?? t('adminSaveFailed'));
         return;

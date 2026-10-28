@@ -3,6 +3,8 @@ import { act } from 'react-test-renderer';
 import * as authApi from '../src/api/auth';
 import { t } from '../src/i18n';
 import { AdminUsersScreen } from '../src/screens/admin/users/AdminUsersScreen';
+import { useAdminUsers } from '../src/screens/admin/users/useAdminUsers';
+import { render } from './testUtils';
 import { renderSafeArea, buttons, containsText, buttonByLabel, flushEffects, response } from './testUtils';
 
 const originalPlatform = Platform.OS;
@@ -30,8 +32,8 @@ describe('AdminUsersScreen', () => {
       const onToast = jest.fn();
       const renderer = renderSafeArea(<AdminUsersScreen onToast={onToast} />);
       await flushEffects();
-      expect(apiRequest).toHaveBeenCalledWith(expect.stringContaining('/users?'));
-      expect(apiRequest).toHaveBeenCalledWith(expect.stringContaining('limit=9'));
+      expect(apiRequest).toHaveBeenCalledWith(expect.stringContaining('/users?'), expect.objectContaining({ signal: expect.any(AbortSignal) }));
+      expect(apiRequest).toHaveBeenCalledWith(expect.stringContaining('limit=9'), expect.objectContaining({ signal: expect.any(AbortSignal) }));
       expect(renderer.root.findAllByProps({ children: 'Alex Admin' }).length).toBeGreaterThan(0);
   
       act(() => buttonByLabel(renderer, t('adminAddUser')).props.onPress());
@@ -54,7 +56,7 @@ describe('AdminUsersScreen', () => {
       act(() => search.props.onChangeText('Alex'));
       const apply = buttons(renderer).find((button) => button.props.children?.props?.children === t('adminApplyFilters'));
       await act(async () => { apply?.props.onPress(); });
-      expect(apiRequest).toHaveBeenCalledWith(expect.stringContaining('search=Alex'));
+      expect(apiRequest).toHaveBeenCalledWith(expect.stringContaining('search=Alex'), expect.objectContaining({ signal: expect.any(AbortSignal) }));
   
       const deleteAction = buttonByLabel(renderer, `${t('adminDelete')} Alex Admin`);
       act(() => deleteAction.props.onPress());
@@ -142,7 +144,7 @@ describe('AdminUsersScreen', () => {
       await act(async () => { loadMore?.props.onPress(); });
       await flushEffects();
       expect(renderer.root.findAllByProps({ children: 'Second User' }).length).toBeGreaterThan(0);
-      expect(apiRequest).toHaveBeenCalledWith(expect.stringContaining('page=2'));
+      expect(apiRequest).toHaveBeenCalledWith(expect.stringContaining('page=2'), expect.objectContaining({ signal: expect.any(AbortSignal) }));
   
       act(() => buttonByLabel(renderer, `${t('adminEditUser')} Alex Admin`).props.onPress());
       const nameInput = renderer.root.find((node) => node.type === TextInput && node.props.value === 'Alex Admin');
@@ -185,8 +187,8 @@ describe('AdminUsersScreen', () => {
     act(() => buttons(renderer).find((button) => containsText(button.props.children, t('adminActive')))?.props.onPress());
     const apply = buttons(renderer).find((button) => containsText(button.props.children, t('adminApplyFilters')));
     await act(async () => { apply?.props.onPress(); });
-    expect(apiRequest).toHaveBeenCalledWith(expect.stringContaining('franchiseId=store-1'));
-    expect(apiRequest).toHaveBeenCalledWith(expect.stringContaining('status=active'));
+    expect(apiRequest).toHaveBeenCalledWith(expect.stringContaining('franchiseId=store-1'), expect.objectContaining({ signal: expect.any(AbortSignal) }));
+    expect(apiRequest).toHaveBeenCalledWith(expect.stringContaining('status=active'), expect.objectContaining({ signal: expect.any(AbortSignal) }));
 
     act(() => buttonByLabel(renderer, t('adminOpenFilters')).props.onPress());
     const clear = buttons(renderer).find((button) => containsText(button.props.children, t('adminClearFilters')));
@@ -197,5 +199,40 @@ describe('AdminUsersScreen', () => {
     expect(latestUserListRequest).not.toContain('franchiseId=');
     expect(latestUserListRequest).not.toContain('role=');
     act(() => renderer.unmount());
+  });
+
+  it('ignores superseded user list responses and aborts in-flight requests on unmount', async () => {
+    const user = (id: string, name: string) => ({ _id: id, name, email: `${id}@example.com`, role: 'sub_admin', franchises: [] });
+    const pending: Array<{ path: string; signal?: AbortSignal; resolve: (value: Response) => void }> = [];
+    jest.spyOn(authApi, 'apiRequest').mockImplementation((path, init) => {
+      if (path.startsWith('/stores')) return Promise.resolve(response(200, { franchises: [] }));
+      return new Promise<Response>((resolve) => { pending.push({ path, signal: init?.signal ?? undefined, resolve }); });
+    });
+    let state!: ReturnType<typeof useAdminUsers>;
+    const onToast = jest.fn();
+    function Harness() { state = useAdminUsers({ onToast }); return null; }
+    const renderer = render(<Harness />);
+    await flushEffects();
+    act(() => state.setSearchText('New'));
+    let applied!: Promise<void>;
+    act(() => { applied = state.applyFilters(); });
+    expect(pending).toHaveLength(2);
+    expect(pending[0].signal?.aborted).toBe(true);
+
+    await act(async () => {
+      pending[1].resolve(response(200, { users: [user('u-2', 'New User')], pagination: { page: 1, totalPages: 1, total: 1 } }));
+      await applied;
+    });
+    await act(async () => {
+      pending[0].resolve(response(200, { users: [user('u-1', 'Old User')], pagination: { page: 1, totalPages: 1, total: 1 } }));
+      await new Promise((resolve) => setImmediate(resolve));
+    });
+    expect(state.visibleUsers.map((item) => item.name)).toEqual(['New User']);
+    expect(state.appliedFilters.search).toBe('New');
+
+    act(() => { void state.loadMore(); });
+    const inFlight = pending[2];
+    act(() => renderer.unmount());
+    expect(inFlight.signal?.aborted).toBe(true);
   });
 });

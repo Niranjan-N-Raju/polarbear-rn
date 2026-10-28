@@ -5,7 +5,7 @@ import { theme } from '../../../config/theme';
 import { t } from '../../../i18n';
 import { Archive, UserRound, UsersRound } from '../../../icons';
 import { getAdminLayout } from '../../../utils/adminLayout';
-import { localDateValue } from '../dashboardDates';
+import { businessDate } from '../../../utils/businessDate';
 import { type EmployeeStatusFilter } from './EmployeeFiltersDrawer';
 export interface Employee {
   _id: string;
@@ -14,7 +14,7 @@ export interface Employee {
   phone?: string;
   position?: string;
   employmentType?: 'full_time' | 'part_time';
-  salary?: number;
+  salary?: number | null;
   dateOfJoining?: string;
   isActive?: boolean;
   archivedAt?: string;
@@ -40,7 +40,7 @@ export function useFranchiseEmployees({ storeId }: { storeId: string; }) {
   const [formVisible, setFormVisible] = useState(false);
   const [editing, setEditing] = useState<Employee | null>(null);
   const [archiveTarget, setArchiveTarget] = useState<Employee | null>(null);
-  const [exitDate, setExitDate] = useState(localDateValue());
+  const [exitDate, setExitDate] = useState(() => businessDate());
   const [busy, setBusy] = useState(false);
   const [toast, setToast] = useState<{ message: string; tone: 'success' | 'error'; } | null>(null);
   const [pendingToast, setPendingToast] = useState('');

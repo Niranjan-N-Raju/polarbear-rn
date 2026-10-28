@@ -22,7 +22,7 @@ describe('AdminDashboardScreen', () => {
       }));
       let renderer = render(<AdminDashboardScreen />);
       await act(async () => { await new Promise((resolve) => setImmediate(resolve)); });
-      expect(apiRequest).toHaveBeenCalledWith('/dashboard');
+      expect(apiRequest).toHaveBeenCalledWith('/dashboard', expect.objectContaining({ signal: expect.any(AbortSignal) }));
       expect(renderer.root.findByType(SummaryCards).props.cards).toEqual([
         expect.objectContaining({ key: 'totalStores', color: theme.colors.teal }),
         expect.objectContaining({ key: 'activeStores', color: theme.colors.orange }),

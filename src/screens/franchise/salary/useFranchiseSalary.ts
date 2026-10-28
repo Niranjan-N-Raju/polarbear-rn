@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useWindowDimensions } from 'react-native';
 import { apiRequest } from '../../../api/auth';
 import { theme } from '../../../config/theme';
@@ -61,16 +61,41 @@ export function useFranchiseSalary({ storeId }: { storeId: string; }) {
     { label: t('franchiseSalaryIncentivesTotal'), value: formatMoney(totals.incentives), color: theme.colors.orange, Icon: Gift },
   ];
   const summaryRows = layout.desktopWeb ? [cards] : [cards.slice(0, 2), cards.slice(2)];
+  // Slip responses are dropped once the employee changes or the slip/drawer is closed.
+  const slipControllerRef = useRef<AbortController | null>(null);
+  const cancelSlipRequest = useCallback(() => {
+    slipControllerRef.current?.abort();
+    slipControllerRef.current = null;
+    setSlipBusy(false);
+  }, []);
+  useEffect(() => () => slipControllerRef.current?.abort(), []);
+  const selectEmployee = useCallback((employee: Projection | null) => {
+    cancelSlipRequest();
+    setSelectedEmployee(employee);
+  }, [cancelSlipRequest]);
+  const updateSlip = useCallback((next: SlipData | null) => {
+    if (!next) cancelSlipRequest();
+    setSlip(next);
+  }, [cancelSlipRequest]);
   const openSlip = async (employee: Projection) => {
+    slipControllerRef.current?.abort();
+    const controller = new AbortController();
+    slipControllerRef.current = controller;
     setSelectedEmployee(employee); setSlip(null); setSlipBusy(true);
     try {
       const query = new URLSearchParams({ storeId, employeeId: employee.employeeId, period });
-      const response = await apiRequest(`/salary/slip?${query.toString()}`);
+      const response = await apiRequest(`/salary/slip?${query.toString()}`, { signal: controller.signal });
       const result = await response.json().catch(() => ({})) as SlipData & { message?: string; };
+      if (controller.signal.aborted) return;
       if (!response.ok) { setToast(result.message ?? t('franchiseSalarySlipFailed')); return; }
       setSlip(result);
-    } catch { setToast(t('adminNetworkError')); }
-    finally { setSlipBusy(false); }
+    } catch { if (!controller.signal.aborted) setToast(t('adminNetworkError')); }
+    finally {
+      if (slipControllerRef.current === controller) {
+        slipControllerRef.current = null;
+        setSlipBusy(false);
+      }
+    }
   };
   const saveCycle = async () => {
     const day = Number(startDay);
@@ -115,9 +140,9 @@ export function useFranchiseSalary({ storeId }: { storeId: string; }) {
     cycleError,
     savingCycle,
     selectedEmployee,
-    setSelectedEmployee,
+    setSelectedEmployee: selectEmployee,
     slip,
-    setSlip,
+    setSlip: updateSlip,
     slipBusy,
     queuedDrawerAction,
     setQueuedDrawerAction,

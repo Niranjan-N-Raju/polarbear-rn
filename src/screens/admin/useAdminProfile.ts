@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { useWindowDimensions } from 'react-native';
 import { apiRequest, setAccessToken } from '../../api/auth';
 import type { AuthenticatedUser } from '../../api/types';
-import { getLanguage, setLanguage, t, type AppLanguage } from '../../i18n';
+import { getLanguage, setLanguage, t, type AppLanguage, type TranslationKey } from '../../i18n';
 import { getAdminLayout } from '../../utils/adminLayout';
 import type { AdminProfileScreenProps } from './types';
 export const languageOptions = [
@@ -53,9 +53,10 @@ export function useAdminProfile({ user: initialUser, onUserUpdated, onToast }: A
   }
   useEffect(() => {
     let active = true;
-    apiRequest('/me')
+    const controller = new AbortController();
+    apiRequest('/me', { signal: controller.signal })
       .then(async (response) => {
-        const data = await response.json() as AuthenticatedUser & { message?: string; };
+        const data = await response.json().catch(() => ({})) as AuthenticatedUser & { message?: string; };
         if (!response.ok) throw new Error(data.message ?? t('adminLoadFailed'));
         if (!active) return;
         setUser(data);
@@ -69,7 +70,7 @@ export function useAdminProfile({ user: initialUser, onUserUpdated, onToast }: A
       .finally(() => {
         if (active) setIsLoading(false);
       });
-    return () => { active = false; };
+    return () => { active = false; controller.abort(); };
   }, [onUserUpdated]);
   async function saveName(): Promise<void> {
     setNameError('');
@@ -84,7 +85,7 @@ export function useAdminProfile({ user: initialUser, onUserUpdated, onToast }: A
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name: name.trim() }),
       });
-      const data = await response.json() as { message?: string; token?: string; };
+      const data = await response.json().catch(() => ({})) as { message?: string; token?: string; };
       if (!response.ok) throw new Error(data.message ?? t('adminSaveFailed'));
       if (data.token) setAccessToken(data.token);
       const updated = { ...user, name: name.trim() };
@@ -107,7 +108,7 @@ export function useAdminProfile({ user: initialUser, onUserUpdated, onToast }: A
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ preferredLanguage: language }),
       });
-      const data = await response.json() as { message?: string; token?: string; };
+      const data = await response.json().catch(() => ({})) as { message?: string; token?: string; };
       if (!response.ok) throw new Error(data.message ?? t('adminLanguageSaveFailed'));
       if (data.token) setAccessToken(data.token);
       const updated = { ...user, preferredLanguage: language };
@@ -123,17 +124,18 @@ export function useAdminProfile({ user: initialUser, onUserUpdated, onToast }: A
       setIsSavingLanguage(false);
     }
   }
-  function validatePassword(): string | null {
-    if (!currentPassword.trim()) return t('adminPasswordRequired');
-    if (!newPassword.trim()) return t('adminNewPasswordRequired');
-    if (!confirmPassword.trim()) return t('adminConfirmPasswordRequired');
-    if (newPassword !== confirmPassword) return t('adminPasswordMismatch');
-    if (newPassword.length < 12) return t('adminPasswordLength');
-    if (!/[A-Z]/.test(newPassword)) return t('adminPasswordUppercase');
-    if (!/[a-z]/.test(newPassword)) return t('adminPasswordLowercase');
-    if (!/[^A-Za-z0-9]/.test(newPassword)) return t('adminPasswordSpecial');
-    if (!/\d/.test(newPassword)) return t('adminPasswordNumber');
-    if (currentPassword === newPassword) return t('adminPasswordSame');
+  // Each rule names its field explicitly so routing never depends on the (translated) message text.
+  function validatePassword(): { field: 'current' | 'new' | 'confirm'; key: TranslationKey } | null {
+    if (!currentPassword.trim()) return { field: 'current', key: 'adminPasswordRequired' };
+    if (!newPassword.trim()) return { field: 'new', key: 'adminNewPasswordRequired' };
+    if (!confirmPassword.trim()) return { field: 'confirm', key: 'adminConfirmPasswordRequired' };
+    if (newPassword !== confirmPassword) return { field: 'confirm', key: 'adminPasswordMismatch' };
+    if (newPassword.length < 12) return { field: 'new', key: 'adminPasswordLength' };
+    if (!/[A-Z]/.test(newPassword)) return { field: 'new', key: 'adminPasswordUppercase' };
+    if (!/[a-z]/.test(newPassword)) return { field: 'new', key: 'adminPasswordLowercase' };
+    if (!/[^A-Za-z0-9]/.test(newPassword)) return { field: 'new', key: 'adminPasswordSpecial' };
+    if (!/\d/.test(newPassword)) return { field: 'new', key: 'adminPasswordNumber' };
+    if (currentPassword === newPassword) return { field: 'new', key: 'adminPasswordSame' };
     return null;
   }
   async function changePassword(): Promise<void> {
@@ -143,9 +145,10 @@ export function useAdminProfile({ user: initialUser, onUserUpdated, onToast }: A
     setPasswordError('');
     const validationError = validatePassword();
     if (validationError) {
-      if (!currentPassword.trim()) setCurrentPasswordError(validationError);
-      else if (!newPassword.trim() || newPassword.length < 12 || /uppercase|lowercase|special|number|same/i.test(validationError)) setNewPasswordError(validationError);
-      else setConfirmPasswordError(validationError);
+      const message = t(validationError.key);
+      if (validationError.field === 'current') setCurrentPasswordError(message);
+      else if (validationError.field === 'new') setNewPasswordError(message);
+      else setConfirmPasswordError(message);
       return;
     }
 
@@ -156,7 +159,7 @@ export function useAdminProfile({ user: initialUser, onUserUpdated, onToast }: A
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ currentPassword, newPassword }),
       });
-      const data = await response.json() as { message?: string; token?: string; };
+      const data = await response.json().catch(() => ({})) as { message?: string; token?: string; };
       if (!response.ok) {
         const message = data.message ?? t('adminSaveFailed');
         if (/current password|incorrect/i.test(message)) setCurrentPasswordError(message);

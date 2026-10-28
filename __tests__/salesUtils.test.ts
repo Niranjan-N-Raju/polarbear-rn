@@ -40,7 +40,7 @@ describe('sales utils', () => {
   });
 
   it('builds preset ranges and validates ranges', () => {
-    const now = new Date(2026, 0, 15);
+    const now = new Date('2026-01-15T06:30:00Z'); // noon IST
     expect(salePresetRange('today', now)).toEqual({ from: '2026-01-15', to: '2026-01-15' });
     expect(saleRangeError({ from: '2026-01-10', to: '2026-01-01' }, '2026-01-15')).toBe(t('franchiseInvalidDates'));
     expect(saleRangeError({ from: '2026-01-10', to: '2026-01-20' }, '2026-01-15')).toBe(t('franchiseSaleFutureDate'));

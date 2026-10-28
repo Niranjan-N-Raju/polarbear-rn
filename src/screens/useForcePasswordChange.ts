@@ -44,7 +44,7 @@ export function useForcePasswordChange({ onCompleted }: ForcePasswordChangeScree
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ currentPassword, newPassword }),
       });
-      const data = await response.json() as { message?: string; token?: string; mustChangePassword?: boolean; };
+      const data = await response.json().catch(() => ({})) as { message?: string; token?: string; mustChangePassword?: boolean; };
       if (!response.ok || !data.token) {
         setError(data.message ?? t('adminSaveFailed'));
         return;

@@ -9,9 +9,10 @@ import { ResponsiveDrawerModal } from '../../../components/ResponsiveDrawerModal
 import { theme } from '../../../config/theme';
 import { t } from '../../../i18n';
 import { adminStyles as styles } from '../../../styles/adminStyles';
-import { localDateValue, validDateRange } from '../dashboardDates';
+import { validDateRange } from '../dashboardDates';
 import type { WithdrawalRecord } from './FranchiseWithdrawalsScreen';
 import { withdrawalStyles } from './withdrawalStyles';
+import { businessDate } from '../../../utils/businessDate';
 
 interface WithdrawalFormDrawerProps {
   visible: boolean;
@@ -25,7 +26,7 @@ interface WithdrawalFormDrawerProps {
 type EntryType = WithdrawalRecord['type'];
 
 export function WithdrawalFormDrawer({ visible, storeId, editingRecord, onClose, onAfterClose, onSaved }: WithdrawalFormDrawerProps) {
-  const [date, setDate] = useState(localDateValue());
+  const [date, setDate] = useState(businessDate());
   const [amount, setAmount] = useState('');
   const [type, setType] = useState<EntryType>('withdrawal');
   const [reason, setReason] = useState('');
@@ -35,7 +36,7 @@ export function WithdrawalFormDrawer({ visible, storeId, editingRecord, onClose,
 
   useEffect(() => {
     if (!visible) return;
-    setDate(editingRecord?.date ?? localDateValue());
+    setDate(editingRecord?.date ?? businessDate());
     setAmount(editingRecord ? String(editingRecord.amount) : '');
     setType(editingRecord?.type ?? 'withdrawal');
     setReason(editingRecord?.reason ?? '');
@@ -46,7 +47,7 @@ export function WithdrawalFormDrawer({ visible, storeId, editingRecord, onClose,
   const save = async () => {
     if (saving) return;
     const nextErrors: { date?: string; amount?: string } = {};
-    if (!validDateRange(date, date) || date > localDateValue()) nextErrors.date = t('franchiseWithdrawalsDateInvalid');
+    if (!validDateRange(date, date) || date > businessDate()) nextErrors.date = t('franchiseWithdrawalsDateInvalid');
     const parsedAmount = Number(amount);
     if (!amount.trim() || !Number.isFinite(parsedAmount) || parsedAmount <= 0) nextErrors.amount = t('franchiseWithdrawalsAmountInvalid');
     setErrors(nextErrors);
@@ -96,7 +97,7 @@ export function WithdrawalFormDrawer({ visible, storeId, editingRecord, onClose,
         <ScrollView style={styles.drawerFormScroll} keyboardShouldPersistTaps="handled">
           <AdminFormField
             date
-            maximumDate={localDateValue()}
+            maximumDate={businessDate()}
             label={t('franchiseWithdrawalsDate')}
             placeholder="YYYY-MM-DD"
             value={date}
