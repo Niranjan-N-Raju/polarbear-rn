@@ -36,10 +36,10 @@ Copy `.env.example` to `.env`. For native development clients, set `TEST_LOGIN_E
 
 ### Local backend connectivity
 
-Development defaults to `http://192.168.1.2:4000/api` on native and web.
-Devices must be able to reach that address and be on the same network as the
-backend. Check
-`http://<development-host>:4000/api/health` before troubleshooting sign-in;
+Development defaults to `https://polarbear-be.vercel.app/api` on native and web.
+Devices need internet access; a shared local network is not required.
+`https://polarbear-be.vercel.app/api/greet` is the public greeting endpoint.
+Check `https://polarbear-be.vercel.app/api/health` before troubleshooting sign-in;
 it should return HTTP 200 with a connected database.
 
 If the backend address or port changes, explicitly set `API_BASE_URL`
