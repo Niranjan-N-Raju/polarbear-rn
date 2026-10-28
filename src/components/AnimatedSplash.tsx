@@ -1,13 +1,16 @@
 import { useCallback, useEffect, useRef } from 'react';
 import type { ComponentType } from 'react';
-import { Animated, Image, StyleSheet, TurboModuleRegistry } from 'react-native';
+import { Animated, Image, Platform, StyleSheet, TurboModuleRegistry } from 'react-native';
 import BootSplash from 'react-native-bootsplash';
 import type { WebViewMessageEvent, WebViewProps } from 'react-native-webview';
 import manifest from '../../assets/bootsplash/manifest.json';
 import { SPLASH_SVG } from '../assets/splashSvg';
 
 export const MIN_SPLASH_MS = 1500;
-export const SPLASH_LOGO_WIDTH = 320;
+// Must equal the native launch-screen logo width (react-native-bootsplash --logo-width) so the static
+// launch screen and the animation's first frame are identical. Android 12+ masks the launch icon to a
+// 192dp circle, so Android uses a smaller size that keeps the artwork uncropped.
+export const SPLASH_LOGO_WIDTH = Platform.OS === 'android' ? 184 : 320;
 // If the WebView never reports its first paint, stop waiting this long after it finished loading.
 export const PAINT_FALLBACK_MS = 1000;
 export const PAINTED_MESSAGE = 'splash-painted';
@@ -24,7 +27,7 @@ html,body{margin:0;height:100%;background:${
   manifest.background
 };overflow:hidden}
 body{display:flex;align-items:center;justify-content:center}
-svg{width:min(${SPLASH_LOGO_WIDTH}px,80vw);height:auto;display:block}
+svg{width:${SPLASH_LOGO_WIDTH}px;max-width:100%;height:auto;display:block}
 </style></head><body>${SPLASH_SVG.replace(
   /^<\?xml[^>]*\?>\s*/,
   '',

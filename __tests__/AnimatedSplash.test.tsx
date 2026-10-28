@@ -3,7 +3,7 @@ import path from 'path';
 import React from 'react';
 import ReactTestRenderer from 'react-test-renderer';
 import BootSplash from 'react-native-bootsplash';
-import { AnimatedSplash, MIN_SPLASH_MS, PAINT_FALLBACK_MS, PAINTED_MESSAGE, SPLASH_HTML } from '../src/components/AnimatedSplash';
+import { AnimatedSplash, LAUNCH_SCREEN_MAX_MS, MIN_SPLASH_MS, PAINT_FALLBACK_MS, PAINTED_MESSAGE, SPLASH_HTML } from '../src/components/AnimatedSplash';
 import { SPLASH_SVG } from '../src/assets/splashSvg';
 
 describe('AnimatedSplash (native)', () => {
@@ -72,17 +72,42 @@ describe('AnimatedSplash (native)', () => {
     warn.mockRestore();
   });
 
-  test('finishes after the minimum display time', async () => {
+  test('plays the animation for the full minimum time after it becomes visible, then finishes', async () => {
     jest.useFakeTimers();
     const onFinish = jest.fn();
     let renderer!: ReactTestRenderer.ReactTestRenderer;
     await ReactTestRenderer.act(() => {
       renderer = ReactTestRenderer.create(<AnimatedSplash onFinish={onFinish} />);
     });
+    const webview = renderer.root.findByProps({ testID: 'animated-splash-webview' });
+    // Simulate a slow first paint: the minimum time must not have been consumed while waiting.
+    await ReactTestRenderer.act(() => {
+      jest.advanceTimersByTime(PAINT_FALLBACK_MS - 100);
+      webview.props.onMessage({ nativeEvent: { data: PAINTED_MESSAGE } });
+    });
+    await ReactTestRenderer.act(() => {
+      jest.advanceTimersByTime(MIN_SPLASH_MS - 100);
+    });
     expect(onFinish).not.toHaveBeenCalled();
     await ReactTestRenderer.act(() => {
-      jest.advanceTimersByTime(MIN_SPLASH_MS + 1000);
+      jest.advanceTimersByTime(1000);
     });
+    expect(onFinish).toHaveBeenCalledTimes(1);
+    ReactTestRenderer.act(() => renderer.unmount());
+    jest.useRealTimers();
+  });
+
+  test('never waits on the static launch screen longer than the safety cap', async () => {
+    jest.useFakeTimers();
+    const onFinish = jest.fn();
+    let renderer!: ReactTestRenderer.ReactTestRenderer;
+    await ReactTestRenderer.act(() => {
+      renderer = ReactTestRenderer.create(<AnimatedSplash onFinish={onFinish} />);
+    });
+    await ReactTestRenderer.act(() => {
+      jest.advanceTimersByTime(LAUNCH_SCREEN_MAX_MS + MIN_SPLASH_MS + 1000);
+    });
+    expect(BootSplash.hide).toHaveBeenCalledTimes(1);
     expect(onFinish).toHaveBeenCalledTimes(1);
     ReactTestRenderer.act(() => renderer.unmount());
     jest.useRealTimers();

@@ -20,6 +20,14 @@ describe('launch splash configuration', () => {
     expect(read('ios/reactnative/SceneDelegate.swift')).toContain('RNBootSplash.initWithStoryboard("BootSplash", rootView: rootView)');
   });
 
+  it('sizes the native launch logo exactly like the animated splash so the hand-off is seamless', () => {
+    // iOS launch logo is generated at 320pt; Android at 184dp (Android 12+ masks the icon to a 192dp circle).
+    expect(read('ios/reactnative/BootSplash.storyboard')).toMatch(/<image name="BootSplashLogo-[0-9a-f]+" width="320" height="116"\/>/);
+    const source = read('src/components/AnimatedSplash.tsx');
+    expect(source).toContain("Platform.OS === 'android' ? 184 : 320");
+    expect(source).toContain('svg{width:${SPLASH_LOGO_WIDTH}px;');
+  });
+
   it('uses the Android system splash theme and initializes it before the activity starts', () => {
     expect(read('android/app/src/main/AndroidManifest.xml')).toContain('android:theme="@style/BootTheme"');
     expect(read('android/app/src/main/res/values/styles.xml')).toContain('<item name="postBootSplashTheme">@style/AppTheme</item>');
@@ -27,6 +35,7 @@ describe('launch splash configuration', () => {
     expect(activity.indexOf('RNBootSplash.init')).toBeLessThan(activity.indexOf('super.onCreate'));
     const manifest = JSON.parse(read('assets/bootsplash/manifest.json'));
     expect(manifest.background).toBe('#ffffff');
-    expect(manifest.logo.width).toBe(176);
+    // The manifest reflects the last generated platform (Android).
+    expect(manifest.logo.width).toBe(184);
   });
 });
