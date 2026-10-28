@@ -1,12 +1,14 @@
 import { useEffect, useState } from 'react';
 import { Pressable, ScrollView, Text, useWindowDimensions, View } from 'react-native';
-import { DateInput } from '../../components/DateInput';
+import { AdminFormField } from '../../components/AdminFormField';
+import { ResponsiveDrawerModal } from '../../components/ResponsiveDrawerModal';
 import { apiRequest } from '../../api/auth';
 import { AppLoader } from '../../components/AppLoader';
 import { theme } from '../../config/theme';
 import { t } from '../../i18n';
 import { SummaryCards } from '../../components/SummaryCards';
-import { CalendarCheck, IndianRupee, Store, UsersRound } from '../../icons';
+import { CalendarCheck, Filter, IndianRupee, RefreshCw, Store, UsersRound, X } from '../../icons';
+import { adminStyles } from '../../styles/adminStyles';
 import { getAdminLayout } from '../../utils/adminLayout';
 import { getDashboardCardColor } from '../../utils/dashboardConfig';
 import { currentMonthRange, datesBetween, thisWeekRange, validDateRange } from './dashboardDates';
@@ -15,13 +17,16 @@ import { franchiseStyles as styles } from './franchiseStyles';
 import type { DailySale, FranchiseDashboardStats } from './types';
 
 export function FranchiseDashboardScreen({ storeId }: { storeId: string }) {
-  const { width } = useWindowDimensions();
+  const { width, height } = useWindowDimensions();
   const layout = getAdminLayout(width);
+  const compactShortcuts = !layout.desktopWeb;
   const perRow = layout.desktopWeb ? 4 : 2;
   const [stats, setStats] = useState<FranchiseDashboardStats | null>(null);
   const [sales, setSales] = useState<DailySale[]>([]);
   const [range, setRange] = useState(currentMonthRange);
   const [appliedRange, setAppliedRange] = useState(currentMonthRange);
+  const [filtersOpen, setFiltersOpen] = useState(false);
+  const [filterError, setFilterError] = useState('');
   const [error, setError] = useState('');
   const [salesError, setSalesError] = useState('');
   const [loading, setLoading] = useState(true);
@@ -68,7 +73,19 @@ export function FranchiseDashboardScreen({ storeId }: { storeId: string }) {
 
   function applyRange(next = range) {
     setRange(next);
-    if (validDateRange(next.from, next.to)) setAppliedRange(next);
+    if (!validDateRange(next.from, next.to)) {
+      setFilterError(t('franchiseInvalidDates'));
+      return;
+    }
+    setAppliedRange(next);
+    setFilterError('');
+    setFiltersOpen(false);
+  }
+
+  function openFilters() {
+    setRange(appliedRange);
+    setFilterError('');
+    setFiltersOpen(true);
   }
 
   const salesByDate = new Map(sales.map((sale) => [sale.date, sale.totalSale]));
@@ -80,13 +97,21 @@ export function FranchiseDashboardScreen({ storeId }: { storeId: string }) {
   ].map((card, index) => ({ ...card, color: theme.colors[getDashboardCardColor(index, perRow)] })) : [];
 
   return (
+    <>
     <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
       <View style={styles.card}>
-        <Text style={styles.title}>{t('adminDashboard')}</Text>
+        <View style={styles.dashboardHeading}>
+          <Text style={[styles.title, styles.dashboardTitle]}>{t('adminDashboard')}</Text>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel={t('adminRefresh')}
+            onPress={() => setVersion((value) => value + 1)}
+            style={styles.dashboardRefreshButton}
+          >
+            <RefreshCw size={20} color={theme.colors.teal} />
+          </Pressable>
+        </View>
         <Text style={styles.body}>{t('adminOverviewDescription')}</Text>
-        <Pressable accessibilityRole="button" onPress={() => setVersion((value) => value + 1)} style={styles.button}>
-          <Text style={styles.buttonText}>{t('adminRefresh')}</Text>
-        </Pressable>
       </View>
       {loading ? <AppLoader /> : error ? (
         <Text accessibilityRole="alert" style={styles.error}>{error}</Text>
@@ -95,33 +120,20 @@ export function FranchiseDashboardScreen({ storeId }: { storeId: string }) {
           <SummaryCards cards={summaryCards} isWeb={layout.isWeb} perRow={perRow} />
           <Text style={styles.subtitle}>{t('franchiseAttendancePending')}</Text>
           <View style={styles.card}>
-            <Text style={styles.sectionTitle}>{t('franchiseSalesTrend')}</Text>
-            <View style={styles.filters}>
-              {(['from', 'to'] as const).map((field) => (
-                <View key={field} style={styles.dateField}>
-                  <Text style={styles.body}>{t(field === 'from' ? 'franchiseFrom' : 'franchiseTo')}</Text>
-                  <DateInput
-                    accessibilityLabel={t(field === 'from' ? 'franchiseFrom' : 'franchiseTo')}
-                    value={range[field]}
-                    placeholder="YYYY-MM-DD"
-                    onChangeText={(value) => setRange((current) => ({ ...current, [field]: value }))}
-                    style={styles.dateInput}
-                  />
-                </View>
-              ))}
+            <View style={[styles.dashboardHeading, styles.salesHeading]}>
+              <Text style={[styles.sectionTitle, styles.dashboardTitle]}>{t('franchiseSalesTrend')}</Text>
+              <View style={[styles.filters, styles.salesShortcuts, compactShortcuts && styles.salesShortcutsCompact]}>
+                <Pressable accessibilityRole="button" hitSlop={compactShortcuts ? 6 : undefined} onPress={() => applyRange(thisWeekRange())} style={[styles.button, compactShortcuts && styles.salesShortcutButtonCompact]}>
+                  <Text style={[styles.buttonText, compactShortcuts && styles.salesShortcutTextCompact]}>{t('franchiseThisWeek')}</Text>
+                </Pressable>
+                <Pressable accessibilityRole="button" hitSlop={compactShortcuts ? 6 : undefined} onPress={() => applyRange(currentMonthRange())} style={[styles.button, compactShortcuts && styles.salesShortcutButtonCompact]}>
+                  <Text style={[styles.buttonText, compactShortcuts && styles.salesShortcutTextCompact]}>{t('franchiseThisMonth')}</Text>
+                </Pressable>
+                <Pressable accessibilityRole="button" accessibilityLabel={t('adminOpenFilters')} onPress={openFilters} style={adminStyles.filterIconButton}>
+                  <Filter color={theme.colors.teal} size={18} />
+                </Pressable>
+              </View>
             </View>
-            <View style={styles.filters}>
-              <Pressable accessibilityRole="button" onPress={() => applyRange()} style={styles.button}>
-                <Text style={styles.buttonText}>{t('adminApplyFilters')}</Text>
-              </Pressable>
-              <Pressable accessibilityRole="button" onPress={() => applyRange(thisWeekRange())} style={styles.button}>
-                <Text style={styles.buttonText}>{t('franchiseThisWeek')}</Text>
-              </Pressable>
-              <Pressable accessibilityRole="button" onPress={() => applyRange(currentMonthRange())} style={styles.button}>
-                <Text style={styles.buttonText}>{t('franchiseThisMonth')}</Text>
-              </Pressable>
-            </View>
-            {!validDateRange(range.from, range.to) ? <Text accessibilityRole="alert" style={styles.error}>{t('franchiseInvalidDates')}</Text> : null}
             <Text style={styles.subtitle}>{appliedRange.from} - {appliedRange.to}</Text>
             {salesLoading ? <AppLoader variant="inline" /> : salesError ? (
               <Text accessibilityRole="alert" style={styles.error}>{salesError}</Text>
@@ -178,5 +190,50 @@ export function FranchiseDashboardScreen({ storeId }: { storeId: string }) {
         </>
       ) : null}
     </ScrollView>
+    <ResponsiveDrawerModal
+      visible={filtersOpen}
+      closeLabel={t('adminCloseMenu')}
+      onClose={() => setFiltersOpen(false)}
+      panelStyle={!layout.isWeb ? { height: Math.min(height * 0.8, 390) } : undefined}
+    >
+      <View style={adminStyles.drawerContent}>
+        <View style={adminStyles.drawerHeading}>
+          <Text style={[adminStyles.modalTitle, adminStyles.drawerHeadingTitle]}>{t('franchiseFilterSales')}</Text>
+          <Pressable accessibilityRole="button" accessibilityLabel={t('adminCloseMenu')} onPress={() => setFiltersOpen(false)} style={adminStyles.userIconAction}>
+            <X color={theme.colors.muted} size={18} />
+          </Pressable>
+        </View>
+        <ScrollView style={adminStyles.drawerFormScroll} contentContainerStyle={adminStyles.filterDrawerFields} keyboardShouldPersistTaps="handled" automaticallyAdjustKeyboardInsets>
+          {(['from', 'to'] as const).map((field) => (
+            <AdminFormField
+              key={field}
+              date
+              label={t(field === 'from' ? 'franchiseFrom' : 'franchiseTo')}
+              placeholder={t('franchiseDatePlaceholder')}
+              value={range[field]}
+              onChangeText={(value) => {
+                setRange((current) => ({ ...current, [field]: value }));
+                setFilterError('');
+              }}
+              containerStyle={adminStyles.filterDrawerField}
+            />
+          ))}
+          {filterError ? <Text accessibilityRole="alert" style={styles.error}>{filterError}</Text> : null}
+        </ScrollView>
+        <View style={adminStyles.modalActions}>
+          <View style={adminStyles.drawerActionSlot}>
+            <Pressable accessibilityRole="button" onPress={() => applyRange(currentMonthRange())} style={[adminStyles.secondaryButton, adminStyles.drawerActionButton]}>
+              <Text style={adminStyles.secondaryButtonText}>{t('adminClearFilters')}</Text>
+            </Pressable>
+          </View>
+          <View style={adminStyles.drawerActionSlot}>
+            <Pressable accessibilityRole="button" onPress={() => applyRange()} style={[adminStyles.primaryButton, adminStyles.drawerActionButton]}>
+              <Text style={adminStyles.primaryButtonText}>{t('adminApplyFilters')}</Text>
+            </Pressable>
+          </View>
+        </View>
+      </View>
+    </ResponsiveDrawerModal>
+    </>
   );
 }
