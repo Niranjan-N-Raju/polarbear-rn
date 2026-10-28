@@ -1,11 +1,11 @@
-import { Pressable,ScrollView,Text,View } from 'react-native';
+import { Pressable, ScrollView, Text, View } from 'react-native';
 import { AppErrorState } from '../../../components/AppErrorState';
 import { AppLoader } from '../../../components/AppLoader';
 import { AppToast } from '../../../components/AppToast';
 import { SummaryCards } from '../../../components/SummaryCards';
 import { theme } from '../../../config/theme';
 import { t } from '../../../i18n';
-import { Filter,Package,Plus } from '../../../icons';
+import { Filter, Package, Plus } from '../../../icons';
 import { adminStyles as styles } from '../../../styles/adminStyles';
 import { InventoryActionDrawer } from './InventoryActionDrawer';
 import { InventoryCard } from './InventoryCard';
@@ -13,15 +13,44 @@ import { InventoryFiltersDrawer } from './InventoryFiltersDrawer';
 import { inventoryStyles } from './inventoryStyles';
 import { ProductsDrawer } from './ProductsDrawer';
 import { StockFormDrawer } from './StockFormDrawer';
-import { type FranchiseInventoryScreenProps,pageSize,useFranchiseInventory } from './useFranchiseInventory';
+import { type FranchiseInventoryScreenProps, pageSize, useFranchiseInventory } from './useFranchiseInventory';
 import {
-defaultInventoryFilters
+  defaultInventoryFilters
 } from './utils';
 
 
 export function FranchiseInventoryScreen({ storeId }: FranchiseInventoryScreenProps) {
-const { height, layout, items, isLoading, error, setReloadKey, filters, draftFilters, setDraftFilters, visibleCount, setVisibleCount, drawer, setDrawer, lastAction, setLastAction, toast, setToast, filteredItems, visibleItems, hasActiveFilters, totalUnits, applyFilterState, openFilters, toggleStatus, openAction, completeWithToast, handleAfterClose, summaryCards } = useFranchiseInventory({ storeId });
-return (
+  const {
+    height,
+    layout,
+    items,
+    isLoading,
+    error,
+    setReloadKey,
+    filters,
+    draftFilters,
+    setDraftFilters,
+    visibleCount,
+    setVisibleCount,
+    drawer,
+    setDrawer,
+    lastAction,
+    setLastAction,
+    toast,
+    setToast,
+    filteredItems,
+    visibleItems,
+    hasActiveFilters,
+    totalUnits,
+    applyFilterState,
+    openFilters,
+    toggleStatus,
+    openAction,
+    completeWithToast,
+    handleAfterClose,
+    summaryCards,
+  } = useFranchiseInventory({ storeId });
+  return (
     <View style={styles.screen}>
       <View style={[styles.screenHeader, layout.desktopWeb && styles.screenHeaderInline, layout.compactWeb && styles.screenHeaderStack]}>
         <View style={layout.isWeb ? styles.screenHeaderCopy : styles.screenHeaderCopyNative}>

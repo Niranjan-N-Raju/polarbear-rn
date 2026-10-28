@@ -1,10 +1,10 @@
-import { Pressable,Text,View } from 'react-native';
+import { Pressable, Text, View } from 'react-native';
 import { AdminFormField } from '../../../components/AdminFormField';
 import { FilterDrawer } from '../../../components/FilterDrawer';
 import { t } from '../../../i18n';
 import { adminStyles as styles } from '../../../styles/adminStyles';
 import { salesStyles } from '../sales/salesStyles';
-import type { InventoryFilter,InventoryFilters } from './utils';
+import type { InventoryFilter, InventoryFilters } from './utils';
 
 interface InventoryFiltersDrawerProps {
   visible: boolean;
@@ -19,7 +19,7 @@ interface InventoryFiltersDrawerProps {
   onApply: () => void;
 }
 
-export const inventoryFilterOptions: { key: InventoryFilter; label: Parameters<typeof t>[0] }[] = [
+export const inventoryFilterOptions: { key: InventoryFilter; label: Parameters<typeof t>[0]; }[] = [
   { key: 'all', label: 'franchiseInventoryFilterAll' },
   { key: 'expired', label: 'franchiseInventoryFilterExpired' },
   { key: 'oneDay', label: 'franchiseInventoryFilterOneDay' },

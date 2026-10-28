@@ -73,7 +73,25 @@ after rollout.
 
 The dashboard migrates the Next.js summary cards, sales trend (date range, This Week, This Month), employee attrition, weekday sales, top expenses, and payment mix. Dates use `YYYY-MM-DD`; apply the filters after editing. Attendance summary is explicitly marked as not calculated yet, matching Next.js. Loading, empty-data, and request-error states are separate; Refresh retries dashboard requests.
 
-### Dashboard module boundaries
+### Screen and feature module boundaries
+
+Every screen keeps its request effects, form state, validation, and actions in
+a neighboring `use<Feature>` hook. Screen components compose the UI and existing
+feature cards/drawers instead of making API requests directly. This applies to
+login, forced password changes, both workspace shells, both dashboards, Profile,
+Stores, Users, and all franchise operational screens.
+
+- Keep feature-specific logic beside its screen rather than adding unrelated
+  responsibilities to a global hook. Login's screen hook composes the existing
+  shared authentication hook.
+- Reuse existing feature `types`, defaults, styles, cards, and form drawers.
+  Franchise navigation metadata lives in `navigation.ts`; salary types/styles,
+  attendance utilities, and store-configuration styles have separate modules.
+- Share local date formatting and month helpers with the dashboard. Attendance
+  retains its own capped local-date iteration and employee eligibility rules;
+  those are not interchangeable with dashboard chart-date iteration.
+
+#### Dashboard composition and shared filters
 
 - `FranchiseDashboardScreen` composes the screen and summary cards; keep request
   effects out of the screen component.
@@ -82,9 +100,11 @@ The dashboard migrates the Next.js summary cards, sales trend (date range, This 
 - `SalesTrendCard` renders trend controls and sales; `DashboardInsights` renders
   the remaining insight sections using the existing shared chart helpers.
 - `src/components/FilterDrawer.tsx` provides the shared responsive filter shell,
-  heading, close control, and Clear/Apply actions. Both dashboard date filters
-  and the sales list reuse it. `DateRangeFilterDrawer` supplies reusable date
-  fields; callers own validation and what Clear means.
+  heading, close control, and Clear/Apply actions. Dashboard, Sales, Inventory,
+  Employees, Stores, and Users reuse it while retaining their fields, labels,
+  sizing, disabled actions, dropdown overlays, and after-close callbacks.
+  `DateRangeFilterDrawer` supplies reusable date fields; callers own validation
+  and what Clear means.
 
 The Sales Trend filter icon opens the date drawer. Closing without applying
 discards edits on the next open; Apply validates before updating the graph,
@@ -101,7 +121,7 @@ still applies. After installing dependencies, run `bundle exec pod install`
 from `ios/` and rebuild both native apps to link
 `@react-native-community/datetimepicker`; a Metro reload alone is insufficient.
 
-The full source menu is present: Dashboard; Store (Sales, Inventory, P&L, Withdrawals); Staff (Employees, Attendance, Salary); Profile; and Store Config. Dashboard and the existing shared Profile screen work in this phase. Remaining screens are labeled **Not yet migrated**, rather than displaying fictitious operational data.
+The full source menu is present: Dashboard; Store (Sales, Inventory, P&L, Withdrawals); Staff (Employees, Attendance, Salary); Profile; and Store Config. These screens use the selected store and the existing authenticated API endpoints.
 
 The mobile menu respects device safe areas and scrolls when space is limited, including its store-switch and sign-out actions. Every route and group has its own relevant icon. Store and Staff groups animate their height, opacity, and chevron rotation when expanded or collapsed; the mobile drawer fades in and out. The collapsed desktop sidebar uses icon-only actions.
 

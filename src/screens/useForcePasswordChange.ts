@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { apiRequest,setAccessToken } from '../api/auth';
-import { t,type TranslationKey } from '../i18n';
+import { apiRequest, setAccessToken } from '../api/auth';
+import { t, type TranslationKey } from '../i18n';
 export type ForcePasswordChangeScreenProps = {
   onCompleted: () => void;
   onSignOut: () => void;
@@ -20,17 +20,17 @@ export function validateNewPassword(currentPassword: string, newPassword: string
   return null;
 }
 
-export function useForcePasswordChange({ onCompleted, onSignOut }: ForcePasswordChangeScreenProps) {
-const insets = useSafeAreaInsets();
-const [currentPassword, setCurrentPassword] = useState('');
-const [newPassword, setNewPassword] = useState('');
-const [confirmPassword, setConfirmPassword] = useState('');
-const [showCurrent, setShowCurrent] = useState(false);
-const [showNew, setShowNew] = useState(false);
-const [showConfirm, setShowConfirm] = useState(false);
-const [error, setError] = useState('');
-const [isSaving, setIsSaving] = useState(false);
-async function submit(): Promise<void> {
+export function useForcePasswordChange({ onCompleted }: ForcePasswordChangeScreenProps) {
+  const insets = useSafeAreaInsets();
+  const [currentPassword, setCurrentPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [showCurrent, setShowCurrent] = useState(false);
+  const [showNew, setShowNew] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
+  const [error, setError] = useState('');
+  const [isSaving, setIsSaving] = useState(false);
+  async function submit(): Promise<void> {
     setError('');
     const validationError = validateNewPassword(currentPassword, newPassword, confirmPassword);
     if (validationError) {
@@ -44,7 +44,7 @@ async function submit(): Promise<void> {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ currentPassword, newPassword }),
       });
-      const data = await response.json() as { message?: string; token?: string; mustChangePassword?: boolean };
+      const data = await response.json() as { message?: string; token?: string; mustChangePassword?: boolean; };
       if (!response.ok || !data.token) {
         setError(data.message ?? t('adminSaveFailed'));
         return;
@@ -60,5 +60,23 @@ async function submit(): Promise<void> {
       setIsSaving(false);
     }
   }
-return { insets, currentPassword, setCurrentPassword, newPassword, setNewPassword, confirmPassword, setConfirmPassword, showCurrent, setShowCurrent, showNew, setShowNew, showConfirm, setShowConfirm, error, setError, isSaving, submit };
+  return {
+    insets,
+    currentPassword,
+    setCurrentPassword,
+    newPassword,
+    setNewPassword,
+    confirmPassword,
+    setConfirmPassword,
+    showCurrent,
+    setShowCurrent,
+    showNew,
+    setShowNew,
+    showConfirm,
+    setShowConfirm,
+    error,
+    setError,
+    isSaving,
+    submit,
+  };
 }

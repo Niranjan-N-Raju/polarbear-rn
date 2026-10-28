@@ -1,8 +1,8 @@
-import { useCallback,useEffect,useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useWindowDimensions } from 'react-native';
-import { apiRequest,setAccessToken } from '../../api/auth';
+import { apiRequest, setAccessToken } from '../../api/auth';
 import type { AuthenticatedUser } from '../../api/types';
-import { getLanguage,setLanguage,t,type AppLanguage } from '../../i18n';
+import { getLanguage, setLanguage, t, type AppLanguage } from '../../i18n';
 import { getAdminLayout } from '../../utils/adminLayout';
 import type { AdminProfileScreenProps } from './types';
 export const languageOptions = [
@@ -11,51 +11,51 @@ export const languageOptions = [
 ] as const;
 
 export function useAdminProfile({ user: initialUser, onUserUpdated, onToast }: AdminProfileScreenProps) {
-const { width } = useWindowDimensions();
-const layout = getAdminLayout(width);
-const [user, setUser] = useState(initialUser);
-const [isLoading, setIsLoading] = useState(true);
-const [name, setName] = useState(initialUser.name);
-const [nameError, setNameError] = useState('');
-const [isSavingName, setIsSavingName] = useState(false);
-const [currentPassword, setCurrentPassword] = useState('');
-const [newPassword, setNewPassword] = useState('');
-const [confirmPassword, setConfirmPassword] = useState('');
-const [currentPasswordError, setCurrentPasswordError] = useState('');
-const [newPasswordError, setNewPasswordError] = useState('');
-const [confirmPasswordError, setConfirmPasswordError] = useState('');
-const [passwordError, setPasswordError] = useState('');
-const [isSavingPassword, setIsSavingPassword] = useState(false);
-const [showCurrent, setShowCurrent] = useState(false);
-const [showNew, setShowNew] = useState(false);
-const [showConfirm, setShowConfirm] = useState(false);
-const [showCurrentError, setShowCurrentError] = useState('');
-const [isSavingLanguage, setIsSavingLanguage] = useState(false);
-const [languageError, setLanguageError] = useState('');
-const [pendingLanguage, setPendingLanguage] = useState<AppLanguage | null>(null);
-const [isLanguageDialogOpen, setIsLanguageDialogOpen] = useState(false);
-const [localToast, setLocalToast] = useState<{ message: string; tone: 'success' | 'error' } | null>(null);
-const dismissLocalToast = useCallback(() => setLocalToast(null), []);
-const showToast = useCallback((message: string, tone: 'success' | 'error') => {
+  const { width } = useWindowDimensions();
+  const layout = getAdminLayout(width);
+  const [user, setUser] = useState(initialUser);
+  const [isLoading, setIsLoading] = useState(true);
+  const [name, setName] = useState(initialUser.name);
+  const [nameError, setNameError] = useState('');
+  const [isSavingName, setIsSavingName] = useState(false);
+  const [currentPassword, setCurrentPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [currentPasswordError, setCurrentPasswordError] = useState('');
+  const [newPasswordError, setNewPasswordError] = useState('');
+  const [confirmPasswordError, setConfirmPasswordError] = useState('');
+  const [passwordError, setPasswordError] = useState('');
+  const [isSavingPassword, setIsSavingPassword] = useState(false);
+  const [showCurrent, setShowCurrent] = useState(false);
+  const [showNew, setShowNew] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
+  const [showCurrentError, setShowCurrentError] = useState('');
+  const [isSavingLanguage, setIsSavingLanguage] = useState(false);
+  const [languageError, setLanguageError] = useState('');
+  const [pendingLanguage, setPendingLanguage] = useState<AppLanguage | null>(null);
+  const [isLanguageDialogOpen, setIsLanguageDialogOpen] = useState(false);
+  const [localToast, setLocalToast] = useState<{ message: string; tone: 'success' | 'error'; } | null>(null);
+  const dismissLocalToast = useCallback(() => setLocalToast(null), []);
+  const showToast = useCallback((message: string, tone: 'success' | 'error') => {
     if (onToast) onToast(message, tone);
     else setLocalToast({ message, tone });
   }, [onToast]);
-function requestLanguageChange(language: AppLanguage): void {
+  function requestLanguageChange(language: AppLanguage): void {
     if (language === getLanguage()) return;
     setPendingLanguage(language);
     setIsLanguageDialogOpen(true);
   }
-async function confirmLanguageChange(): Promise<void> {
+  async function confirmLanguageChange(): Promise<void> {
     if (!pendingLanguage) return;
     const saved = await savePreferredLanguage(pendingLanguage);
     setIsLanguageDialogOpen(false);
     if (saved) showToast(t('adminLanguageUpdated'), 'success');
   }
-useEffect(() => {
+  useEffect(() => {
     let active = true;
     apiRequest('/me')
       .then(async (response) => {
-        const data = await response.json() as AuthenticatedUser & { message?: string };
+        const data = await response.json() as AuthenticatedUser & { message?: string; };
         if (!response.ok) throw new Error(data.message ?? t('adminLoadFailed'));
         if (!active) return;
         setUser(data);
@@ -71,7 +71,7 @@ useEffect(() => {
       });
     return () => { active = false; };
   }, [onUserUpdated]);
-async function saveName(): Promise<void> {
+  async function saveName(): Promise<void> {
     setNameError('');
     if (!name.trim()) {
       setNameError(t('adminNameRequired'));
@@ -84,7 +84,7 @@ async function saveName(): Promise<void> {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name: name.trim() }),
       });
-      const data = await response.json() as { message?: string; token?: string };
+      const data = await response.json() as { message?: string; token?: string; };
       if (!response.ok) throw new Error(data.message ?? t('adminSaveFailed'));
       if (data.token) setAccessToken(data.token);
       const updated = { ...user, name: name.trim() };
@@ -97,7 +97,7 @@ async function saveName(): Promise<void> {
       setIsSavingName(false);
     }
   }
-async function savePreferredLanguage(language: AppLanguage): Promise<boolean> {
+  async function savePreferredLanguage(language: AppLanguage): Promise<boolean> {
     if (language === getLanguage()) return false;
     setLanguageError('');
     setIsSavingLanguage(true);
@@ -107,7 +107,7 @@ async function savePreferredLanguage(language: AppLanguage): Promise<boolean> {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ preferredLanguage: language }),
       });
-      const data = await response.json() as { message?: string; token?: string };
+      const data = await response.json() as { message?: string; token?: string; };
       if (!response.ok) throw new Error(data.message ?? t('adminLanguageSaveFailed'));
       if (data.token) setAccessToken(data.token);
       const updated = { ...user, preferredLanguage: language };
@@ -122,7 +122,7 @@ async function savePreferredLanguage(language: AppLanguage): Promise<boolean> {
       setIsSavingLanguage(false);
     }
   }
-function validatePassword(): string | null {
+  function validatePassword(): string | null {
     if (!currentPassword.trim()) return t('adminPasswordRequired');
     if (!newPassword.trim()) return t('adminNewPasswordRequired');
     if (!confirmPassword.trim()) return t('adminConfirmPasswordRequired');
@@ -135,7 +135,7 @@ function validatePassword(): string | null {
     if (currentPassword === newPassword) return t('adminPasswordSame');
     return null;
   }
-async function changePassword(): Promise<void> {
+  async function changePassword(): Promise<void> {
     setCurrentPasswordError('');
     setNewPasswordError('');
     setConfirmPasswordError('');
@@ -155,7 +155,7 @@ async function changePassword(): Promise<void> {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ currentPassword, newPassword }),
       });
-      const data = await response.json() as { message?: string; token?: string };
+      const data = await response.json() as { message?: string; token?: string; };
       if (!response.ok) {
         const message = data.message ?? t('adminSaveFailed');
         if (/current password|incorrect/i.test(message)) setCurrentPasswordError(message);
@@ -176,5 +176,47 @@ async function changePassword(): Promise<void> {
       setIsSavingPassword(false);
     }
   }
-return { layout, user, isLoading, name, setName, nameError, setNameError, isSavingName, currentPassword, setCurrentPassword, newPassword, setNewPassword, confirmPassword, setConfirmPassword, currentPasswordError, setCurrentPasswordError, newPasswordError, setNewPasswordError, confirmPasswordError, setConfirmPasswordError, passwordError, isSavingPassword, showCurrent, setShowCurrent, showNew, setShowNew, showConfirm, setShowConfirm, showCurrentError, isSavingLanguage, languageError, pendingLanguage, setPendingLanguage, isLanguageDialogOpen, setIsLanguageDialogOpen, localToast, dismissLocalToast, requestLanguageChange, confirmLanguageChange, saveName, changePassword };
+  return {
+    layout,
+    user,
+    isLoading,
+    name,
+    setName,
+    nameError,
+    setNameError,
+    isSavingName,
+    currentPassword,
+    setCurrentPassword,
+    newPassword,
+    setNewPassword,
+    confirmPassword,
+    setConfirmPassword,
+    currentPasswordError,
+    setCurrentPasswordError,
+    newPasswordError,
+    setNewPasswordError,
+    confirmPasswordError,
+    setConfirmPasswordError,
+    passwordError,
+    isSavingPassword,
+    showCurrent,
+    setShowCurrent,
+    showNew,
+    setShowNew,
+    showConfirm,
+    setShowConfirm,
+    showCurrentError,
+    isSavingLanguage,
+    languageError,
+    pendingLanguage,
+    setPendingLanguage,
+    isLanguageDialogOpen,
+    setIsLanguageDialogOpen,
+    localToast,
+    dismissLocalToast,
+    requestLanguageChange,
+    confirmLanguageChange,
+    saveName,
+    changePassword,
+  };
 }

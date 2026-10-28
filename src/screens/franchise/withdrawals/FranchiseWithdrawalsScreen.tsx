@@ -1,30 +1,54 @@
-import { Pressable,ScrollView,Text,View } from 'react-native';
+import { Pressable, ScrollView, Text, View } from 'react-native';
 import { AppErrorState } from '../../../components/AppErrorState';
 import { AppLoader } from '../../../components/AppLoader';
 import { AppToast } from '../../../components/AppToast';
 import { SummaryCards } from '../../../components/SummaryCards';
 import { theme } from '../../../config/theme';
 import { t } from '../../../i18n';
-import { ArrowDownLeft,ArrowUpRight,Pencil,Plus,Trash2 } from '../../../icons';
+import { ArrowDownLeft, ArrowUpRight, Pencil, Plus, Trash2 } from '../../../icons';
 import { adminStyles as styles } from '../../../styles/adminStyles';
 import { formatMoney } from '../DashboardCharts';
 import { ConfirmDrawer } from '../shared/ConfirmDrawer';
-import { currentMonthValue,formatShortDate } from '../shared/months';
+import { currentMonthValue, formatShortDate } from '../shared/months';
 import { MonthStepper } from '../shared/MonthStepper';
 import { useFranchiseWithdrawals } from './useFranchiseWithdrawals';
 import { WithdrawalFormDrawer } from './WithdrawalFormDrawer';
 import { withdrawalStyles } from './withdrawalStyles';
 export { type WithdrawalRecord } from './useFranchiseWithdrawals';
 
-export function FranchiseWithdrawalsScreen({ storeId }: { storeId: string }) {
-const { layout, month, setMonth, records, loading, error, setReloadKey, formVisible, setFormVisible, editingRecord, deleteRecord, setDeleteRecord, deleteBusy, deleteError, setDeleteError, toast, setToast, summaryCards, openCreate, openEdit, handleSaved, confirmDelete, afterDrawerClose } = useFranchiseWithdrawals({ storeId });
-if (loading && records.length === 0 && !error) {
+export function FranchiseWithdrawalsScreen({ storeId }: { storeId: string; }) {
+  const {
+    layout,
+    month,
+    setMonth,
+    records,
+    loading,
+    error,
+    setReloadKey,
+    formVisible,
+    setFormVisible,
+    editingRecord,
+    deleteRecord,
+    setDeleteRecord,
+    deleteBusy,
+    deleteError,
+    setDeleteError,
+    toast,
+    setToast,
+    summaryCards,
+    openCreate,
+    openEdit,
+    handleSaved,
+    confirmDelete,
+    afterDrawerClose,
+  } = useFranchiseWithdrawals({ storeId });
+  if (loading && records.length === 0 && !error) {
     return <View style={styles.screen}><AppLoader /></View>;
   }
-if (error && records.length === 0) {
+  if (error && records.length === 0) {
     return <View style={styles.screen}><AppErrorState message={error} onRetry={() => setReloadKey((key) => key + 1)} /></View>;
   }
-return (
+  return (
     <View style={styles.screen}>
       <View style={[styles.screenHeader, layout.desktopWeb && styles.screenHeaderInline, layout.compactWeb && styles.screenHeaderStack]}>
         <View style={layout.isWeb ? styles.screenHeaderCopy : styles.screenHeaderCopyNative}>

@@ -1,17 +1,23 @@
-import { Platform,ScrollView,Text,View } from 'react-native';
+import { Platform, ScrollView, Text, View } from 'react-native';
 import { AppLoader } from '../../components/AppLoader';
 import { SummaryCards } from '../../components/SummaryCards';
 import { theme } from '../../config/theme';
 import { t } from '../../i18n';
 import { adminStyles as styles } from '../../styles/adminStyles';
-import { dashboardStatCards,getDashboardCardColor } from '../../utils/dashboardConfig';
+import { dashboardStatCards, getDashboardCardColor } from '../../utils/dashboardConfig';
 import { useAdminDashboard } from './useAdminDashboard';
 
 
 export function AdminDashboardScreen() {
-const { layout, perRow, stats, isLoading, hasError } = useAdminDashboard();
-if (isLoading) return <AppLoader variant="screen" />;
-return (
+  const {
+    layout,
+    perRow,
+    stats,
+    isLoading,
+    hasError,
+  } = useAdminDashboard();
+  if (isLoading) return <AppLoader variant="screen" />;
+  return (
     <ScrollView contentContainerStyle={styles.screenScroll}>
       <View style={styles.screenHeader}>
         {layout.dashboardEyebrow ? <Text style={styles.screenEyebrow}>{t('adminOverview')}</Text> : null}

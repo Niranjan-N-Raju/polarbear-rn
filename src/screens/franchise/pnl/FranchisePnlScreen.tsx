@@ -1,4 +1,4 @@
-import { Pressable,ScrollView,Text,View } from 'react-native';
+import { Pressable, ScrollView, Text, View } from 'react-native';
 import { AppErrorState } from '../../../components/AppErrorState';
 import { AppLoader } from '../../../components/AppLoader';
 import { AppToast } from '../../../components/AppToast';
@@ -11,9 +11,9 @@ import { MonthStepper } from '../shared/MonthStepper';
 import { PnlMonthDrawer } from './PnlMonthDrawer';
 import { pnlStyles } from './pnlStyles';
 import type { PnlMonth } from './types';
-import { useFranchisePnl,type FranchisePnlScreenProps } from './useFranchisePnl';
+import { useFranchisePnl, type FranchisePnlScreenProps } from './useFranchisePnl';
 
-function MonthSummaryCard({ month, onView }: { month: PnlMonth; onView: () => void }) {
+function MonthSummaryCard({ month, onView }: { month: PnlMonth; onView: () => void; }) {
   return (
     <View style={[pnlStyles.monthCard, month.isCurrent && pnlStyles.monthCardCurrent]}>
       <View style={pnlStyles.monthHeading}>
@@ -39,7 +39,7 @@ function MonthSummaryCard({ month, onView }: { month: PnlMonth; onView: () => vo
     </View>
   );
 }
-function Metric({ label, value }: { label: string; value: number }) {
+function Metric({ label, value }: { label: string; value: number; }) {
   return (
     <View style={pnlStyles.monthMetric}>
       <Text style={pnlStyles.metricLabel}>{label}</Text>
@@ -48,8 +48,26 @@ function Metric({ label, value }: { label: string; value: number }) {
   );
 }
 export function FranchisePnlScreen({ storeId }: FranchisePnlScreenProps) {
-const { layout, loading, error, setReloadKey, setSelectedPeriod, drawerMonth, drawerVisible, setPendingToast, toast, setToast, months, selected, lastPeriod, cards, openMonth, closeDrawer, finishDrawerClose } = useFranchisePnl({ storeId });
-return (
+  const {
+    layout,
+    loading,
+    error,
+    setReloadKey,
+    setSelectedPeriod,
+    drawerMonth,
+    drawerVisible,
+    setPendingToast,
+    toast,
+    setToast,
+    months,
+    selected,
+    lastPeriod,
+    cards,
+    openMonth,
+    closeDrawer,
+    finishDrawerClose,
+  } = useFranchisePnl({ storeId });
+  return (
     <View style={styles.screen}>
       <View style={[styles.screenHeader, layout.desktopWeb && styles.screenHeaderInline, layout.compactWeb && styles.screenHeaderStack]}>
         <View style={layout.isWeb ? styles.screenHeaderCopy : styles.screenHeaderCopyNative}>

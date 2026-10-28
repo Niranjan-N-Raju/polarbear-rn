@@ -1,21 +1,56 @@
-import { Pressable,ScrollView,Text,View } from 'react-native';
+import { Pressable, ScrollView, Text, View } from 'react-native';
 import { AppErrorState } from '../../../components/AppErrorState';
 import { AppLoader } from '../../../components/AppLoader';
 import { AppToast } from '../../../components/AppToast';
 import { SummaryCards } from '../../../components/SummaryCards';
 import { theme } from '../../../config/theme';
 import { t } from '../../../i18n';
-import { Filter,Plus } from '../../../icons';
+import { Filter, Plus } from '../../../icons';
 import { adminStyles as styles } from '../../../styles/adminStyles';
 import { SaleCard } from './SaleCard';
 import { SaleFiltersDrawer } from './SaleFiltersDrawer';
 import { SaleFormDrawer } from './SaleFormDrawer';
-import { pageSize,useFranchiseSales,type FranchiseSalesScreenProps } from './useFranchiseSales';
+import { pageSize, useFranchiseSales, type FranchiseSalesScreenProps } from './useFranchiseSales';
 
 
 export function FranchiseSalesScreen({ storeId }: FranchiseSalesScreenProps) {
-const { height, layout, range, draftRange, setDraftRange, draftError, setDraftError, isFilterOpen, setIsFilterOpen, sales, visibleCount, setVisibleCount, isLoading, error, setReloadKey, isFormOpen, setIsFormOpen, editingSale, setEditingSale, pendingToast, setPendingToast, toast, setToast, existingDates, defaultRange, hasActiveFilters, visibleSales, openFilters, applyFilters, clearFilters, openCreate, openEdit, handleSaved, summaryCards } = useFranchiseSales({ storeId });
-return (
+  const {
+    height,
+    layout,
+    range,
+    draftRange,
+    setDraftRange,
+    draftError,
+    setDraftError,
+    isFilterOpen,
+    setIsFilterOpen,
+    sales,
+    visibleCount,
+    setVisibleCount,
+    isLoading,
+    error,
+    setReloadKey,
+    isFormOpen,
+    setIsFormOpen,
+    editingSale,
+    setEditingSale,
+    pendingToast,
+    setPendingToast,
+    toast,
+    setToast,
+    existingDates,
+    defaultRange,
+    hasActiveFilters,
+    visibleSales,
+    openFilters,
+    applyFilters,
+    clearFilters,
+    openCreate,
+    openEdit,
+    handleSaved,
+    summaryCards,
+  } = useFranchiseSales({ storeId });
+  return (
     <View style={styles.screen}>
       <View style={[styles.screenHeader, layout.desktopWeb && styles.screenHeaderInline, layout.compactWeb && styles.screenHeaderStack]}>
         <View style={layout.isWeb ? styles.screenHeaderCopy : styles.screenHeaderCopyNative}>

@@ -1,26 +1,82 @@
-import { Pressable,Text,View } from 'react-native';
+import { Pressable, Text, View } from 'react-native';
 import { AppErrorState } from '../../../components/AppErrorState';
 import { AppLoader } from '../../../components/AppLoader';
 import { AppToast } from '../../../components/AppToast';
 import { ResponsiveDrawerModal } from '../../../components/ResponsiveDrawerModal';
 import { theme } from '../../../config/theme';
 import { t } from '../../../i18n';
-import { Filter,Plus } from '../../../icons';
+import { Filter, Plus } from '../../../icons';
 import { adminStyles as styles } from '../../../styles/adminStyles';
 import { UserFiltersDrawer } from './UserFiltersDrawer';
 import { UserFormDrawer } from './UserFormDrawer';
 import { UserList } from './UserList';
 import type {
-AdminUsersScreenProps
+  AdminUsersScreenProps
 } from './types';
 import { useAdminUsers } from './useAdminUsers';
 
 
 export function AdminUsersScreen({ onToast }: AdminUsersScreenProps) {
-const { height, layout, stores, setFilterStore, filterStatus, setFilterStatus, filterRole, setFilterRole, storeSearchText, setStoreSearchText, openFilter, setOpenFilter, searchText, setSearchText, appliedFilters, isFilterDrawerOpen, setIsFilterDrawerOpen, pageInfo, isRefreshing, isLoadingMore, isLoading, loadError, form, editing, isFormOpen, setIsFormOpen, pendingDelete, setPendingDelete, fieldErrors, toastMessage, pendingFormSuccess, setPendingFormSuccess, pendingDeleteSuccess, setPendingDeleteSuccess, isSaving, isDeleting, isDeleteDialogOpen, setIsDeleteDialogOpen, dismissToast, load, visibleUsers, userRoleOptions, hasActiveFilters, hasDraftFilters, openFilters, applyFilters, clearFilters, loadMore, openCreate, openEdit, updateField, toggleStore, updateRole, save, deleteUser } = useAdminUsers({ onToast });
-if (isLoading) return <AppLoader variant="screen" />;
-if (loadError) return <AppErrorState message={loadError} onRetry={() => void load(1, appliedFilters)} />;
-return (
+  const {
+    height,
+    layout,
+    stores,
+    setFilterStore,
+    filterStatus,
+    setFilterStatus,
+    filterRole,
+    setFilterRole,
+    storeSearchText,
+    setStoreSearchText,
+    openFilter,
+    setOpenFilter,
+    searchText,
+    setSearchText,
+    appliedFilters,
+    isFilterDrawerOpen,
+    setIsFilterDrawerOpen,
+    pageInfo,
+    isRefreshing,
+    isLoadingMore,
+    isLoading,
+    loadError,
+    form,
+    editing,
+    isFormOpen,
+    setIsFormOpen,
+    pendingDelete,
+    setPendingDelete,
+    fieldErrors,
+    toastMessage,
+    pendingFormSuccess,
+    setPendingFormSuccess,
+    pendingDeleteSuccess,
+    setPendingDeleteSuccess,
+    isSaving,
+    isDeleting,
+    isDeleteDialogOpen,
+    setIsDeleteDialogOpen,
+    dismissToast,
+    load,
+    visibleUsers,
+    userRoleOptions,
+    hasActiveFilters,
+    hasDraftFilters,
+    openFilters,
+    applyFilters,
+    clearFilters,
+    loadMore,
+    openCreate,
+    openEdit,
+    updateField,
+    toggleStore,
+    updateRole,
+    save,
+    deleteUser,
+  } = useAdminUsers({ onToast });
+  if (isLoading) return <AppLoader variant="screen" />;
+  if (loadError) return <AppErrorState message={loadError} onRetry={() => void load(1, appliedFilters)} />;
+  return (
     <View style={styles.screen}>
       <View style={[styles.screenHeader, layout.desktopWeb && styles.screenHeaderInline, layout.compactWeb && styles.screenHeaderStack]}>
         <View style={layout.isWeb ? styles.screenHeaderCopy : styles.screenHeaderCopyNative}>

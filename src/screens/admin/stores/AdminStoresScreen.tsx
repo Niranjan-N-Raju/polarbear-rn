@@ -1,11 +1,11 @@
-import { Pressable,ScrollView,Text,View } from 'react-native';
+import { Pressable, ScrollView, Text, View } from 'react-native';
 import { AppErrorState } from '../../../components/AppErrorState';
 import { AppLoader } from '../../../components/AppLoader';
 import { AppToast } from '../../../components/AppToast';
 import { ResponsiveDrawerModal } from '../../../components/ResponsiveDrawerModal';
 import { theme } from '../../../config/theme';
 import { t } from '../../../i18n';
-import { Filter,Plus } from '../../../icons';
+import { Filter, Plus } from '../../../icons';
 import { adminStyles as styles } from '../../../styles/adminStyles';
 import { StoreCard } from './StoreCard';
 import { StoreFiltersDrawer } from './StoreFiltersDrawer';
@@ -15,10 +15,64 @@ import { useAdminStores } from './useAdminStores';
 
 
 export function AdminStoresScreen({ userId, onToast }: AdminStoresScreenProps) {
-const { height, layout, searchText, setSearchText, statusFilter, setStatusFilter, typeFilter, setTypeFilter, openMobileFilter, setOpenMobileFilter, appliedFilters, isFilterDrawerOpen, setIsFilterDrawerOpen, pageInfo, isRefreshing, isLoadingMore, isLoading, error, isFormOpen, setIsFormOpen, editingStore, pendingArchive, setPendingArchive, pendingArchiveValue, setPendingArchiveValue, pendingArchiveToast, setPendingArchiveToast, form, formIsArchived, setFormIsArchived, toastMessage, toastTone, pendingSuccessMessage, setPendingSuccessMessage, fieldErrors, isSaving, updatingArchiveId, isArchiveDialogOpen, setIsArchiveDialogOpen, dismissToast, loadStores, visibleStores, hasActiveFilters, hasDraftFilters, openFilters, applyFilters, clearFilters, loadMore, openCreate, openEdit, updateField, saveStore, updateStoreArchive } = useAdminStores({ userId, onToast });
-if (isLoading) return <AppLoader variant="screen" />;
-if (error) return <AppErrorState message={error} onRetry={() => void loadStores(1, appliedFilters)} />;
-return (
+  const {
+    height,
+    layout,
+    searchText,
+    setSearchText,
+    statusFilter,
+    setStatusFilter,
+    typeFilter,
+    setTypeFilter,
+    openMobileFilter,
+    setOpenMobileFilter,
+    appliedFilters,
+    isFilterDrawerOpen,
+    setIsFilterDrawerOpen,
+    pageInfo,
+    isRefreshing,
+    isLoadingMore,
+    isLoading,
+    error,
+    isFormOpen,
+    setIsFormOpen,
+    editingStore,
+    pendingArchive,
+    setPendingArchive,
+    pendingArchiveValue,
+    setPendingArchiveValue,
+    pendingArchiveToast,
+    setPendingArchiveToast,
+    form,
+    formIsArchived,
+    setFormIsArchived,
+    toastMessage,
+    toastTone,
+    pendingSuccessMessage,
+    setPendingSuccessMessage,
+    fieldErrors,
+    isSaving,
+    updatingArchiveId,
+    isArchiveDialogOpen,
+    setIsArchiveDialogOpen,
+    dismissToast,
+    loadStores,
+    visibleStores,
+    hasActiveFilters,
+    hasDraftFilters,
+    openFilters,
+    applyFilters,
+    clearFilters,
+    loadMore,
+    openCreate,
+    openEdit,
+    updateField,
+    saveStore,
+    updateStoreArchive,
+  } = useAdminStores({ userId, onToast });
+  if (isLoading) return <AppLoader variant="screen" />;
+  if (error) return <AppErrorState message={error} onRetry={() => void loadStores(1, appliedFilters)} />;
+  return (
     <View style={styles.screen}>
       <View style={[styles.screenHeader, layout.desktopWeb && styles.screenHeaderInline, layout.compactWeb && styles.screenHeaderStack]}>
         <View style={layout.isWeb ? styles.screenHeaderCopy : styles.screenHeaderCopyNative}>

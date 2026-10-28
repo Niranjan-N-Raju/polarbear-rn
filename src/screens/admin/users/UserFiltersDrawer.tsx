@@ -1,10 +1,10 @@
-import { Pressable,Text,TextInput,View } from 'react-native';
+import { Pressable, Text, TextInput, View } from 'react-native';
 import { AdminFilterDropdown } from '../../../components/AdminFilterDropdown';
 import { AdminFormField } from '../../../components/AdminFormField';
 import { FilterDrawer } from '../../../components/FilterDrawer';
 import { t } from '../../../i18n';
 import { adminStyles as styles } from '../../../styles/adminStyles';
-import type { UserFiltersDrawerProps,UserStoreAutocompleteProps } from './types';
+import type { UserFiltersDrawerProps, UserStoreAutocompleteProps } from './types';
 
 export function UserFiltersDrawer({
   visible,

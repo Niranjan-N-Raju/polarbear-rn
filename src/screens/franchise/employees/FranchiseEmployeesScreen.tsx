@@ -1,4 +1,4 @@
-import { Pressable,ScrollView,Text,View } from 'react-native';
+import { Pressable, ScrollView, Text, View } from 'react-native';
 import { AdminFormField } from '../../../components/AdminFormField';
 import { AppErrorState } from '../../../components/AppErrorState';
 import { AppLoader } from '../../../components/AppLoader';
@@ -7,19 +7,56 @@ import { ResponsiveDrawerModal } from '../../../components/ResponsiveDrawerModal
 import { SummaryCards } from '../../../components/SummaryCards';
 import { theme } from '../../../config/theme';
 import { t } from '../../../i18n';
-import { Archive,Filter,Pencil,Plus,RotateCcw,X } from '../../../icons';
+import { Archive, Filter, Pencil, Plus, RotateCcw, X } from '../../../icons';
 import { adminStyles as styles } from '../../../styles/adminStyles';
 import { EmployeeFiltersDrawer } from './EmployeeFiltersDrawer';
 import { EmployeeFormDrawer } from './EmployeeFormDrawer';
 import { employeeStyles } from './employeeStyles';
-import { pageSize,useFranchiseEmployees } from './useFranchiseEmployees';
+import { pageSize, useFranchiseEmployees } from './useFranchiseEmployees';
 
 
-export function FranchiseEmployeesScreen({ storeId }: { storeId: string }) {
-const { layout, employees, loading, loadError, setReloadKey, filterVisible, setFilterVisible, draftSearch, setDraftSearch, draftStatus, setDraftStatus, visibleCount, setVisibleCount, formVisible, setFormVisible, editing, archiveTarget, setArchiveTarget, exitDate, setExitDate, busy, toast, setToast, filtered, hasActiveFilters, summary, openFilters, applyFilters, clearFilters, openCreate, openEdit, saved, archive, restore, afterFormClose, afterArchiveClose } = useFranchiseEmployees({ storeId });
-if (loading && employees.length === 0) return <View style={styles.screen}><AppLoader /></View>;
-if (loadError && employees.length === 0) return <View style={styles.screen}><AppErrorState message={loadError} onRetry={() => setReloadKey((key) => key + 1)} /></View>;
-return (
+export function FranchiseEmployeesScreen({ storeId }: { storeId: string; }) {
+  const {
+    layout,
+    employees,
+    loading,
+    loadError,
+    setReloadKey,
+    filterVisible,
+    setFilterVisible,
+    draftSearch,
+    setDraftSearch,
+    draftStatus,
+    setDraftStatus,
+    visibleCount,
+    setVisibleCount,
+    formVisible,
+    setFormVisible,
+    editing,
+    archiveTarget,
+    setArchiveTarget,
+    exitDate,
+    setExitDate,
+    busy,
+    toast,
+    setToast,
+    filtered,
+    hasActiveFilters,
+    summary,
+    openFilters,
+    applyFilters,
+    clearFilters,
+    openCreate,
+    openEdit,
+    saved,
+    archive,
+    restore,
+    afterFormClose,
+    afterArchiveClose,
+  } = useFranchiseEmployees({ storeId });
+  if (loading && employees.length === 0) return <View style={styles.screen}><AppLoader /></View>;
+  if (loadError && employees.length === 0) return <View style={styles.screen}><AppErrorState message={loadError} onRetry={() => setReloadKey((key) => key + 1)} /></View>;
+  return (
     <View style={styles.screen}>
       <View style={[styles.screenHeader, layout.desktopWeb && styles.screenHeaderInline, layout.compactWeb && styles.screenHeaderStack]}>
         <View style={layout.isWeb ? styles.screenHeaderCopy : styles.screenHeaderCopyNative}>

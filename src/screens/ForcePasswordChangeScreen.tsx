@@ -1,15 +1,33 @@
-import { Pressable,ScrollView,Text,View } from 'react-native';
+import { Pressable, ScrollView, Text, View } from 'react-native';
 import { AdminFormField } from '../components/AdminFormField';
 import { AppLoader } from '../components/AppLoader';
 import { theme } from '../config/theme';
 import { t } from '../i18n';
 import { adminStyles as styles } from '../styles/adminStyles';
-import { useForcePasswordChange,type ForcePasswordChangeScreenProps } from './useForcePasswordChange';
+import { useForcePasswordChange, type ForcePasswordChangeScreenProps } from './useForcePasswordChange';
 export { validateNewPassword } from './useForcePasswordChange';
 
 export function ForcePasswordChangeScreen({ onCompleted, onSignOut }: ForcePasswordChangeScreenProps) {
-const { insets, currentPassword, setCurrentPassword, newPassword, setNewPassword, confirmPassword, setConfirmPassword, showCurrent, setShowCurrent, showNew, setShowNew, showConfirm, setShowConfirm, error, setError, isSaving, submit } = useForcePasswordChange({ onCompleted, onSignOut });
-return (
+  const {
+    insets,
+    currentPassword,
+    setCurrentPassword,
+    newPassword,
+    setNewPassword,
+    confirmPassword,
+    setConfirmPassword,
+    showCurrent,
+    setShowCurrent,
+    showNew,
+    setShowNew,
+    showConfirm,
+    setShowConfirm,
+    error,
+    setError,
+    isSaving,
+    submit,
+  } = useForcePasswordChange({ onCompleted, onSignOut });
+  return (
     <ScrollView
       keyboardShouldPersistTaps="handled"
       contentContainerStyle={[styles.screenScroll, { paddingTop: insets.top + 24, paddingBottom: insets.bottom + 24 }]}

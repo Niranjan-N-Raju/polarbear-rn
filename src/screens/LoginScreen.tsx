@@ -1,28 +1,28 @@
 import {
-KeyboardAvoidingView,
-Platform,
-Pressable,
-ScrollView,
-StatusBar,
-Text,
-TextInput,
-View
+  KeyboardAvoidingView,
+  Platform,
+  Pressable,
+  ScrollView,
+  StatusBar,
+  Text,
+  TextInput,
+  View
 } from 'react-native';
 import { AppLoader } from '../components/AppLoader';
 import { AppToast } from '../components/AppToast';
 import { theme } from '../config/theme';
 import { t } from '../i18n';
-import { Eye,EyeOff,LockKeyhole,Mail } from '../icons';
+import { Eye, EyeOff, LockKeyhole, Mail } from '../icons';
 import {
-getSignInButtonStyle,
-styles
+  getSignInButtonStyle,
+  styles
 } from '../styles/loginScreenStyles';
 import { AdminHomeScreen } from './admin/AdminHomeScreen';
 import { ForcePasswordChangeScreen } from './ForcePasswordChangeScreen';
 import { FranchiseHomeScreen } from './franchise/FranchiseHomeScreen';
 import { useLoginScreen } from './useLoginScreen';
 
-function Brand({ compact = false }: { compact?: boolean }) {
+function Brand({ compact = false }: { compact?: boolean; }) {
   return (
     <View style={styles.brandRow}>
       <View style={[styles.brandMark, compact && styles.brandMarkCompact]}>
@@ -42,8 +42,17 @@ function Brand({ compact = false }: { compact?: boolean }) {
   );
 }
 export function LoginScreen() {
-const { isWide, isWebCompact, isWebTablet, loginState, signOut, authToastMessage, passwordInputRef, dismissAuthToast, safeAreaStyles } = useLoginScreen();
-if (loginState.session) {
+  const {
+    isWide,
+    isWebCompact,
+    isWebTablet,
+    loginState,
+    authToastMessage,
+    passwordInputRef,
+    dismissAuthToast,
+    safeAreaStyles,
+  } = useLoginScreen();
+  if (loginState.session) {
     if (loginState.session.user.mustChangePassword === true) {
       return (
         <>
@@ -75,7 +84,7 @@ if (loginState.session) {
       </>
     );
   }
-return (
+  return (
     <View
       style={[
         styles.container,
@@ -151,117 +160,117 @@ return (
               </View>
             ) : null}
             <>
-                <View style={styles.headingBlock}>
-                  <Text style={[styles.eyebrow, !isWide && styles.eyebrowMobile]}>
-                    {t('welcomeBack')}
-                  </Text>
-                  <Text style={styles.heading}>{t('loginHeading')}</Text>
-                  <Text style={styles.subtitle}>{t('loginDescription')}</Text>
+              <View style={styles.headingBlock}>
+                <Text style={[styles.eyebrow, !isWide && styles.eyebrowMobile]}>
+                  {t('welcomeBack')}
+                </Text>
+                <Text style={styles.heading}>{t('loginHeading')}</Text>
+                <Text style={styles.subtitle}>{t('loginDescription')}</Text>
+              </View>
+
+              {loginState.formError ? (
+                <Text accessibilityRole="alert" style={styles.formError}>
+                  {loginState.formError}
+                </Text>
+              ) : null}
+
+              <View style={styles.form}>
+                <View style={styles.fieldGroup}>
+                  <Text style={styles.label}>{t('emailLabel')}</Text>
+                  <View style={styles.inputWrap}>
+                    <Mail
+                      color={theme.colors.placeholder}
+                      size={theme.layout.iconSize}
+                      strokeWidth={theme.layout.iconStrokeWidth}
+                      style={styles.inputIcon}
+                    />
+                    <TextInput
+                      accessibilityLabel={t('emailLabel')}
+                      autoCapitalize="none"
+                      autoComplete="email"
+                      autoCorrect={false}
+                      keyboardType="email-address"
+                      onChangeText={loginState.updateEmail}
+                      placeholder={t('emailPlaceholder')}
+                      placeholderTextColor={theme.colors.placeholder}
+                      onSubmitEditing={() => passwordInputRef.current?.focus()}
+                      returnKeyType="next"
+                      style={[styles.input, loginState.emailError ? styles.inputError : null]}
+                      value={loginState.email}
+                    />
+                  </View>
+                  {loginState.emailError ? (
+                    <Text style={styles.fieldError}>{loginState.emailError}</Text>
+                  ) : null}
                 </View>
 
-                {loginState.formError ? (
-                  <Text accessibilityRole="alert" style={styles.formError}>
-                    {loginState.formError}
-                  </Text>
-                ) : null}
-
-                <View style={styles.form}>
-                  <View style={styles.fieldGroup}>
-                    <Text style={styles.label}>{t('emailLabel')}</Text>
-                    <View style={styles.inputWrap}>
-                      <Mail
-                        color={theme.colors.placeholder}
-                        size={theme.layout.iconSize}
-                        strokeWidth={theme.layout.iconStrokeWidth}
-                        style={styles.inputIcon}
-                      />
-                      <TextInput
-                        accessibilityLabel={t('emailLabel')}
-                        autoCapitalize="none"
-                        autoComplete="email"
-                        autoCorrect={false}
-                        keyboardType="email-address"
-                        onChangeText={loginState.updateEmail}
-                        placeholder={t('emailPlaceholder')}
-                        placeholderTextColor={theme.colors.placeholder}
-                        onSubmitEditing={() => passwordInputRef.current?.focus()}
-                        returnKeyType="next"
-                        style={[styles.input, loginState.emailError ? styles.inputError : null]}
-                        value={loginState.email}
-                      />
-                    </View>
-                    {loginState.emailError ? (
-                      <Text style={styles.fieldError}>{loginState.emailError}</Text>
-                    ) : null}
+                <View style={styles.fieldGroup}>
+                  <Text style={styles.label}>{t('passwordLabel')}</Text>
+                  <View style={styles.inputWrap}>
+                    <LockKeyhole
+                      color={theme.colors.placeholder}
+                      size={theme.layout.iconSize}
+                      strokeWidth={theme.layout.iconStrokeWidth}
+                      style={styles.inputIcon}
+                    />
+                    <TextInput
+                      ref={passwordInputRef}
+                      accessibilityLabel={t('passwordLabel')}
+                      autoCapitalize="none"
+                      autoComplete="current-password"
+                      onChangeText={loginState.updatePassword}
+                      onSubmitEditing={() => void loginState.submit()}
+                      placeholder={t('passwordPlaceholder')}
+                      placeholderTextColor={theme.colors.placeholder}
+                      returnKeyType="done"
+                      secureTextEntry={!loginState.showPassword}
+                      style={[styles.input, loginState.passwordError ? styles.inputError : null]}
+                      value={loginState.password}
+                    />
+                    <Pressable
+                      accessibilityRole="button"
+                      accessibilityLabel={
+                        loginState.showPassword ? t('hidePassword') : t('showPassword')
+                      }
+                      onPress={() => loginState.setShowPassword(!loginState.showPassword)}
+                      style={styles.visibilityButton}
+                    >
+                      {loginState.showPassword ? (
+                        <EyeOff
+                          color={theme.colors.iconMuted}
+                          size={theme.layout.iconSize}
+                          strokeWidth={theme.layout.iconStrokeWidth}
+                        />
+                      ) : (
+                        <Eye
+                          color={theme.colors.iconMuted}
+                          size={theme.layout.iconSize}
+                          strokeWidth={theme.layout.iconStrokeWidth}
+                        />
+                      )}
+                    </Pressable>
                   </View>
-
-                  <View style={styles.fieldGroup}>
-                    <Text style={styles.label}>{t('passwordLabel')}</Text>
-                    <View style={styles.inputWrap}>
-                      <LockKeyhole
-                        color={theme.colors.placeholder}
-                        size={theme.layout.iconSize}
-                        strokeWidth={theme.layout.iconStrokeWidth}
-                        style={styles.inputIcon}
-                      />
-                      <TextInput
-                        ref={passwordInputRef}
-                        accessibilityLabel={t('passwordLabel')}
-                        autoCapitalize="none"
-                        autoComplete="current-password"
-                        onChangeText={loginState.updatePassword}
-                        onSubmitEditing={() => void loginState.submit()}
-                        placeholder={t('passwordPlaceholder')}
-                        placeholderTextColor={theme.colors.placeholder}
-                        returnKeyType="done"
-                        secureTextEntry={!loginState.showPassword}
-                        style={[styles.input, loginState.passwordError ? styles.inputError : null]}
-                        value={loginState.password}
-                      />
-                      <Pressable
-                        accessibilityRole="button"
-                        accessibilityLabel={
-                          loginState.showPassword ? t('hidePassword') : t('showPassword')
-                        }
-                        onPress={() => loginState.setShowPassword(!loginState.showPassword)}
-                        style={styles.visibilityButton}
-                      >
-                        {loginState.showPassword ? (
-                          <EyeOff
-                            color={theme.colors.iconMuted}
-                            size={theme.layout.iconSize}
-                            strokeWidth={theme.layout.iconStrokeWidth}
-                          />
-                        ) : (
-                          <Eye
-                            color={theme.colors.iconMuted}
-                            size={theme.layout.iconSize}
-                            strokeWidth={theme.layout.iconStrokeWidth}
-                          />
-                        )}
-                      </Pressable>
-                    </View>
-                    {loginState.passwordError ? (
-                      <Text style={styles.fieldError}>{loginState.passwordError}</Text>
-                    ) : null}
-                  </View>
-
-                  <Pressable
-                    accessibilityRole="button"
-                    accessibilityState={{ disabled: loginState.isPending }}
-                    disabled={loginState.isPending}
-                    onPress={() => void loginState.submit()}
-                    style={getSignInButtonStyle(loginState.isPending)}
-                  >
-                    {loginState.isPending ? (
-                      <AppLoader variant="inline" color={theme.colors.white} />
-                    ) : (
-                      <>
-                        <Text style={styles.signInText}>{t('signIn')}</Text>
-                      </>
-                    )}
-                  </Pressable>
+                  {loginState.passwordError ? (
+                    <Text style={styles.fieldError}>{loginState.passwordError}</Text>
+                  ) : null}
                 </View>
+
+                <Pressable
+                  accessibilityRole="button"
+                  accessibilityState={{ disabled: loginState.isPending }}
+                  disabled={loginState.isPending}
+                  onPress={() => void loginState.submit()}
+                  style={getSignInButtonStyle(loginState.isPending)}
+                >
+                  {loginState.isPending ? (
+                    <AppLoader variant="inline" color={theme.colors.white} />
+                  ) : (
+                    <>
+                      <Text style={styles.signInText}>{t('signIn')}</Text>
+                    </>
+                  )}
+                </Pressable>
+              </View>
             </>
             <Text style={styles.footer}>
               {t('protectedAccess')}

@@ -20,7 +20,7 @@ interface SaleFiltersDrawerProps {
   onApply: () => void;
 }
 
-const presets: { key: SalePreset; label: 'franchiseToday' | 'franchiseThisWeek' | 'franchiseThisMonth' }[] = [
+const presets: { key: SalePreset; label: 'franchiseToday' | 'franchiseThisWeek' | 'franchiseThisMonth'; }[] = [
   { key: 'today', label: 'franchiseToday' },
   { key: 'week', label: 'franchiseThisWeek' },
   { key: 'month', label: 'franchiseThisMonth' },

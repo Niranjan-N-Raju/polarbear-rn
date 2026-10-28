@@ -1,57 +1,57 @@
-import { useCallback,useEffect,useRef,useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useWindowDimensions } from 'react-native';
 import { apiRequest } from '../../../api/auth';
-import { t,translateRole } from '../../../i18n';
+import { t, translateRole } from '../../../i18n';
 import { getAdminLayout } from '../../../utils/adminLayout';
-import { blankForm,defaultUserFilters } from './defaults';
+import { blankForm, defaultUserFilters } from './defaults';
 import type {
-AdminUser,
-AdminUsersScreenProps,
-OpenUserFilter,
-PageInfo,
-StoreOption,
-UserFieldErrors,
-UserForm,
-UserListFilters,
-UserStatusFilter,
+  AdminUser,
+  AdminUsersScreenProps,
+  OpenUserFilter,
+  PageInfo,
+  StoreOption,
+  UserFieldErrors,
+  UserForm,
+  UserListFilters,
+  UserStatusFilter,
 } from './types';
 
 
 export function useAdminUsers({ onToast }: AdminUsersScreenProps) {
-const { width, height } = useWindowDimensions();
-const layout = getAdminLayout(width);
-const [users, setUsers] = useState<AdminUser[]>([]);
-const [stores, setStores] = useState<StoreOption[]>([]);
-const [filterStore, setFilterStore] = useState('');
-const [filterStatus, setFilterStatus] = useState<UserStatusFilter>('all');
-const [filterRole, setFilterRole] = useState('all');
-const [storeSearchText, setStoreSearchText] = useState('');
-const [openFilter, setOpenFilter] = useState<OpenUserFilter>(null);
-const [searchText, setSearchText] = useState('');
-const [appliedFilters, setAppliedFilters] = useState(defaultUserFilters);
-const [isFilterDrawerOpen, setIsFilterDrawerOpen] = useState(false);
-const [pageInfo, setPageInfo] = useState<PageInfo>({ page: 1, totalPages: 1, total: 0 });
-const [isRefreshing, setIsRefreshing] = useState(false);
-const [isLoadingMore, setIsLoadingMore] = useState(false);
-const [isLoading, setIsLoading] = useState(true);
-const [isLoadingStores, setIsLoadingStores] = useState(false);
-const [hasLoadedStores, setHasLoadedStores] = useState(false);
-const [loadError, setLoadError] = useState('');
-const [form, setForm] = useState<UserForm>(blankForm);
-const [editing, setEditing] = useState<AdminUser | null>(null);
-const [isFormOpen, setIsFormOpen] = useState(false);
-const [pendingDelete, setPendingDelete] = useState<AdminUser | null>(null);
-const [fieldErrors, setFieldErrors] = useState<UserFieldErrors>({});
-const [toastMessage, setToastMessage] = useState('');
-const [pendingFormSuccess, setPendingFormSuccess] = useState('');
-const [pendingDeleteSuccess, setPendingDeleteSuccess] = useState('');
-const [isSaving, setIsSaving] = useState(false);
-const [isDeleting, setIsDeleting] = useState(false);
-const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
-const initialLoadComplete = useRef(false);
-const dismissToast = useCallback(() => setToastMessage(''), []);
-const showErrorToast = useCallback((message: string) => setToastMessage(message), []);
-const load = useCallback(async (page: number, filters: UserListFilters, append = false): Promise<boolean> => {
+  const { width, height } = useWindowDimensions();
+  const layout = getAdminLayout(width);
+  const [users, setUsers] = useState<AdminUser[]>([]);
+  const [stores, setStores] = useState<StoreOption[]>([]);
+  const [filterStore, setFilterStore] = useState('');
+  const [filterStatus, setFilterStatus] = useState<UserStatusFilter>('all');
+  const [filterRole, setFilterRole] = useState('all');
+  const [storeSearchText, setStoreSearchText] = useState('');
+  const [openFilter, setOpenFilter] = useState<OpenUserFilter>(null);
+  const [searchText, setSearchText] = useState('');
+  const [appliedFilters, setAppliedFilters] = useState(defaultUserFilters);
+  const [isFilterDrawerOpen, setIsFilterDrawerOpen] = useState(false);
+  const [pageInfo, setPageInfo] = useState<PageInfo>({ page: 1, totalPages: 1, total: 0 });
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isLoadingStores, setIsLoadingStores] = useState(false);
+  const [hasLoadedStores, setHasLoadedStores] = useState(false);
+  const [loadError, setLoadError] = useState('');
+  const [form, setForm] = useState<UserForm>(blankForm);
+  const [editing, setEditing] = useState<AdminUser | null>(null);
+  const [isFormOpen, setIsFormOpen] = useState(false);
+  const [pendingDelete, setPendingDelete] = useState<AdminUser | null>(null);
+  const [fieldErrors, setFieldErrors] = useState<UserFieldErrors>({});
+  const [toastMessage, setToastMessage] = useState('');
+  const [pendingFormSuccess, setPendingFormSuccess] = useState('');
+  const [pendingDeleteSuccess, setPendingDeleteSuccess] = useState('');
+  const [isSaving, setIsSaving] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const initialLoadComplete = useRef(false);
+  const dismissToast = useCallback(() => setToastMessage(''), []);
+  const showErrorToast = useCallback((message: string) => setToastMessage(message), []);
+  const load = useCallback(async (page: number, filters: UserListFilters, append = false): Promise<boolean> => {
     if (append) setIsLoadingMore(true);
     else setIsRefreshing(true);
     setLoadError('');
@@ -96,25 +96,25 @@ const load = useCallback(async (page: number, filters: UserListFilters, append =
       }
     }
   }, [onToast]);
-useEffect(() => {
+  useEffect(() => {
     void load(1, defaultUserFilters);
   }, [load]);
-const visibleUsers = users;
-const userRoleOptions = ['admin', 'sub_admin', 'franchise_admin']
+  const visibleUsers = users;
+  const userRoleOptions = ['admin', 'sub_admin', 'franchise_admin']
     .map((role) => ({ value: role, label: translateRole(role) }));
-const hasActiveFilters = Boolean(
+  const hasActiveFilters = Boolean(
     appliedFilters.search
     || appliedFilters.franchiseId
     || appliedFilters.status !== 'all'
     || appliedFilters.role !== 'all',
   );
-const hasDraftFilters = Boolean(
+  const hasDraftFilters = Boolean(
     searchText.trim()
     || filterStore
     || filterStatus !== 'all'
     || filterRole !== 'all',
   );
-function openFilters(): void {
+  function openFilters(): void {
     setSearchText(appliedFilters.search);
     setFilterStore(appliedFilters.franchiseId);
     setStoreSearchText(stores.find((store) => store._id === appliedFilters.franchiseId)?.name ?? '');
@@ -124,7 +124,7 @@ function openFilters(): void {
     setIsFilterDrawerOpen(true);
     void loadStores();
   }
-async function applyFilters(): Promise<void> {
+  async function applyFilters(): Promise<void> {
     const filters: UserListFilters = {
       search: searchText.trim(),
       franchiseId: filterStore,
@@ -136,7 +136,7 @@ async function applyFilters(): Promise<void> {
     if (!await load(1, filters)) return;
     setAppliedFilters(filters);
   }
-async function clearFilters(): Promise<void> {
+  async function clearFilters(): Promise<void> {
     setOpenFilter(null);
     setIsFilterDrawerOpen(false);
     if (!await load(1, defaultUserFilters)) return;
@@ -147,15 +147,15 @@ async function clearFilters(): Promise<void> {
     setFilterRole('all');
     setAppliedFilters(defaultUserFilters);
   }
-function loadMore(): void {
+  function loadMore(): void {
     void load(pageInfo.page + 1, appliedFilters, true);
   }
-const loadStores = useCallback(async () => {
+  const loadStores = useCallback(async () => {
     if (hasLoadedStores || isLoadingStores) return;
     setIsLoadingStores(true);
     try {
       const response = await apiRequest('/stores?limit=100');
-      const data = await response.json() as { franchises?: StoreOption[]; message?: string };
+      const data = await response.json() as { franchises?: StoreOption[]; message?: string; };
       if (!response.ok) throw new Error(data.message ?? t('adminLoadFailed'));
       setStores(data.franchises ?? []);
       setHasLoadedStores(true);
@@ -165,10 +165,10 @@ const loadStores = useCallback(async () => {
       setIsLoadingStores(false);
     }
   }, [hasLoadedStores, isLoadingStores, showErrorToast]);
-useEffect(() => {
+  useEffect(() => {
     void loadStores();
   }, [loadStores]);
-function openCreate(): void {
+  function openCreate(): void {
     setEditing(null);
     setForm(blankForm);
     setFieldErrors({});
@@ -176,7 +176,7 @@ function openCreate(): void {
     setIsFormOpen(true);
     void loadStores();
   }
-function openEdit(user: AdminUser): void {
+  function openEdit(user: AdminUser): void {
     setEditing(user);
     setForm({
       name: user.name,
@@ -190,7 +190,7 @@ function openEdit(user: AdminUser): void {
     setIsFormOpen(true);
     void loadStores();
   }
-function updateField<Key extends keyof UserForm>(key: Key, value: UserForm[Key]): void {
+  function updateField<Key extends keyof UserForm>(key: Key, value: UserForm[Key]): void {
     setForm((current) => ({ ...current, [key]: value }));
     setFieldErrors((current) => {
       const next = { ...current };
@@ -201,16 +201,16 @@ function updateField<Key extends keyof UserForm>(key: Key, value: UserForm[Key])
       return next;
     });
   }
-function toggleStore(id: string): void {
+  function toggleStore(id: string): void {
     updateField('franchiseIds', form.franchiseIds.includes(id)
       ? form.franchiseIds.filter((storeId) => storeId !== id)
       : [...form.franchiseIds, id]);
   }
-function updateRole(role: UserForm['role']): void {
+  function updateRole(role: UserForm['role']): void {
     setForm((current) => ({ ...current, role, franchiseIds: role === 'sub_admin' ? [] : current.franchiseIds }));
     if (role === 'sub_admin') setFieldErrors((current) => ({ ...current, franchiseIds: undefined }));
   }
-function validate(): UserFieldErrors {
+  function validate(): UserFieldErrors {
     const errors: UserFieldErrors = {};
     if (!form.name.trim()) errors.name = t('adminUserNameRequired');
     if (!form.email.trim()) errors.email = t('adminUserEmailRequired');
@@ -226,7 +226,7 @@ function validate(): UserFieldErrors {
     if (form.role === 'franchise_admin' && form.franchiseIds.length === 0) errors.franchiseIds = t('adminUserStoreRequired');
     return errors;
   }
-async function save(): Promise<void> {
+  async function save(): Promise<void> {
     const validationErrors = validate();
     setFieldErrors(validationErrors);
     if (Object.keys(validationErrors).length > 0) {
@@ -246,7 +246,7 @@ async function save(): Promise<void> {
             : { name: form.name.trim(), email: form.email.trim(), password: form.password, role: form.role, franchiseIds: form.role === 'sub_admin' ? [] : form.franchiseIds }),
         },
       );
-      const data = await response.json() as { message?: string };
+      const data = await response.json() as { message?: string; };
       if (!response.ok) {
         showErrorToast(data.message ?? t('adminSaveFailed'));
         return;
@@ -260,12 +260,12 @@ async function save(): Promise<void> {
       setIsSaving(false);
     }
   }
-async function deleteUser(): Promise<void> {
+  async function deleteUser(): Promise<void> {
     if (!pendingDelete) return;
     setIsDeleting(true);
     try {
       const response = await apiRequest(`/users/${encodeURIComponent(pendingDelete._id)}`, { method: 'DELETE' });
-      const data = await response.json() as { message?: string };
+      const data = await response.json() as { message?: string; };
       if (!response.ok) {
         showErrorToast(data.message ?? t('adminSaveFailed'));
         return;
@@ -278,5 +278,61 @@ async function deleteUser(): Promise<void> {
       setIsDeleting(false);
     }
   }
-return { height, layout, stores, setFilterStore, filterStatus, setFilterStatus, filterRole, setFilterRole, storeSearchText, setStoreSearchText, openFilter, setOpenFilter, searchText, setSearchText, appliedFilters, isFilterDrawerOpen, setIsFilterDrawerOpen, pageInfo, isRefreshing, isLoadingMore, isLoading, loadError, form, editing, isFormOpen, setIsFormOpen, pendingDelete, setPendingDelete, fieldErrors, toastMessage, pendingFormSuccess, setPendingFormSuccess, pendingDeleteSuccess, setPendingDeleteSuccess, isSaving, isDeleting, isDeleteDialogOpen, setIsDeleteDialogOpen, dismissToast, load, visibleUsers, userRoleOptions, hasActiveFilters, hasDraftFilters, openFilters, applyFilters, clearFilters, loadMore, openCreate, openEdit, updateField, toggleStore, updateRole, save, deleteUser };
+  return {
+    height,
+    layout,
+    stores,
+    setFilterStore,
+    filterStatus,
+    setFilterStatus,
+    filterRole,
+    setFilterRole,
+    storeSearchText,
+    setStoreSearchText,
+    openFilter,
+    setOpenFilter,
+    searchText,
+    setSearchText,
+    appliedFilters,
+    isFilterDrawerOpen,
+    setIsFilterDrawerOpen,
+    pageInfo,
+    isRefreshing,
+    isLoadingMore,
+    isLoading,
+    loadError,
+    form,
+    editing,
+    isFormOpen,
+    setIsFormOpen,
+    pendingDelete,
+    setPendingDelete,
+    fieldErrors,
+    toastMessage,
+    pendingFormSuccess,
+    setPendingFormSuccess,
+    pendingDeleteSuccess,
+    setPendingDeleteSuccess,
+    isSaving,
+    isDeleting,
+    isDeleteDialogOpen,
+    setIsDeleteDialogOpen,
+    dismissToast,
+    load,
+    visibleUsers,
+    userRoleOptions,
+    hasActiveFilters,
+    hasDraftFilters,
+    openFilters,
+    applyFilters,
+    clearFilters,
+    loadMore,
+    openCreate,
+    openEdit,
+    updateField,
+    toggleStore,
+    updateRole,
+    save,
+    deleteUser,
+  };
 }
