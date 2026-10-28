@@ -1,8 +1,6 @@
-import { Pressable, ScrollView, Text, View } from 'react-native';
-import { X } from '../../../icons';
+import { Pressable, Text, View } from 'react-native';
 import { AdminFormField } from '../../../components/AdminFormField';
-import { ResponsiveDrawerModal } from '../../../components/ResponsiveDrawerModal';
-import { theme } from '../../../config/theme';
+import { FilterDrawer } from '../../../components/FilterDrawer';
 import { t } from '../../../i18n';
 import { adminStyles as styles } from '../../../styles/adminStyles';
 import { salesStyles } from './salesStyles';
@@ -42,79 +40,56 @@ export function SaleFiltersDrawer({
   onApply,
 }: SaleFiltersDrawerProps) {
   return (
-    <ResponsiveDrawerModal
+    <FilterDrawer
       visible={visible}
-      closeLabel={t('adminCloseMenu')}
+      title={t('franchiseFilterSales')}
+      height={height}
+      isWeb={isWeb}
+      maxHeight={430}
+      canClear={canClear}
       onClose={onClose}
       onAfterClose={onAfterClose}
-      panelStyle={!isWeb ? { height: Math.min(height * 0.8, 430) } : undefined}
+      onClear={onClear}
+      onApply={onApply}
     >
-      <View style={styles.drawerContent}>
-        <View style={styles.drawerHeading}>
-          <Text style={[styles.modalTitle, styles.drawerHeadingTitle]}>{t('franchiseFilterSales')}</Text>
-          <Pressable accessibilityRole="button" accessibilityLabel={t('adminCloseMenu')} onPress={onClose} style={styles.userIconAction}>
-            <X color={theme.colors.muted} size={18} />
-          </Pressable>
-        </View>
-        <ScrollView style={styles.drawerFormScroll} contentContainerStyle={styles.filterDrawerFields} keyboardShouldPersistTaps="handled">
-          <View style={[salesStyles.presetRow, styles.filterDrawerField]}>
-            {presets.map((preset) => {
-              const range = salePresetRange(preset.key);
-              const selected = range.from === draft.from && range.to === draft.to;
-              return (
-                <Pressable
-                  key={preset.key}
-                  accessibilityRole="button"
-                  accessibilityState={{ selected }}
-                  onPress={() => onDraftChange(range)}
-                  style={[styles.secondaryButton, salesStyles.presetButton, selected && styles.storeOptionSelected]}
-                >
-                  <Text style={styles.secondaryButtonText}>{t(preset.label)}</Text>
-                </Pressable>
-              );
-            })}
-          </View>
-          <AdminFormField
-            date
-            label={t('franchiseFrom')}
-            placeholder={t('franchiseDatePlaceholder')}
-            value={draft.from}
-            onChangeText={(from) => onDraftChange({ ...draft, from })}
-            containerStyle={styles.filterDrawerField}
-            keyboardType="numbers-and-punctuation"
-            autoCapitalize="none"
-          />
-          <AdminFormField
-            date
-            label={t('franchiseTo')}
-            placeholder={t('franchiseDatePlaceholder')}
-            value={draft.to}
-            onChangeText={(to) => onDraftChange({ ...draft, to })}
-            containerStyle={styles.filterDrawerField}
-            keyboardType="numbers-and-punctuation"
-            autoCapitalize="none"
-          />
-          {error ? <Text accessibilityRole="alert" style={salesStyles.dateError}>{error}</Text> : null}
-        </ScrollView>
-        <View style={styles.modalActions}>
-          <View style={styles.drawerActionSlot}>
+      <View style={[salesStyles.presetRow, styles.filterDrawerField]}>
+        {presets.map((preset) => {
+          const range = salePresetRange(preset.key);
+          const selected = range.from === draft.from && range.to === draft.to;
+          return (
             <Pressable
+              key={preset.key}
               accessibilityRole="button"
-              accessibilityState={{ disabled: !canClear }}
-              disabled={!canClear}
-              onPress={onClear}
-              style={[styles.secondaryButton, styles.drawerActionButton, !canClear && styles.filterDrawerDisabledButton]}
+              accessibilityState={{ selected }}
+              onPress={() => onDraftChange(range)}
+              style={[styles.secondaryButton, salesStyles.presetButton, selected && styles.storeOptionSelected]}
             >
-              <Text style={styles.secondaryButtonText}>{t('adminClearFilters')}</Text>
+              <Text style={styles.secondaryButtonText}>{t(preset.label)}</Text>
             </Pressable>
-          </View>
-          <View style={styles.drawerActionSlot}>
-            <Pressable accessibilityRole="button" onPress={onApply} style={[styles.primaryButton, styles.drawerActionButton]}>
-              <Text style={styles.primaryButtonText}>{t('adminApplyFilters')}</Text>
-            </Pressable>
-          </View>
-        </View>
+          );
+        })}
       </View>
-    </ResponsiveDrawerModal>
+      <AdminFormField
+        date
+        label={t('franchiseFrom')}
+        placeholder={t('franchiseDatePlaceholder')}
+        value={draft.from}
+        onChangeText={(from) => onDraftChange({ ...draft, from })}
+        containerStyle={styles.filterDrawerField}
+        keyboardType="numbers-and-punctuation"
+        autoCapitalize="none"
+      />
+      <AdminFormField
+        date
+        label={t('franchiseTo')}
+        placeholder={t('franchiseDatePlaceholder')}
+        value={draft.to}
+        onChangeText={(to) => onDraftChange({ ...draft, to })}
+        containerStyle={styles.filterDrawerField}
+        keyboardType="numbers-and-punctuation"
+        autoCapitalize="none"
+      />
+      {error ? <Text accessibilityRole="alert" style={salesStyles.dateError}>{error}</Text> : null}
+    </FilterDrawer>
   );
 }

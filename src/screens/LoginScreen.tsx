@@ -1,66 +1,49 @@
 import {
-  KeyboardAvoidingView,
-  Platform,
-  Pressable,
-  ScrollView,
-  StatusBar,
-  Text,
-  TextInput,
-  useWindowDimensions,
-  View,
+KeyboardAvoidingView,
+Platform,
+Pressable,
+ScrollView,
+StatusBar,
+Text,
+TextInput,
+View
 } from 'react-native';
-import { useCallback, useEffect, useRef, useState, type ComponentRef } from 'react';
-import { Eye, EyeOff, LockKeyhole, Mail } from '../icons';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { AppToast } from '../components/AppToast';
 import { AppLoader } from '../components/AppLoader';
-import { setPasswordChangeRequiredHandler, setUnauthorizedHandler } from '../api/auth';
+import { AppToast } from '../components/AppToast';
 import { theme } from '../config/theme';
-import { useLogin } from '../hooks/useLogin';
 import { t } from '../i18n';
-import { FranchiseHomeScreen } from './franchise/FranchiseHomeScreen';
+import { Eye,EyeOff,LockKeyhole,Mail } from '../icons';
+import {
+getSignInButtonStyle,
+styles
+} from '../styles/loginScreenStyles';
 import { AdminHomeScreen } from './admin/AdminHomeScreen';
 import { ForcePasswordChangeScreen } from './ForcePasswordChangeScreen';
-import {
-  getLoginSafeAreaStyles,
-  getSignInButtonStyle,
-  styles,
-} from '../styles/loginScreenStyles';
+import { FranchiseHomeScreen } from './franchise/FranchiseHomeScreen';
+import { useLoginScreen } from './useLoginScreen';
 
-export function LoginScreen() {
-  const safeAreaInsets = useSafeAreaInsets();
-  const { width, height } = useWindowDimensions();
-  const isWide = width >= theme.layout.desktopBreakpoint;
-  const isWebCompact = Platform.OS === 'web' && !isWide;
-  const isWebTablet =
-    Platform.OS === 'web' && width >= theme.layout.tabletBreakpoint && !isWide;
-  const loginState = useLogin();
-  const signOut = loginState.signOut;
-  const [authToastMessage, setAuthToastMessage] = useState('');
-  const passwordInputRef = useRef<ComponentRef<typeof TextInput>>(null);
-  const dismissAuthToast = useCallback(() => setAuthToastMessage(''), []);
-  const handleUnauthorized = useCallback(() => {
-    signOut();
-    setAuthToastMessage(t('sessionExpired'));
-  }, [signOut]);
-
-  useEffect(() => {
-    setUnauthorizedHandler(handleUnauthorized);
-    return () => setUnauthorizedHandler(null);
-  }, [handleUnauthorized]);
-
-  const requirePasswordChange = loginState.requirePasswordChange;
-  useEffect(() => {
-    setPasswordChangeRequiredHandler(requirePasswordChange);
-    return () => setPasswordChangeRequiredHandler(null);
-  }, [requirePasswordChange]);
-  const safeAreaStyles = getLoginSafeAreaStyles(
-    safeAreaInsets.top,
-    safeAreaInsets.bottom,
-    height,
+function Brand({ compact = false }: { compact?: boolean }) {
+  return (
+    <View style={styles.brandRow}>
+      <View style={[styles.brandMark, compact && styles.brandMarkCompact]}>
+        <Text style={styles.brandMarkText}>{t('brandInitials')}</Text>
+      </View>
+      <View>
+        {compact ? (
+          <>
+            <Text style={styles.brandCompactName}>{t('brandShortName')}</Text>
+            <Text style={styles.brandSubtitle}>{t('brandSubtitle')}</Text>
+          </>
+        ) : (
+          <Text style={styles.brand}>{t('brandName')}</Text>
+        )}
+      </View>
+    </View>
   );
-
-  if (loginState.session) {
+}
+export function LoginScreen() {
+const { isWide, isWebCompact, isWebTablet, loginState, signOut, authToastMessage, passwordInputRef, dismissAuthToast, safeAreaStyles } = useLoginScreen();
+if (loginState.session) {
     if (loginState.session.user.mustChangePassword === true) {
       return (
         <>
@@ -92,8 +75,7 @@ export function LoginScreen() {
       </>
     );
   }
-
-  return (
+return (
     <View
       style={[
         styles.container,
@@ -288,26 +270,6 @@ export function LoginScreen() {
         </KeyboardAvoidingView>
       </View>
       {authToastMessage ? <AppToast message={authToastMessage} onDismiss={dismissAuthToast} /> : null}
-    </View>
-  );
-}
-
-function Brand({ compact = false }: { compact?: boolean }) {
-  return (
-    <View style={styles.brandRow}>
-      <View style={[styles.brandMark, compact && styles.brandMarkCompact]}>
-        <Text style={styles.brandMarkText}>{t('brandInitials')}</Text>
-      </View>
-      <View>
-        {compact ? (
-          <>
-            <Text style={styles.brandCompactName}>{t('brandShortName')}</Text>
-            <Text style={styles.brandSubtitle}>{t('brandSubtitle')}</Text>
-          </>
-        ) : (
-          <Text style={styles.brand}>{t('brandName')}</Text>
-        )}
-      </View>
     </View>
   );
 }

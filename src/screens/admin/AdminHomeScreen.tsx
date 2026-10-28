@@ -1,64 +1,21 @@
-import { useCallback, useState } from 'react';
-import { Modal, Pressable, Text, useWindowDimensions, View } from 'react-native';
-import { ChevronsLeft, LayoutDashboard, LogOut, Menu, Store, UserRound, UsersRound, X } from '../../icons';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { AppToast } from '../../components/AppToast';
+import { Modal,Pressable,Text,View } from 'react-native';
 import { AppLoader } from '../../components/AppLoader';
-import { apiRequest, setAccessToken } from '../../api/auth';
+import { AppToast } from '../../components/AppToast';
 import { theme } from '../../config/theme';
-import { t, translateRole } from '../../i18n';
-import { adminStyles as styles, getAdminDrawerSafeAreaStyles, getAdminSafeAreaStyles } from '../../styles/adminStyles';
-import { getAdminLayout } from '../../utils/adminLayout';
+import { t,translateRole } from '../../i18n';
+import { ChevronsLeft,LogOut,Menu,UserRound,X } from '../../icons';
+import { adminStyles as styles } from '../../styles/adminStyles';
 import { AdminDashboardScreen } from './AdminDashboardScreen';
 import { AdminProfileScreen } from './AdminProfileScreen';
 import { AdminStoresScreen } from './stores/AdminStoresScreen';
+import type { AdminHomeScreenProps } from './types';
+import { useAdminHome } from './useAdminHome';
 import { AdminUsersScreen } from './users/AdminUsersScreen';
-import type { AdminHomeScreenProps, AdminTab } from './types';
 
 export type { AdminTab } from './types';
-
 export function AdminHomeScreen({ user: initialUser, onLogout }: AdminHomeScreenProps) {
-  const insets = useSafeAreaInsets();
-  const { width } = useWindowDimensions();
-  const layout = getAdminLayout(width);
-  const [user, setUser] = useState(initialUser);
-  const [activeTab, setActiveTab] = useState<AdminTab>('dashboard');
-  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
-  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
-  const [isLoggingOut, setIsLoggingOut] = useState(false);
-  const [appToast, setAppToast] = useState<{ message: string; tone: 'success' | 'error' } | null>(null);
-  const safeAreaStyles = getAdminSafeAreaStyles(insets.top, insets.bottom);
-  const drawerSafeAreaStyles = getAdminDrawerSafeAreaStyles(insets.top, insets.bottom);
-  const dismissAppToast = useCallback(() => setAppToast(null), []);
-  const showAppToast = useCallback((message: string, tone: 'success' | 'error') => {
-    setAppToast({ message, tone });
-  }, []);
-
-  async function logout(): Promise<void> {
-    setIsLoggingOut(true);
-    try {
-      const response = await apiRequest('/auth/logout', { method: 'POST' });
-      if (!response.ok && response.status !== 401) {
-        if (__DEV__) console.warn('[auth.logout] Server revocation failed; only the local session will be cleared.');
-      }
-    } catch {
-      if (__DEV__) console.warn('[auth.logout] Server unreachable; only the local session will be cleared.');
-    } finally {
-      setAccessToken(null);
-      onLogout();
-      setIsLoggingOut(false);
-    }
-  }
-
-  const tabs = [
-    { key: 'dashboard' as const, label: 'adminDashboard' as const, Icon: LayoutDashboard },
-    { key: 'stores' as const, label: 'adminStores' as const, Icon: Store },
-    { key: 'users' as const, label: 'adminUsers' as const, Icon: UsersRound },
-    { key: 'profile' as const, label: 'adminProfile' as const, Icon: UserRound },
-  ];
-  const primaryTabs = tabs.filter((tab) => tab.key !== 'profile');
-
-  return (
+const { layout, user, setUser, activeTab, setActiveTab, isSidebarCollapsed, setIsSidebarCollapsed, isDrawerOpen, setIsDrawerOpen, isLoggingOut, appToast, safeAreaStyles, drawerSafeAreaStyles, dismissAppToast, showAppToast, logout, tabs, primaryTabs } = useAdminHome({ user: initialUser, onLogout });
+return (
     <View style={[styles.root, safeAreaStyles.root, layout.hasSidebar && styles.rootWeb]}>
       {layout.hasSidebar ? (
         <View style={[styles.webSidebar, isSidebarCollapsed && styles.webSidebarCollapsed, drawerSafeAreaStyles.drawerTop]}>

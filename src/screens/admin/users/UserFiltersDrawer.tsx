@@ -1,12 +1,10 @@
-import { Pressable, ScrollView, Text, TextInput, View } from 'react-native';
-import { X } from '../../../icons';
+import { Pressable,Text,TextInput,View } from 'react-native';
 import { AdminFilterDropdown } from '../../../components/AdminFilterDropdown';
 import { AdminFormField } from '../../../components/AdminFormField';
-import { ResponsiveDrawerModal } from '../../../components/ResponsiveDrawerModal';
-import { theme } from '../../../config/theme';
+import { FilterDrawer } from '../../../components/FilterDrawer';
 import { t } from '../../../i18n';
 import { adminStyles as styles } from '../../../styles/adminStyles';
-import type { UserFiltersDrawerProps, UserStoreAutocompleteProps } from './types';
+import type { UserFiltersDrawerProps,UserStoreAutocompleteProps } from './types';
 
 export function UserFiltersDrawer({
   visible,
@@ -34,98 +32,71 @@ export function UserFiltersDrawer({
   userRoleOptions,
 }: UserFiltersDrawerProps) {
   return (
-    <ResponsiveDrawerModal
+    <FilterDrawer
       visible={visible}
-      closeLabel={t('adminCloseMenu')}
+      title={t('adminFilterUsers')}
+      height={height}
+      isWeb={isWeb}
+      maxHeight={470}
+      canClear={hasDraftFilters}
       onClose={onClose}
       onAfterClose={onAfterClose}
-      panelStyle={!isWeb ? { height: Math.min(height * 0.8, 470) } : undefined}
+      onClear={onClearFilters}
+      onApply={onApplyFilters}
     >
-      <View style={styles.drawerContent}>
-        <View style={styles.drawerHeading}>
-          <Text style={[styles.modalTitle, styles.drawerHeadingTitle]}>{t('adminFilterUsers')}</Text>
-          <Pressable accessibilityRole="button" accessibilityLabel={t('adminCloseMenu')} onPress={onClose} style={styles.userIconAction}>
-            <X color={theme.colors.muted} size={18} />
-          </Pressable>
-        </View>
-        <ScrollView style={styles.drawerFormScroll} contentContainerStyle={styles.filterDrawerFields} keyboardShouldPersistTaps="handled">
-          <AdminFormField
-            label={t('adminSearchUsers')}
-            placeholder={t('adminSearchUsers')}
-            value={searchText}
-            onChangeText={onSearchChange}
-            autoCorrect={false}
-            containerStyle={styles.filterDrawerField}
-          />
-          <StoreAutocomplete
-            stores={stores}
-            value={storeSearchText}
-            expanded={openFilter === 'store'}
-            containerStyle={styles.filterDrawerDropdown}
-            onFocus={onOpenStoreFilter}
-            onChangeText={onStoreSearchChange}
-            onSelect={onStoreSelect}
-          />
-          <AdminFilterDropdown
-            label={t('adminStatus')}
-            value={filterStatus}
-            expanded={openFilter === 'status'}
-            containerStyle={[styles.userFilterDropdown, styles.filterDrawerDropdown]}
-            onToggle={() => onToggleFilter('status')}
-            onSelect={onFilterStatusChange}
-            options={[
-              { value: 'all', label: t('adminAllUsers') },
-              { value: 'active', label: t('adminActive') },
-              { value: 'inactive', label: t('adminInactive') },
-            ]}
-          />
-          <AdminFilterDropdown
-            label={t('adminUserTypeFilter')}
-            value={filterRole}
-            expanded={openFilter === 'type'}
-            containerStyle={[styles.userFilterDropdown, styles.filterDrawerDropdown]}
-            optionsPlacement="above"
-            onToggle={() => onToggleFilter('type')}
-            onSelect={onFilterRoleChange}
-            options={[
-              { value: 'all', label: t('adminAllUserTypes') },
-              ...userRoleOptions,
-            ]}
-          />
-          {openFilter ? (
-            <Pressable
-              testID="user-filter-dropdown-dismiss"
-              accessibilityRole="button"
-              accessibilityLabel={t('adminCloseMenu')}
-              onPress={onDismissDropdown}
-              style={styles.filterDropdownDismissOverlay}
-            />
-          ) : null}
-        </ScrollView>
-        <View style={styles.modalActions}>
-          <View style={styles.drawerActionSlot}>
-            <Pressable
-              accessibilityRole="button"
-              accessibilityState={{ disabled: !hasDraftFilters }}
-              disabled={!hasDraftFilters}
-              onPress={onClearFilters}
-              style={[
-                styles.secondaryButton,
-                styles.drawerActionButton,
-                !hasDraftFilters && styles.filterDrawerDisabledButton,
-              ]}
-            >
-              <Text style={styles.secondaryButtonText}>{t('adminClearFilters')}</Text>
-            </Pressable>
-          </View>
-          <View style={styles.drawerActionSlot}>
-            <Pressable onPress={onApplyFilters} style={[styles.primaryButton, styles.drawerActionButton]}>
-              <Text style={styles.primaryButtonText}>{t('adminApplyFilters')}</Text>
-            </Pressable>
-          </View>
-        </View>
-      </View>
-    </ResponsiveDrawerModal>
+      <AdminFormField
+        label={t('adminSearchUsers')}
+        placeholder={t('adminSearchUsers')}
+        value={searchText}
+        onChangeText={onSearchChange}
+        autoCorrect={false}
+        containerStyle={styles.filterDrawerField}
+      />
+      <StoreAutocomplete
+        stores={stores}
+        value={storeSearchText}
+        expanded={openFilter === 'store'}
+        containerStyle={styles.filterDrawerDropdown}
+        onFocus={onOpenStoreFilter}
+        onChangeText={onStoreSearchChange}
+        onSelect={onStoreSelect}
+      />
+      <AdminFilterDropdown
+        label={t('adminStatus')}
+        value={filterStatus}
+        expanded={openFilter === 'status'}
+        containerStyle={[styles.userFilterDropdown, styles.filterDrawerDropdown]}
+        onToggle={() => onToggleFilter('status')}
+        onSelect={onFilterStatusChange}
+        options={[
+          { value: 'all', label: t('adminAllUsers') },
+          { value: 'active', label: t('adminActive') },
+          { value: 'inactive', label: t('adminInactive') },
+        ]}
+      />
+      <AdminFilterDropdown
+        label={t('adminUserTypeFilter')}
+        value={filterRole}
+        expanded={openFilter === 'type'}
+        containerStyle={[styles.userFilterDropdown, styles.filterDrawerDropdown]}
+        optionsPlacement="above"
+        onToggle={() => onToggleFilter('type')}
+        onSelect={onFilterRoleChange}
+        options={[
+          { value: 'all', label: t('adminAllUserTypes') },
+          ...userRoleOptions,
+        ]}
+      />
+      {openFilter ? (
+        <Pressable
+          testID="user-filter-dropdown-dismiss"
+          accessibilityRole="button"
+          accessibilityLabel={t('adminCloseMenu')}
+          onPress={onDismissDropdown}
+          style={styles.filterDropdownDismissOverlay}
+        />
+      ) : null}
+    </FilterDrawer>
   );
 }
 

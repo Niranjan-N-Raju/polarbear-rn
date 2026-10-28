@@ -73,6 +73,23 @@ after rollout.
 
 The dashboard migrates the Next.js summary cards, sales trend (date range, This Week, This Month), employee attrition, weekday sales, top expenses, and payment mix. Dates use `YYYY-MM-DD`; apply the filters after editing. Attendance summary is explicitly marked as not calculated yet, matching Next.js. Loading, empty-data, and request-error states are separate; Refresh retries dashboard requests.
 
+### Dashboard module boundaries
+
+- `FranchiseDashboardScreen` composes the screen and summary cards; keep request
+  effects out of the screen component.
+- `src/screens/franchise/dashboard/useFranchiseDashboard.ts` owns scoped requests,
+  cancellation, refresh, draft date filters, and validation.
+- `SalesTrendCard` renders trend controls and sales; `DashboardInsights` renders
+  the remaining insight sections using the existing shared chart helpers.
+- `src/components/FilterDrawer.tsx` provides the shared responsive filter shell,
+  heading, close control, and Clear/Apply actions. Both dashboard date filters
+  and the sales list reuse it. `DateRangeFilterDrawer` supplies reusable date
+  fields; callers own validation and what Clear means.
+
+The Sales Trend filter icon opens the date drawer. Closing without applying
+discards edits on the next open; Apply validates before updating the graph,
+and Clear restores the current month. Week/month shortcuts remain in the heading.
+
 ### Date pickers
 
 Date fields use Android system date dialogs, the iOS native date spinner with
