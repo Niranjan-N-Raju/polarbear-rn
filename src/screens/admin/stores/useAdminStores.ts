@@ -64,6 +64,7 @@ export function useAdminStores({ onToast }: AdminStoresScreenProps) {
       return true;
     } catch (loadError) {
       const message = loadError instanceof Error ? loadError.message : t('adminLoadFailed');
+      // Keep an already-loaded list usable; only the initial failure replaces it with an error state.
       if (append || initialLoadComplete.current) onToast(message, 'error');
       else setError(message);
       return false;
@@ -100,6 +101,7 @@ export function useAdminStores({ onToast }: AdminStoresScreenProps) {
     };
     setOpenMobileFilter(null);
     setIsFilterDrawerOpen(false);
+    // Commit filters only after their first page succeeds, keeping pagination tied to the displayed list.
     if (!await loadStores(1, filters)) return;
     setAppliedFilters(filters);
   }
@@ -201,6 +203,7 @@ export function useAdminStores({ onToast }: AdminStoresScreenProps) {
         return;
       }
       if (statusChanged && editingStore) {
+        // Archiving is a separate API operation; a details update alone does not change store access.
         const archiveResponse = await apiRequest(`/stores/archive?id=${encodeURIComponent(editingStore._id)}`, {
           method: 'PATCH',
           headers: { 'Content-Type': 'application/json' },

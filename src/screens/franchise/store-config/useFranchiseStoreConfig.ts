@@ -4,6 +4,7 @@ import { t } from '../../../i18n';
 import { currentMonthValue as currentPeriod } from '../shared/months';
 import { type StoreConfigPayload, type StoreConfigSection, type StoreConfigValues, type StoreShift } from './StoreConfigDrawer';
 export const initial: StoreConfigValues = { name: '', hasLogo: false, configured: false, cycleType: 'calendar_month', startDay: 1, endDay: 31, positions: [], shifts: [] };
+// Encode bytes without relying on browser btoa or Node Buffer, neither of which is universal on native.
 export function bytesToBase64(bytes: Uint8Array) {
   const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
   let result = '';
@@ -38,6 +39,7 @@ export function useFranchiseStoreConfig({ storeId }: { storeId: string; }) {
         `/stores/shifts?storeId=${encodeURIComponent(storeId)}`,
       ];
       const responses = await Promise.all(paths.map((path) => apiRequest(path)));
+      // Publish a combined configuration only when every section has loaded successfully.
       const results = await Promise.all(responses.map(async (response) => {
         const data = await response.json() as { message?: string; store?: { name?: string; hasLogo?: boolean; }; cycle?: { configured?: boolean; type?: StoreConfigValues['cycleType']; startDay?: number; endDay?: number; }; positions?: string[]; shifts?: StoreShift[]; };
         if (!response.ok) throw new Error(data.message ?? t('franchiseStoreConfigLoadFailed'));
@@ -64,6 +66,7 @@ export function useFranchiseStoreConfig({ storeId }: { storeId: string; }) {
   useEffect(() => {
     let current = true;
     if (!value.hasLogo || !storeId) { setLogoUri(null); return () => { current = false; }; }
+    // Fetch with the authenticated API client, then render a data URI without putting a token in the URL.
     apiRequest(`/stores/logo?storeId=${encodeURIComponent(storeId)}`).then(async (response) => {
       if (!response.ok) return;
       const contentType = response.headers.get('content-type') ?? 'image/png';

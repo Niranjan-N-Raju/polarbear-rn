@@ -71,6 +71,7 @@ export function useFranchiseWithdrawals({ storeId }: { storeId: string; }) {
   const monthWithdrawals = records.filter((record) => record.type === 'withdrawal').reduce((sum, record) => sum + record.amount, 0);
   const monthRepayments = records.filter((record) => record.type === 'repayment').reduce((sum, record) => sum + record.amount, 0);
   const netOutstanding = monthWithdrawals - monthRepayments;
+  // Month totals come from the returned rows; all-time totals come from separate server aggregates.
   const summaryCards = [
     { label: t('franchiseWithdrawalsMonthTotal'), value: formatMoney(monthWithdrawals), color: theme.colors.orange, Icon: ArrowUpRight },
     { label: t('franchiseWithdrawalsRepayments'), value: formatMoney(monthRepayments), color: theme.colors.teal, Icon: ArrowDownLeft },
@@ -110,6 +111,7 @@ export function useFranchiseWithdrawals({ storeId }: { storeId: string; }) {
     }
   };
   const afterDrawerClose = () => {
+    // Defer cleanup and screen-level feedback until the form/confirmation modal is no longer on top.
     setEditingRecord(null);
     if (pendingToast) {
       setToast({ message: pendingToast, tone: 'success' });

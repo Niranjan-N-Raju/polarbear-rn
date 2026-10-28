@@ -28,6 +28,7 @@ export async function apiRequest(path: string, init: RequestInit = {}): Promise<
   const headers = new Headers(init.headers);
   if (accessToken) headers.set('Authorization', `Bearer ${accessToken}`);
   const controller = new AbortController();
+  // Combine caller cancellation with the shared timeout without replacing the caller's signal.
   const abortFromCaller = () => controller.abort();
   if (init.signal?.aborted) controller.abort();
   init.signal?.addEventListener('abort', abortFromCaller);
@@ -39,12 +40,14 @@ export async function apiRequest(path: string, init: RequestInit = {}): Promise<
     clearTimeout(timeout);
     init.signal?.removeEventListener('abort', abortFromCaller);
   }
+  // Parallel failed requests should trigger one sign-out notification, not one toast per request.
   if (response.status === 401 && accessToken && path !== '/auth/logout' && !hasHandledUnauthorized) {
     hasHandledUnauthorized = true;
     accessToken = null;
     unauthorizedHandler?.();
   }
   if (response.status === 403 && accessToken && passwordChangeRequiredHandler && typeof response.clone === 'function') {
+    // Inspect a copy so feature callers can still read the original response body.
     const body = (await response.clone().json().catch(() => null)) as { code?: string } | null;
     if (body?.code === 'PASSWORD_CHANGE_REQUIRED') passwordChangeRequiredHandler();
   }

@@ -66,6 +66,7 @@ export function useFranchiseInventory({ storeId }: FranchiseInventoryScreenProps
     };
   }, [storeId, reloadKey]);
   const summary = useMemo(() => summarizeInventory(items), [items]);
+  // Summary badges describe all loaded stock, while filters only narrow the visible list.
   const filteredItems = useMemo(() => filterInventory(items, filters), [items, filters]);
   const visibleItems = filteredItems.slice(0, visibleCount);
   const hasActiveFilters = filters.status !== 'all' || filters.search.trim() !== '';
@@ -82,6 +83,7 @@ export function useFranchiseInventory({ storeId }: FranchiseInventoryScreenProps
     applyFilterState({ ...filters, status: filters.status === status ? 'all' : status });
   };
   const openAction = useCallback((item: InventoryStockItem, action: InventoryAction) => {
+    // Retain the action's content separately while the drawer animates out.
     setLastAction({ item, action });
     setDrawer({ type: 'action', item, action });
   }, []);
@@ -91,6 +93,7 @@ export function useFranchiseInventory({ storeId }: FranchiseInventoryScreenProps
     setDrawer(null);
   };
   const handleAfterClose = () => {
+    // Native modals can cover screen-level toasts until their close animation finishes.
     if (!pendingToast) return;
     setToast(pendingToast);
     setPendingToast('');

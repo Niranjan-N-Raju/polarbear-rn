@@ -17,6 +17,7 @@ export function useFranchiseSales({ storeId }: FranchiseSalesScreenProps) {
   const { width, height } = useWindowDimensions();
   const layout = getAdminLayout(width);
   const [range, setRange] = useState<SaleRange>(() => defaultSaleRange());
+  // Drawer edits stay local until Apply; requests depend on range, not draftRange.
   const [draftRange, setDraftRange] = useState<SaleRange>(range);
   const [draftError, setDraftError] = useState<string | null>(null);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
@@ -62,6 +63,7 @@ export function useFranchiseSales({ storeId }: FranchiseSalesScreenProps) {
   const defaultRange = useMemo(() => defaultSaleRange(), []);
   const hasActiveFilters = range.from !== defaultRange.from || range.to !== defaultRange.to;
   const visibleSales = sales.slice(0, visibleCount);
+  // Pagination reveals the loaded date range; it does not fetch another server page.
   const openFilters = () => {
     setDraftRange(range);
     setDraftError(null);
@@ -90,6 +92,7 @@ export function useFranchiseSales({ storeId }: FranchiseSalesScreenProps) {
   }, []);
   const handleSaved = (message: string, keepOpen: boolean) => {
     setReloadKey((key) => key + 1);
+    // Save-and-continue leaves feedback in the form; ordinary saves defer it until drawer close.
     if (keepOpen) return;
     setPendingToast(message);
     setIsFormOpen(false);

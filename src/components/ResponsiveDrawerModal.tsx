@@ -37,6 +37,7 @@ export function ResponsiveDrawerModal({ visible, closeLabel, onClose, onAfterClo
   }, []);
 
   useEffect(() => {
+    // Closing timers need the latest callback without restarting the transition on every render.
     onAfterCloseRef.current = onAfterClose;
   }, [onAfterClose]);
 
@@ -48,6 +49,7 @@ export function ResponsiveDrawerModal({ visible, closeLabel, onClose, onAfterClo
         webMountedRef.current = true;
         setWebMounted(true);
         setWebOpen(false);
+        // Mount in the closed position first so the browser can animate to the open styles.
         openTimerRef.current = setTimeout(() => {
           openTimerRef.current = null;
           setWebOpen(true);
@@ -56,6 +58,7 @@ export function ResponsiveDrawerModal({ visible, closeLabel, onClose, onAfterClo
         if (openTimerRef.current) clearTimeout(openTimerRef.current);
         openTimerRef.current = null;
         setWebOpen(false);
+        // Keep children mounted through the exit transition before firing cleanup/toast callbacks.
         closeTimerRef.current = setTimeout(() => {
           closeTimerRef.current = null;
           webMountedRef.current = false;
@@ -70,6 +73,7 @@ export function ResponsiveDrawerModal({ visible, closeLabel, onClose, onAfterClo
     } else if (nativePresentedRef.current) {
       nativePresentedRef.current = false;
       setNativePresented(false);
+      // Allow the native Modal dismissal to finish before another drawer or toast is presented.
       closeTimerRef.current = setTimeout(() => {
         closeTimerRef.current = null;
         onAfterCloseRef.current?.();

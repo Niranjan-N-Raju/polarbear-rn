@@ -35,6 +35,7 @@ export function useFranchisePnl({ storeId }: FranchisePnlScreenProps) {
         if (!active) return;
         if (!response.ok) throw new Error(result.message || t('franchisePnlLoadFailed'));
         setData(result);
+        // Keep the selected period across refreshes unless it is no longer returned by the API.
         setSelectedPeriod((current) => result.months.some((month) => month.period === current)
           ? current
           : result.months.find((month) => month.isCurrent)?.period ?? result.months[0]?.period ?? '');
@@ -61,6 +62,7 @@ export function useFranchisePnl({ storeId }: FranchisePnlScreenProps) {
   }, []);
   const closeDrawer = () => setDrawerVisible(false);
   const finishDrawerClose = () => {
+    // Keep drawer content mounted during dismissal, then release it and reveal the success toast.
     setDrawerMonth(null);
     if (pendingToast) {
       setToast(pendingToast);

@@ -69,6 +69,7 @@ export function SaleFormDrawer({
   const [toast, setToast] = useState<{ message: string; tone: 'error' | 'success' } | null>(null);
 
   useEffect(() => {
+    // Hidden drawers can stay mounted during dismissal; reset only when opened or given another sale.
     if (!visible) return;
     setForm(editingSale ? saleToForm(editingSale) : emptySaleForm());
     setErrors({});
@@ -131,6 +132,7 @@ export function SaleFormDrawer({
       }
       const message = data.message || t('franchiseSaleSaved');
       if (mode === 'next') {
+        // Advance only after persistence succeeds, leaving the current draft intact on failure.
         setForm(emptySaleForm(nextDay(form.date)));
         setErrors({});
         setExpenseDraft(null);

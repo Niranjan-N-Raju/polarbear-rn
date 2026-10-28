@@ -50,6 +50,7 @@ export function useFranchiseHome({ user: initialUser, onLogout }: FranchiseHomeS
         const data: { franchises: FranchiseStore[]; } = await response.json();
         if (!active) return;
         setStores(data.franchises);
+        // Refresh preserves an accessible selection; multiple stores require an explicit choice.
         setActiveStore((current) => data.franchises.find((store) => store._id === current?._id)
           ?? (data.franchises.length === 1 ? data.franchises[0] : null));
       })
@@ -62,6 +63,7 @@ export function useFranchiseHome({ user: initialUser, onLogout }: FranchiseHomeS
   function selectStore(store: FranchiseStore) {
     setActiveStore(store);
     setPickerOpen(false);
+    // Enter the new store at a predictable screen rather than retaining the previous feature.
     setTab('dashboard');
   }
   function navigate(key: string) {

@@ -30,11 +30,13 @@ export function useLoginScreen() {
     signOut();
     setAuthToastMessage(t('sessionExpired'));
   }, [signOut]);
+  // The API layer owns HTTP detection; the mounted login screen owns the session-expiry UX.
   useEffect(() => {
     setUnauthorizedHandler(handleUnauthorized);
     return () => setUnauthorizedHandler(null);
   }, [handleUnauthorized]);
   const requirePasswordChange = loginState.requirePasswordChange;
+  // Route back through the mandatory-change screen even when the server flags an existing session.
   useEffect(() => {
     setPasswordChangeRequiredHandler(requirePasswordChange);
     return () => setPasswordChangeRequiredHandler(null);

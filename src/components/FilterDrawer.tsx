@@ -28,6 +28,7 @@ export function FilterDrawer({
   clearLabel = t('adminClearFilters'), applyLabel = t('adminApplyFilters'),
   automaticallyAdjustKeyboardInsets = false, onClose, onAfterClose, onClear, onApply, children,
 }: FilterDrawerProps) {
+  // This shell owns presentation only; each feature controls drafts, validation, and Clear semantics.
   return (
     <ResponsiveDrawerModal
       visible={visible}

@@ -59,6 +59,7 @@ export function useFranchiseEmployees({ storeId }: { storeId: string; }) {
     } finally { setLoading(false); }
   }, [storeId]);
   useEffect(() => { load(); }, [load, reloadKey]);
+  // Search/status and visibleCount operate on the loaded roster, not server-side pagination.
   const filtered = useMemo(() => employees.filter((employee) => {
     const needle = search.trim().toLocaleLowerCase();
     const matchesSearch = !needle || employee.name.toLocaleLowerCase().includes(needle) || (employee.phone ?? '').toLocaleLowerCase().includes(needle);
@@ -83,6 +84,7 @@ export function useFranchiseEmployees({ storeId }: { storeId: string; }) {
     if (!archiveTarget) return;
     setBusy(true);
     try {
+      // DELETE archives with an exit date so historical attendance and payroll remain available.
       const response = await apiRequest(`/users/${encodeURIComponent(archiveTarget._id)}?storeId=${encodeURIComponent(storeId)}`, { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ exitDate }) });
       const data = await response.json().catch(() => ({})) as { message?: string; };
       if (!response.ok) throw new Error(data.message ?? t('franchiseEmployeesActionFailed'));

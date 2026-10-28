@@ -34,6 +34,7 @@ const roleTranslationKeys: Record<string, TranslationKey> = {
 };
 
 export function t(key: TranslationKey, params: TranslationParams = {}): string {
+  // Partial locale dictionaries fall back to English before exposing a raw translation key.
   const template = locales[currentLanguage][key] ?? locales[defaultLanguage][key] ?? key;
   return template.replace(/\{\{(\w+)\}\}/g, (_match, name: string) =>
     String(params[name] ?? ''),

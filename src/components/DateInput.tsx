@@ -20,6 +20,7 @@ export function DateInput({
   if (max && initial > max) initial = max;
   const hostOverlay = useOverlayHost();
   const hostKey = useId();
+  // iOS edits a draft until Done; cancelling must not mutate the form's committed date.
   const [iosDraft, setIosDraft] = useState<Date | null>(null);
   const closeIos = () => setIosDraft(null);
   const iosSheet = iosDraft ? (
@@ -35,6 +36,7 @@ export function DateInput({
     />
   ) : null;
   useEffect(() => {
+    // Reuse an enclosing modal's overlay layer instead of stacking a second native modal on iOS.
     hostOverlay?.(hostKey, iosSheet);
     // iosSheet is derived from iosDraft; re-host only when the draft or bounds change.
     // eslint-disable-next-line react-hooks/exhaustive-deps

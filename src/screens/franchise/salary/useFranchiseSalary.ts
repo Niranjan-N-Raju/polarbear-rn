@@ -52,6 +52,7 @@ export function useFranchiseSalary({ storeId }: { storeId: string; }) {
     return () => { active = false; controller.abort(); };
   }, [storeId, period, reloadKey]);
   const projections = useMemo(() => data?.projections ?? [], [data]);
+  // Display server-calculated payroll; duplicating its attendance/cycle rules here would risk drift.
   const totals = useMemo(() => projections.reduce((sum, item) => ({ base: sum.base + item.salary, earned: sum.earned + item.earnedSalary, projected: sum.projected + item.projectedSalary, incentives: sum.incentives + item.incentiveTotal }), { base: 0, earned: 0, projected: 0, incentives: 0 }), [projections]);
   const cards = [
     { label: t('franchiseSalaryBase'), value: formatMoney(totals.base), color: theme.colors.teal, Icon: IndianRupee },
@@ -73,6 +74,7 @@ export function useFranchiseSalary({ storeId }: { storeId: string; }) {
   };
   const saveCycle = async () => {
     const day = Number(startDay);
+    // Days 2-28 exist in every month; day 1 is represented by calendar-month mode.
     if (cycleType === 'custom' && (!Number.isInteger(day) || day < 2 || day > 28)) { setCycleError(t('franchiseSalaryCycleDayError')); return; }
     setSavingCycle(true); setCycleError(null);
     try {

@@ -15,6 +15,7 @@ export function datesBetween(from: string, to: string) {
   const dates: string[] = [];
   const cursor = new Date(`${from}T00:00:00`);
   const end = new Date(`${to}T00:00:00`);
+  // Attendance uses local calendar arithmetic and a cycle-sized cap, unlike chart-date iteration.
   while (cursor <= end && dates.length < 45) {
     dates.push(localDate(cursor));
     cursor.setDate(cursor.getDate() + 1);

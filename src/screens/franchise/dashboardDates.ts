@@ -1,4 +1,5 @@
 export function localDateValue(date = new Date()): string {
+  // API dates are local calendar days; toISOString() could shift them across a timezone boundary.
   return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
 }
 
@@ -31,6 +32,7 @@ export function datesBetween(from: string, to: string): string[] {
   const dates: string[] = [];
   const cursor = new Date(`${from}T00:00:00Z`);
   const end = new Date(`${to}T00:00:00Z`);
+  // Once dates are date-only strings, UTC iteration avoids skipped/repeated days at DST changes.
   while (cursor <= end) {
     dates.push(cursor.toISOString().slice(0, 10));
     cursor.setUTCDate(cursor.getUTCDate() + 1);

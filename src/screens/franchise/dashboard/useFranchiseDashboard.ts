@@ -8,6 +8,7 @@ export function useFranchiseDashboard(storeId: string) {
   const [stats, setStats] = useState<FranchiseDashboardStats | null>(null);
   const [sales, setSales] = useState<DailySale[]>([]);
   const [range, setRange] = useState(currentMonthRange);
+  // Only committed dates drive requests; editing the drawer must not change the chart.
   const [appliedRange, setAppliedRange] = useState(currentMonthRange);
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [filterError, setFilterError] = useState('');
@@ -18,6 +19,7 @@ export function useFranchiseDashboard(storeId: string) {
   const [version, setVersion] = useState(0);
 
   useEffect(() => {
+    // Abort saves work; the active guard also blocks late responses after a store switch.
     let active = true;
     const controller = new AbortController();
     setLoading(true);
@@ -36,6 +38,7 @@ export function useFranchiseDashboard(storeId: string) {
     return () => { active = false; controller.abort(); };
   }, [storeId, version]);
 
+  // Summary and trend load independently so one failed endpoint does not hide the other.
   useEffect(() => {
     let active = true;
     const controller = new AbortController();
@@ -67,6 +70,7 @@ export function useFranchiseDashboard(storeId: string) {
   }
 
   function openFilters() {
+    // Reopening starts from committed dates, discarding any previously cancelled draft.
     setRange(appliedRange);
     setFilterError('');
     setFiltersOpen(true);

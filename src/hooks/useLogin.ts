@@ -24,6 +24,7 @@ export function useLogin() {
     setIsPending(true);
     try {
       const result = await login(normalizedEmail, password);
+      // Backend authentication supports more roles than this client exposes workspaces for.
       if (!['admin', 'franchise_admin'].includes(result.user.role)) {
         setAccessToken(null);
         setFormError(t('mobileRoleNotSupported'));
@@ -65,6 +66,7 @@ export function useLogin() {
   }, []);
 
   const signOut = useCallback((): void => {
+    // Tokens and session state stay in memory; workspace callers handle remote revocation first.
     setAccessToken(null);
     setSession(null);
   }, []);

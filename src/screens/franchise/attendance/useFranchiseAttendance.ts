@@ -16,6 +16,7 @@ export function useFranchiseAttendance({ storeId }: FranchiseAttendanceScreenPro
   const [employees, setEmployees] = useState<AttendanceEmployee[]>([]);
   const [records, setRecords] = useState<AttendanceRecord[]>([]);
   const [selectedDate, setSelectedDate] = useState(localDate(new Date()));
+  // Read the latest selected day after loading without making day navigation refetch the whole cycle.
   const selectedDateRef = useRef(selectedDate);
   selectedDateRef.current = selectedDate;
   const [employeeFilter, setEmployeeFilter] = useState('all');
@@ -48,6 +49,7 @@ export function useFranchiseAttendance({ storeId }: FranchiseAttendanceScreenPro
       if (!employeeResponse.ok) throw new Error(employeeData.message || t('adminLoadFailed'));
       if (!cycleResponse.ok || !cycleData.cycle) throw new Error(cycleData.message || t('adminLoadFailed'));
       const nextCycle = cycleData.cycle;
+      // Custom salary cycles may cross calendar months; load attendance for the server-resolved bounds.
       const attendanceQuery = new URLSearchParams({ storeId, from: nextCycle.from, to: nextCycle.to });
       const attendanceResponse = await apiRequest(`/attendance?${attendanceQuery.toString()}`, { signal });
       const attendanceData = await attendanceResponse.json().catch(() => ({})) as { records?: AttendanceRecord[]; message?: string; };
@@ -75,6 +77,7 @@ export function useFranchiseAttendance({ storeId }: FranchiseAttendanceScreenPro
   const periodDates = useMemo(() => cycle ? datesBetween(cycle.from, cycle.to) : [], [cycle]);
   const visibleEmployees = useMemo(() => employees
     .filter((employee) => employeeFilter === 'all' || employee._id === employeeFilter)
+    // Archived employees can still appear on dates before their exit.
     .filter((employee) => isActiveOn(employee, selectedDate))
     .sort((a, b) => a.name.localeCompare(b.name)), [employeeFilter, employees, selectedDate]);
   const dayRecords = records.filter((record) => record.date === selectedDate && (employeeFilter === 'all' || record.employeeId === employeeFilter));
@@ -98,6 +101,7 @@ export function useFranchiseAttendance({ storeId }: FranchiseAttendanceScreenPro
   };
   async function updateStatus(employee: AttendanceEmployee, status: AttendanceStatus) {
     const existing = records.find((record) => record.date === selectedDate && record.employeeId === employee._id);
+    // Serialize marks globally so rapid taps cannot issue overlapping status changes.
     if (existing?.status === status || updatingId) return;
     setUpdatingId(employee._id);
     try {

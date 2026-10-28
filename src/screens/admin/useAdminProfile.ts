@@ -113,6 +113,7 @@ export function useAdminProfile({ user: initialUser, onUserUpdated, onToast }: A
       const updated = { ...user, preferredLanguage: language };
       setUser(updated);
       onUserUpdated(updated);
+      // Switch the whole application's locale only after the preference is persisted successfully.
       setLanguage(language);
       return true;
     } catch (error) {
@@ -162,6 +163,7 @@ export function useAdminProfile({ user: initialUser, onUserUpdated, onToast }: A
         else setPasswordError(message);
         return;
       }
+      // Password changes revoke the previous session version; continue with the replacement token.
       if (data.token) setAccessToken(data.token);
       setCurrentPassword('');
       setNewPassword('');

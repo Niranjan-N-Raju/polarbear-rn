@@ -77,6 +77,7 @@ export function useAdminUsers({ onToast }: AdminUsersScreenProps) {
       setUsers((current) => append ? [...current, ...loadedUsers] : loadedUsers);
       setPageInfo(usersData.pagination ?? { page, totalPages: page, total: loadedUsers.length });
       initialLoadComplete.current = true;
+      // Retain store labels from earlier pages so existing selections remain identifiable.
       setStores((current) => {
         const options = new Map(current.map((store) => [store._id, store]));
         loadedUsers.forEach((user) => user.franchises.forEach((store) => options.set(store._id, store)));
@@ -133,6 +134,7 @@ export function useAdminUsers({ onToast }: AdminUsersScreenProps) {
     };
     setOpenFilter(null);
     setIsFilterDrawerOpen(false);
+    // A failed filter request must not relabel the still-visible results as a new query.
     if (!await load(1, filters)) return;
     setAppliedFilters(filters);
   }
@@ -207,6 +209,7 @@ export function useAdminUsers({ onToast }: AdminUsersScreenProps) {
       : [...form.franchiseIds, id]);
   }
   function updateRole(role: UserForm['role']): void {
+    // Sub-admins are not store-scoped; never carry old assignments into this role.
     setForm((current) => ({ ...current, role, franchiseIds: role === 'sub_admin' ? [] : current.franchiseIds }));
     if (role === 'sub_admin') setFieldErrors((current) => ({ ...current, franchiseIds: undefined }));
   }
