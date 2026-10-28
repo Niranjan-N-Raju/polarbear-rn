@@ -1,64 +1,48 @@
-import { useCallback,useEffect,useMemo,useState } from 'react';
-import { StyleSheet,useWindowDimensions } from 'react-native';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useWindowDimensions } from 'react-native';
 import { apiRequest } from '../../../api/auth';
 import { theme } from '../../../config/theme';
 import { t } from '../../../i18n';
-import { Banknote,Gift,IndianRupee,Wallet } from '../../../icons';
+import { Banknote, Gift, IndianRupee, Wallet } from '../../../icons';
 import { getAdminLayout } from '../../../utils/adminLayout';
 import { formatMoney } from '../DashboardCharts';
-import { type SalaryEntry,type SalaryEntryKind } from './SalaryEntryDrawer';
-export interface Projection {
-  employeeId: string; name: string; position: string; employmentType: string; salary: number;
-  paidDays: number; absentDays: number; weekOffDays: number; missingDays: number; futureDays: number; eligibleDays: number;
-  incentives: SalaryEntry[]; incentiveTotal: number; extraDays: SalaryEntry[]; extraDaysTotal: number;
-  advances: SalaryEntry[]; advanceTotal: number; earnedSalary: number; projectedSalary: number;
-}
-export interface SalaryData { store: { id: string; name: string }; cycle: { configured: boolean; type: 'calendar_month' | 'custom'; startDay: number; endDay: number; from: string; to: string; totalDays: number }; projections: Projection[] }
-export interface SlipData { periodLabel?: string; store?: { name?: string; address?: string; phone?: string }; employee?: Record<string, string>; attendance?: { totalWorkingDays?: number; presentDays?: number; weekOffDays?: number; absentDays?: number; extraDaysTotal?: number; extraDays?: Array<{ type: string; days: number }> }; earnings?: { basicSalary?: number; grossEarnings?: number }; deductions?: { advanceTotal?: number; totalDeductions?: number; advances?: Array<{ type: string; amount: number }> }; incentives?: Array<{ type: string; amount: number }>; incentiveTotal?: number; netPay?: number }
-export const todayPeriod = () => { const now = new Date(); return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`; };
+import { currentMonthValue as todayPeriod } from '../shared/months';
+import { type SalaryEntry, type SalaryEntryKind } from './SalaryEntryDrawer';
+import { Projection, SalaryData, SlipData } from './types';
 export const entryKinds: SalaryEntryKind[] = ['advances', 'incentives', 'extra-days'];
 export const kindLabel: Record<SalaryEntryKind, Parameters<typeof t>[0]> = { advances: 'franchiseSalaryAdvance', incentives: 'franchiseSalaryIncentive', 'extra-days': 'franchiseSalaryExtraDay' };
-export const salaryStyles = StyleSheet.create({
-  flexOne: { flex: 1 },
-  summary: { marginBottom: 12 }, employeeCard: { backgroundColor: theme.colors.white, borderColor: theme.colors.beige, borderWidth: 1, borderRadius: 14, padding: 15, marginBottom: 12, gap: 8 },
-  employeeHeader: { flexDirection: 'row', alignItems: 'flex-start', gap: 12 }, employeeName: { fontSize: 17, color: theme.colors.ink, fontWeight: '700' }, employeeMeta: { marginTop: 3, color: theme.colors.muted, fontSize: 12 }, netPay: { color: theme.colors.teal, fontWeight: '800', fontSize: 17 }, secondary: { color: theme.colors.muted, fontSize: 12 },
-  metrics: { flexDirection: 'row', gap: 8, marginVertical: 4 }, metric: { flex: 1, borderRadius: 10, backgroundColor: theme.colors.paleBackground, padding: 9 }, metricLabel: { color: theme.colors.muted, fontSize: 10 }, metricValue: { color: theme.colors.ink, fontSize: 12, fontWeight: '700', marginTop: 4 }, actions: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 }, actionButton: { flexDirection: 'row', gap: 4, alignItems: 'center', borderRadius: 8, backgroundColor: theme.colors.sand, paddingVertical: 7, paddingHorizontal: 9 }, actionText: { fontSize: 11, color: theme.colors.ink, fontWeight: '600' },
-  modalLabel: { fontSize: 13, color: theme.colors.ink, fontWeight: '700', marginBottom: 8 }, cycleButtons: { flexDirection: 'row', gap: 10, marginBottom: 14 }, cycleButton: { flex: 1, padding: 12, borderRadius: 10, backgroundColor: theme.colors.paleBackground, borderWidth: 1, borderColor: theme.colors.beige, alignItems: 'center' }, selectedCycle: { borderColor: theme.colors.teal, backgroundColor: theme.colors.ice }, cycleText: { color: theme.colors.ink, fontWeight: '600' },
-  detailTitle: { color: theme.colors.ink, fontWeight: '700', fontSize: 15, marginTop: 12, marginBottom: 8 }, detailLine: { flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 8, borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: theme.colors.beige }, detailEntries: { gap: 7 }, entryRow: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 7 }, entryText: { flex: 1, color: theme.colors.ink, fontSize: 12 }, link: { color: theme.colors.teal, fontWeight: '700', fontSize: 12 }, danger: { color: theme.colors.error, fontWeight: '700', fontSize: 12 }, slipButton: { marginTop: 16, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8 }, slip: { marginTop: 12, padding: 12, backgroundColor: theme.colors.paleBackground, borderRadius: 10, gap: 6 }, slipNet: { color: theme.colors.teal, fontWeight: '800', marginTop: 3 },
-});
-
-export function useFranchiseSalary({ storeId }: { storeId: string }) {
-const { width } = useWindowDimensions();
-const layout = getAdminLayout(width);
-const [period, setPeriod] = useState(todayPeriod);
-const [data, setData] = useState<SalaryData | null>(null);
-const [isLoading, setIsLoading] = useState(true);
-const [error, setError] = useState<string | null>(null);
-const [reloadKey, setReloadKey] = useState(0);
-const [isCycleOpen, setIsCycleOpen] = useState(false);
-const [cycleType, setCycleType] = useState<'calendar_month' | 'custom'>('calendar_month');
-const [startDay, setStartDay] = useState('2');
-const [cycleError, setCycleError] = useState<string | null>(null);
-const [savingCycle, setSavingCycle] = useState(false);
-const [selectedEmployee, setSelectedEmployee] = useState<Projection | null>(null);
-const [slip, setSlip] = useState<SlipData | null>(null);
-const [slipBusy, setSlipBusy] = useState(false);
-const [queuedDrawerAction, setQueuedDrawerAction] = useState<{ type: 'entry'; employeeId: string; kind: SalaryEntryKind; entry: SalaryEntry | null } | { type: 'delete'; employeeId: string; kind: SalaryEntryKind; entry: SalaryEntry } | null>(null);
-const [entryRequest, setEntryRequest] = useState<{ employeeId: string; kind: SalaryEntryKind; entry: SalaryEntry | null } | null>(null);
-const [deleteRequest, setDeleteRequest] = useState<{ employeeId: string; kind: SalaryEntryKind; entry: SalaryEntry } | null>(null);
-const [busyDelete, setBusyDelete] = useState(false);
-const [toast, setToast] = useState<string | null>(null);
-const [pendingToast, setPendingToast] = useState('');
-const [deleteError, setDeleteError] = useState<string | null>(null);
-const reload = useCallback(() => setReloadKey((current) => current + 1), []);
-useEffect(() => {
+export function useFranchiseSalary({ storeId }: { storeId: string; }) {
+  const { width } = useWindowDimensions();
+  const layout = getAdminLayout(width);
+  const [period, setPeriod] = useState(todayPeriod);
+  const [data, setData] = useState<SalaryData | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [reloadKey, setReloadKey] = useState(0);
+  const [isCycleOpen, setIsCycleOpen] = useState(false);
+  const [cycleType, setCycleType] = useState<'calendar_month' | 'custom'>('calendar_month');
+  const [startDay, setStartDay] = useState('2');
+  const [cycleError, setCycleError] = useState<string | null>(null);
+  const [savingCycle, setSavingCycle] = useState(false);
+  const [selectedEmployee, setSelectedEmployee] = useState<Projection | null>(null);
+  const [slip, setSlip] = useState<SlipData | null>(null);
+  const [slipBusy, setSlipBusy] = useState(false);
+  const [queuedDrawerAction, setQueuedDrawerAction] = useState<{ type: 'entry'; employeeId: string; kind: SalaryEntryKind; entry: SalaryEntry | null; } | { type: 'delete'; employeeId: string; kind: SalaryEntryKind; entry: SalaryEntry; } | null>(null);
+  const [entryRequest, setEntryRequest] = useState<{ employeeId: string; kind: SalaryEntryKind; entry: SalaryEntry | null; } | null>(null);
+  const [deleteRequest, setDeleteRequest] = useState<{ employeeId: string; kind: SalaryEntryKind; entry: SalaryEntry; } | null>(null);
+  const [busyDelete, setBusyDelete] = useState(false);
+  const [toast, setToast] = useState<string | null>(null);
+  const [pendingToast, setPendingToast] = useState('');
+  const [deleteError, setDeleteError] = useState<string | null>(null);
+  const reload = useCallback(() => setReloadKey((current) => current + 1), []);
+  useEffect(() => {
     const controller = new AbortController();
     let active = true;
     setIsLoading(true); setError(null);
     const query = new URLSearchParams({ storeId, period });
     apiRequest(`/salary?${query.toString()}`, { signal: controller.signal })
       .then(async (response) => {
-        const result = await response.json().catch(() => ({})) as SalaryData & { message?: string };
+        const result = await response.json().catch(() => ({})) as SalaryData & { message?: string; };
         if (!active) return;
         if (!response.ok) { setError(result.message ?? t('adminLoadFailed')); return; }
         setData(result); setCycleType(result.cycle.type); setStartDay(String(result.cycle.startDay));
@@ -67,51 +51,91 @@ useEffect(() => {
       .finally(() => { if (active) setIsLoading(false); });
     return () => { active = false; controller.abort(); };
   }, [storeId, period, reloadKey]);
-const projections = useMemo(() => data?.projections ?? [], [data]);
-const totals = useMemo(() => projections.reduce((sum, item) => ({ base: sum.base + item.salary, earned: sum.earned + item.earnedSalary, projected: sum.projected + item.projectedSalary, incentives: sum.incentives + item.incentiveTotal }), { base: 0, earned: 0, projected: 0, incentives: 0 }), [projections]);
-const cards = [
+  const projections = useMemo(() => data?.projections ?? [], [data]);
+  const totals = useMemo(() => projections.reduce((sum, item) => ({ base: sum.base + item.salary, earned: sum.earned + item.earnedSalary, projected: sum.projected + item.projectedSalary, incentives: sum.incentives + item.incentiveTotal }), { base: 0, earned: 0, projected: 0, incentives: 0 }), [projections]);
+  const cards = [
     { label: t('franchiseSalaryBase'), value: formatMoney(totals.base), color: theme.colors.teal, Icon: IndianRupee },
     { label: t('franchiseSalaryEarned'), value: formatMoney(totals.earned), color: theme.colors.orange, Icon: Wallet },
     { label: t('franchiseSalaryProjected'), value: formatMoney(totals.projected), color: theme.colors.teal, Icon: Banknote },
     { label: t('franchiseSalaryIncentivesTotal'), value: formatMoney(totals.incentives), color: theme.colors.orange, Icon: Gift },
   ];
-const summaryRows = layout.desktopWeb ? [cards] : [cards.slice(0, 2), cards.slice(2)];
-const openSlip = async (employee: Projection) => {
+  const summaryRows = layout.desktopWeb ? [cards] : [cards.slice(0, 2), cards.slice(2)];
+  const openSlip = async (employee: Projection) => {
     setSelectedEmployee(employee); setSlip(null); setSlipBusy(true);
     try {
       const query = new URLSearchParams({ storeId, employeeId: employee.employeeId, period });
       const response = await apiRequest(`/salary/slip?${query.toString()}`);
-      const result = await response.json().catch(() => ({})) as SlipData & { message?: string };
+      const result = await response.json().catch(() => ({})) as SlipData & { message?: string; };
       if (!response.ok) { setToast(result.message ?? t('franchiseSalarySlipFailed')); return; }
       setSlip(result);
     } catch { setToast(t('adminNetworkError')); }
     finally { setSlipBusy(false); }
   };
-const saveCycle = async () => {
+  const saveCycle = async () => {
     const day = Number(startDay);
     if (cycleType === 'custom' && (!Number.isInteger(day) || day < 2 || day > 28)) { setCycleError(t('franchiseSalaryCycleDayError')); return; }
     setSavingCycle(true); setCycleError(null);
     try {
       const response = await apiRequest('/salary', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ storeId, cycleType, ...(cycleType === 'custom' ? { startDay: day } : {}) }) });
-      const result = await response.json().catch(() => ({})) as { message?: string };
+      const result = await response.json().catch(() => ({})) as { message?: string; };
       if (!response.ok) { setCycleError(result.message ?? t('adminSaveFailed')); return; }
       setIsCycleOpen(false); setToast(result.message ?? t('franchiseSalaryCycleSaved')); reload();
     } catch { setCycleError(t('adminNetworkError')); }
     finally { setSavingCycle(false); }
   };
-const removeEntry = async () => {
+  const removeEntry = async () => {
     if (!deleteRequest) return;
     setBusyDelete(true);
     try {
       const response = await apiRequest("/" + deleteRequest.kind + "/" + encodeURIComponent(deleteRequest.entry.id) + "?storeId=" + encodeURIComponent(storeId), { method: "DELETE" });
 
-      const result = await response.json().catch(() => ({})) as { message?: string };
+      const result = await response.json().catch(() => ({})) as { message?: string; };
       if (!response.ok) { setDeleteError(result.message ?? t('adminSaveFailed')); return; }
       setDeleteRequest(null); setPendingToast(result.message ?? t('franchiseSalaryEntryRemoved')); setDeleteError(null); reload();
       setSelectedEmployee((current) => current?.employeeId === deleteRequest.employeeId ? null : current);
     } catch { setToast(t('adminNetworkError')); }
     finally { setBusyDelete(false); }
   };
-const findEntry = (employee: Projection, kind: SalaryEntryKind) => kind === 'advances' ? employee.advances : kind === 'incentives' ? employee.incentives : employee.extraDays;
-return { layout, period, setPeriod, data, isLoading, error, isCycleOpen, setIsCycleOpen, cycleType, setCycleType, startDay, setStartDay, cycleError, savingCycle, selectedEmployee, setSelectedEmployee, slip, setSlip, slipBusy, queuedDrawerAction, setQueuedDrawerAction, entryRequest, setEntryRequest, deleteRequest, setDeleteRequest, busyDelete, toast, setToast, pendingToast, setPendingToast, deleteError, setDeleteError, reload, projections, summaryRows, openSlip, saveCycle, removeEntry, findEntry };
+  const findEntry = (employee: Projection, kind: SalaryEntryKind) => kind === 'advances' ? employee.advances : kind === 'incentives' ? employee.incentives : employee.extraDays;
+  return {
+    layout,
+    period,
+    setPeriod,
+    data,
+    isLoading,
+    error,
+    isCycleOpen,
+    setIsCycleOpen,
+    cycleType,
+    setCycleType,
+    startDay,
+    setStartDay,
+    cycleError,
+    savingCycle,
+    selectedEmployee,
+    setSelectedEmployee,
+    slip,
+    setSlip,
+    slipBusy,
+    queuedDrawerAction,
+    setQueuedDrawerAction,
+    entryRequest,
+    setEntryRequest,
+    deleteRequest,
+    setDeleteRequest,
+    busyDelete,
+    toast,
+    setToast,
+    pendingToast,
+    setPendingToast,
+    deleteError,
+    setDeleteError,
+    reload,
+    projections,
+    summaryRows,
+    openSlip,
+    saveCycle,
+    removeEntry,
+    findEntry,
+  };
 }

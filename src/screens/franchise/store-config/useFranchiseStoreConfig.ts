@@ -1,9 +1,8 @@
-import { useCallback,useEffect,useState } from 'react';
-import { StyleSheet } from 'react-native';
+import { useCallback, useEffect, useState } from 'react';
 import { apiRequest } from '../../../api/auth';
-import { theme } from '../../../config/theme';
 import { t } from '../../../i18n';
-import { type StoreConfigPayload,type StoreConfigSection,type StoreConfigValues,type StoreShift } from './StoreConfigDrawer';
+import { currentMonthValue as currentPeriod } from '../shared/months';
+import { type StoreConfigPayload, type StoreConfigSection, type StoreConfigValues, type StoreShift } from './StoreConfigDrawer';
 export const initial: StoreConfigValues = { name: '', hasLogo: false, configured: false, cycleType: 'calendar_month', startDay: 1, endDay: 31, positions: [], shifts: [] };
 export function bytesToBase64(bytes: Uint8Array) {
   const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
@@ -19,33 +18,15 @@ export function bytesToBase64(bytes: Uint8Array) {
   }
   return result;
 }
-export function currentPeriod() {
-  const now = new Date();
-  return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
-}
-export const localStyles = StyleSheet.create({
-  list: { padding: theme.spacing.lg, gap: theme.spacing.md, paddingBottom: theme.spacing['3xl'] },
-  hero: { backgroundColor: theme.colors.white, borderWidth: 1, borderColor: theme.colors.beige, padding: theme.spacing.lg, marginBottom: theme.spacing.xs },
-  title: { color: theme.colors.ink, fontSize: theme.typography.xl, fontWeight: theme.fontWeight.bold },
-  subtitle: { color: theme.colors.muted, marginTop: theme.spacing.xs },
-  card: { flexDirection: 'row', alignItems: 'center', gap: theme.spacing.md, backgroundColor: theme.colors.white, borderWidth: 1, borderColor: theme.colors.beige, padding: theme.spacing.md, minHeight: 78 },
-  icon: { width: 42, height: 42, alignItems: 'center', justifyContent: 'center', backgroundColor: theme.colors.ice },
-  cardText: { flex: 1, minWidth: 0 },
-  cardTitle: { color: theme.colors.ink, fontWeight: theme.fontWeight.medium },
-  cardSummary: { color: theme.colors.muted, fontSize: theme.typography.xs, marginTop: theme.spacing.xs },
-  edit: { color: theme.colors.orange, fontSize: theme.typography.xs, fontWeight: theme.fontWeight.medium },
-  logo: { width: 40, height: 40, backgroundColor: theme.colors.sand },
-});
-
-export function useFranchiseStoreConfig({ storeId }: { storeId: string }) {
-const [value, setValue] = useState(initial);
-const [logoUri, setLogoUri] = useState<string | null>(null);
-const [loading, setLoading] = useState(true);
-const [busy, setBusy] = useState(false);
-const [section, setSection] = useState<StoreConfigSection | null>(null);
-const [toast, setToast] = useState<{ message: string; tone: 'success' | 'error' } | null>(null);
-const [loadError, setLoadError] = useState<string | null>(null);
-const loadConfig = useCallback(async () => {
+export function useFranchiseStoreConfig({ storeId }: { storeId: string; }) {
+  const [value, setValue] = useState(initial);
+  const [logoUri, setLogoUri] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [busy, setBusy] = useState(false);
+  const [section, setSection] = useState<StoreConfigSection | null>(null);
+  const [toast, setToast] = useState<{ message: string; tone: 'success' | 'error'; } | null>(null);
+  const [loadError, setLoadError] = useState<string | null>(null);
+  const loadConfig = useCallback(async () => {
     if (!storeId) { setLoading(false); return; }
     setLoading(true);
     setLoadError(null);
@@ -58,7 +39,7 @@ const loadConfig = useCallback(async () => {
       ];
       const responses = await Promise.all(paths.map((path) => apiRequest(path)));
       const results = await Promise.all(responses.map(async (response) => {
-        const data = await response.json() as { message?: string; store?: { name?: string; hasLogo?: boolean }; cycle?: { configured?: boolean; type?: StoreConfigValues['cycleType']; startDay?: number; endDay?: number }; positions?: string[]; shifts?: StoreShift[] };
+        const data = await response.json() as { message?: string; store?: { name?: string; hasLogo?: boolean; }; cycle?: { configured?: boolean; type?: StoreConfigValues['cycleType']; startDay?: number; endDay?: number; }; positions?: string[]; shifts?: StoreShift[]; };
         if (!response.ok) throw new Error(data.message ?? t('franchiseStoreConfigLoadFailed'));
         return data;
       }));
@@ -79,8 +60,8 @@ const loadConfig = useCallback(async () => {
       setLoading(false);
     }
   }, [storeId]);
-useEffect(() => { loadConfig(); }, [loadConfig]);
-useEffect(() => {
+  useEffect(() => { loadConfig(); }, [loadConfig]);
+  useEffect(() => {
     let current = true;
     if (!value.hasLogo || !storeId) { setLogoUri(null); return () => { current = false; }; }
     apiRequest(`/stores/logo?storeId=${encodeURIComponent(storeId)}`).then(async (response) => {
@@ -91,12 +72,12 @@ useEffect(() => {
     }).catch(() => { if (current) setLogoUri(null); });
     return () => { current = false; };
   }, [storeId, value.hasLogo]);
-const save = useCallback(async (sectionToSave: StoreConfigSection, payload: StoreConfigPayload) => {
+  const save = useCallback(async (sectionToSave: StoreConfigSection, payload: StoreConfigPayload) => {
     const path = sectionToSave === 'branding' ? '/stores/branding' : `/stores/${sectionToSave}`;
     setBusy(true);
     try {
       const response = await apiRequest(path, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ storeId, ...payload }) });
-      const result = await response.json() as { message?: string };
+      const result = await response.json() as { message?: string; };
       if (!response.ok) throw new Error(result.message ?? t('franchiseStoreConfigSaveFailed'));
       setSection(null);
       setToast({ message: result.message ?? t('franchiseStoreConfigSaved'), tone: 'success' });
@@ -105,11 +86,11 @@ const save = useCallback(async (sectionToSave: StoreConfigSection, payload: Stor
       setToast({ message: error instanceof Error ? error.message : t('franchiseStoreConfigSaveFailed'), tone: 'error' });
     } finally { setBusy(false); }
   }, [loadConfig, storeId]);
-const removeLogo = useCallback(async () => {
+  const removeLogo = useCallback(async () => {
     setBusy(true);
     try {
       const response = await apiRequest(`/stores/logo?storeId=${encodeURIComponent(storeId)}`, { method: 'DELETE' });
-      const result = await response.json() as { message?: string };
+      const result = await response.json() as { message?: string; };
       if (!response.ok) throw new Error(result.message ?? t('franchiseStoreConfigSaveFailed'));
       setSection(null);
       setValue((current) => ({ ...current, hasLogo: false }));
@@ -119,5 +100,18 @@ const removeLogo = useCallback(async () => {
       setToast({ message: error instanceof Error ? error.message : t('franchiseStoreConfigSaveFailed'), tone: 'error' });
     } finally { setBusy(false); }
   }, [storeId]);
-return { value, logoUri, loading, busy, section, setSection, toast, setToast, loadError, loadConfig, save, removeLogo };
+  return {
+    value,
+    logoUri,
+    loading,
+    busy,
+    section,
+    setSection,
+    toast,
+    setToast,
+    loadError,
+    loadConfig,
+    save,
+    removeLogo,
+  };
 }

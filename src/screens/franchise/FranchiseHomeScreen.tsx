@@ -1,10 +1,10 @@
-import { Modal,Pressable,ScrollView,Text,View } from 'react-native';
+import { Modal, Pressable, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { AppLoader } from '../../components/AppLoader';
 import { ResponsiveDrawerModal } from '../../components/ResponsiveDrawerModal';
 import { theme } from '../../config/theme';
 import { t } from '../../i18n';
-import { ChevronsLeft,LogOut,Menu,RefreshCw,Store,UsersRound,X } from '../../icons';
+import { ChevronsLeft, LogOut, Menu, RefreshCw, Store, UsersRound, X } from '../../icons';
 import { AdminProfileScreen } from '../admin/AdminProfileScreen';
 import { FranchiseAttendanceScreen } from './attendance/FranchiseAttendanceScreen';
 import { FranchiseEmployeesScreen } from './employees/FranchiseEmployeesScreen';
@@ -12,18 +12,43 @@ import { FranchiseDashboardScreen } from './FranchiseDashboardScreen';
 import { FranchiseMenuGroup } from './FranchiseMenuGroup';
 import { franchiseStyles as styles } from './franchiseStyles';
 import { FranchiseInventoryScreen } from './inventory/FranchiseInventoryScreen';
+import { menuGroups, menuIcons, type MenuItem } from './navigation';
 import { FranchisePnlScreen } from './pnl/FranchisePnlScreen';
 import { FranchiseSalaryScreen } from './salary/FranchiseSalaryScreen';
 import { FranchiseSalesScreen } from './sales/FranchiseSalesScreen';
 import { FranchiseStoreConfigScreen } from './store-config/FranchiseStoreConfigScreen';
 import { StorePicker } from './StorePicker';
-import { menuGroups,menuIcons,useFranchiseHome,type FranchiseHomeScreenProps,type MenuItem } from './useFranchiseHome';
+import { useFranchiseHome, type FranchiseHomeScreenProps } from './useFranchiseHome';
 import { FranchiseWithdrawalsScreen } from './withdrawals/FranchiseWithdrawalsScreen';
 
 
 export function FranchiseHomeScreen({ user: initialUser, onLogout }: FranchiseHomeScreenProps) {
-const { hasSidebar, pickerPanelStyle, user, setUser, stores, activeStore, loading, error, isLoggingOut, setVersion, pickerOpen, setPickerOpen, drawerOpen, setDrawerOpen, collapsed, setCollapsed, tab, expandedGroup, setExpandedGroup, currentLabel, selectStore, navigate, logout } = useFranchiseHome({ user: initialUser, onLogout });
-function renderNavItem(item: MenuItem) {
+  const {
+    hasSidebar,
+    pickerPanelStyle,
+    user,
+    setUser,
+    stores,
+    activeStore,
+    loading,
+    error,
+    isLoggingOut,
+    setVersion,
+    pickerOpen,
+    setPickerOpen,
+    drawerOpen,
+    setDrawerOpen,
+    collapsed,
+    setCollapsed,
+    tab,
+    expandedGroup,
+    setExpandedGroup,
+    currentLabel,
+    selectStore,
+    navigate,
+    logout,
+  } = useFranchiseHome({ user: initialUser, onLogout });
+  function renderNavItem(item: MenuItem) {
     const Icon = menuIcons[item.key];
     const active = tab === item.key;
     const compact = hasSidebar && collapsed;
@@ -51,7 +76,7 @@ function renderNavItem(item: MenuItem) {
       </Pressable>
     );
   }
-function renderNavigation() {
+  function renderNavigation() {
     const compact = hasSidebar && collapsed;
     return (
       <SafeAreaView edges={hasSidebar ? [] : ['top', 'bottom', 'left']} style={[styles.sidebar, !hasSidebar && styles.drawerPanel, compact && styles.sidebarCollapsed]}>
@@ -107,7 +132,7 @@ function renderNavigation() {
       </SafeAreaView>
     );
   }
-if (loading || error || !activeStore) {
+  if (loading || error || !activeStore) {
     return (
       <SafeAreaView style={styles.root}>
         {loading ? <AppLoader /> : error || stores.length === 0 ? (
@@ -130,7 +155,7 @@ if (loading || error || !activeStore) {
       </SafeAreaView>
     );
   }
-return (
+  return (
     <SafeAreaView style={[styles.root, hasSidebar && styles.wideRoot]}>
       {hasSidebar ? renderNavigation() : null}
       <View style={styles.main}>

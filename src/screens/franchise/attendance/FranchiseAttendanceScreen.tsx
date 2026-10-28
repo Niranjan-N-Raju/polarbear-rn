@@ -1,4 +1,4 @@
-import { Pressable,ScrollView,Text,View } from 'react-native';
+import { Pressable, ScrollView, Text, View } from 'react-native';
 import { AppErrorState } from '../../../components/AppErrorState';
 import { AppLoader } from '../../../components/AppLoader';
 import { AppToast } from '../../../components/AppToast';
@@ -7,17 +7,45 @@ import { ResponsiveDrawerModal } from '../../../components/ResponsiveDrawerModal
 import { SummaryCards } from '../../../components/SummaryCards';
 import { theme } from '../../../config/theme';
 import { t } from '../../../i18n';
-import { CalendarDays,Filter } from '../../../icons';
+import { CalendarDays, Filter } from '../../../icons';
 import { adminStyles as styles } from '../../../styles/adminStyles';
 import { MonthStepper } from '../shared/MonthStepper';
 import { attendanceStyles as local } from './attendanceStyles';
-import { dateLabel,statuses,statusLabelKey,useFranchiseAttendance,type FranchiseAttendanceScreenProps } from './useFranchiseAttendance';
+import { dateLabel, statuses, statusLabelKey } from './attendanceUtils';
+import { useFranchiseAttendance, type FranchiseAttendanceScreenProps } from './useFranchiseAttendance';
 import { WeeklyRosterDrawer } from './WeeklyRosterDrawer';
-export { type AttendanceEmployee } from './useFranchiseAttendance';
+export { type AttendanceEmployee } from './attendanceUtils';
 
 export function FranchiseAttendanceScreen({ storeId }: FranchiseAttendanceScreenProps) {
-const { layout, period, setPeriod, cycle, employees, records, selectedDate, setSelectedDate, employeeFilter, setEmployeeFilter, loading, error, setReloadKey, updatingId, drawer, setDrawer, toast, setToast, toastTone, setToastTone, periodDates, visibleEmployees, summaryCards, changeDate, updateStatus, removeRecord } = useFranchiseAttendance({ storeId });
-return (
+  const {
+    layout,
+    period,
+    setPeriod,
+    cycle,
+    employees,
+    records,
+    selectedDate,
+    setSelectedDate,
+    employeeFilter,
+    setEmployeeFilter,
+    loading,
+    error,
+    setReloadKey,
+    updatingId,
+    drawer,
+    setDrawer,
+    toast,
+    setToast,
+    toastTone,
+    setToastTone,
+    periodDates,
+    visibleEmployees,
+    summaryCards,
+    changeDate,
+    updateStatus,
+    removeRecord,
+  } = useFranchiseAttendance({ storeId });
+  return (
     <View style={styles.screen}>
       <View style={[styles.screenHeader, layout.desktopWeb && styles.screenHeaderInline, layout.compactWeb && styles.screenHeaderStack]}>
         <View style={layout.isWeb ? styles.screenHeaderCopy : styles.screenHeaderCopyNative}>

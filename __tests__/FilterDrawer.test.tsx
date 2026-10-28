@@ -40,4 +40,20 @@ describe('FilterDrawer', () => {
     expect(clear.props.accessibilityState).toEqual({ disabled: true });
     act(() => renderer.unmount());
   });
+
+  it('supports feature-specific labels without imposing a fixed panel height', () => {
+    const onClear = jest.fn();
+    const onApply = jest.fn();
+    const renderer = renderSafeArea(
+      <FilterDrawer visible title="Employees" clearLabel="Clear employee filters" applyLabel="Apply employee filters" onClose={jest.fn()} onClear={onClear} onApply={onApply}>
+        <Text>Employee fields</Text>
+      </FilterDrawer>,
+    );
+    expect(renderer.root.findByType(ResponsiveDrawerModal).props.panelStyle).toBeUndefined();
+    act(() => buttons(renderer).find((button) => button.props.children?.props?.children === 'Clear employee filters')!.props.onPress());
+    act(() => buttons(renderer).find((button) => button.props.children?.props?.children === 'Apply employee filters')!.props.onPress());
+    expect(onClear).toHaveBeenCalledTimes(1);
+    expect(onApply).toHaveBeenCalledTimes(1);
+    act(() => renderer.unmount());
+  });
 });
