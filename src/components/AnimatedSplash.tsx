@@ -2,14 +2,19 @@ import { useCallback, useEffect, useRef } from 'react';
 import type { ComponentType } from 'react';
 import { Animated, Image, StyleSheet, TurboModuleRegistry } from 'react-native';
 import BootSplash from 'react-native-bootsplash';
-import type { WebViewProps } from 'react-native-webview';
+import type { WebViewMessageEvent, WebViewProps } from 'react-native-webview';
 import manifest from '../../assets/bootsplash/manifest.json';
 import { SPLASH_SVG } from '../assets/splashSvg';
 
 export const MIN_SPLASH_MS = 4000;
 export const SPLASH_LOGO_WIDTH = 320;
+// If the WebView never reports its first paint, stop waiting this long after it finished loading.
+export const PAINT_FALLBACK_MS = 1000;
+export const PAINTED_MESSAGE = 'splash-painted';
 
 // react-native-svg can't run the SVG's CSS @keyframes, so the exact SVG is rendered in a WebView.
+// The inline script reports after two animation frames, i.e. once the SVG has actually been drawn;
+// "load end" alone fires before the first paint and would expose the WebView's empty background.
 export const SPLASH_HTML = `<!DOCTYPE html><html><head>
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 <style>
@@ -21,7 +26,7 @@ svg{width:min(${SPLASH_LOGO_WIDTH}px,80vw);height:auto;display:block}
 </style></head><body>${SPLASH_SVG.replace(
   /^<\?xml[^>]*\?>\s*/,
   '',
-)}</body></html>`;
+)}<script>requestAnimationFrame(function(){requestAnimationFrame(function(){window.ReactNativeWebView&&window.ReactNativeWebView.postMessage('${PAINTED_MESSAGE}')})})</script></body></html>`;
 
 type Props = { onFinish: () => void };
 
@@ -64,6 +69,29 @@ export function AnimatedSplash({ onFinish }: Props) {
     }
   }, [WebView, hideLaunchScreen]);
 
+  const paintFallback = useRef<ReturnType<typeof setTimeout> | null>(null);
+  useEffect(
+    () => () => {
+      if (paintFallback.current) {
+        clearTimeout(paintFallback.current);
+      }
+    },
+    [],
+  );
+  const onWebViewLoadEnd = useCallback(() => {
+    if (!paintFallback.current) {
+      paintFallback.current = setTimeout(hideLaunchScreen, PAINT_FALLBACK_MS);
+    }
+  }, [hideLaunchScreen]);
+  const onWebViewMessage = useCallback(
+    (event: WebViewMessageEvent) => {
+      if (event.nativeEvent.data === PAINTED_MESSAGE) {
+        hideLaunchScreen();
+      }
+    },
+    [hideLaunchScreen],
+  );
+
   useEffect(() => {
     const timer = setTimeout(() => {
       hideLaunchScreen();
@@ -95,8 +123,10 @@ export function AnimatedSplash({ onFinish }: Props) {
           bounces={false}
           showsVerticalScrollIndicator={false}
           showsHorizontalScrollIndicator={false}
-          javaScriptEnabled={false}
-          onLoadEnd={hideLaunchScreen}
+          // Script only posts the first-paint signal; the HTML is static and bundled with the app.
+          javaScriptEnabled
+          onMessage={onWebViewMessage}
+          onLoadEnd={onWebViewLoadEnd}
           onError={hideLaunchScreen}
         />
       ) : (

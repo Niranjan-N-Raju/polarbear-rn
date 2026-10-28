@@ -3,19 +3,22 @@ import path from 'path';
 import React from 'react';
 import ReactTestRenderer from 'react-test-renderer';
 import BootSplash from 'react-native-bootsplash';
-import { AnimatedSplash, MIN_SPLASH_MS, SPLASH_HTML } from '../src/components/AnimatedSplash';
+import { AnimatedSplash, MIN_SPLASH_MS, PAINT_FALLBACK_MS, PAINTED_MESSAGE, SPLASH_HTML } from '../src/components/AnimatedSplash';
 import { SPLASH_SVG } from '../src/assets/splashSvg';
 
 describe('AnimatedSplash (native)', () => {
+  beforeEach(() => jest.mocked(BootSplash.hide).mockClear());
+
   test('embeds the exact public/splash-screen.svg (run scripts/sync-splash-svg.js if this fails)', () => {
     const svg = fs.readFileSync(path.join(__dirname, '../public/splash-screen.svg'), 'utf8');
     expect(SPLASH_SVG).toBe(svg);
   });
 
-  test('renders the SVG with its own CSS animations in a WebView', async () => {
+  test('keeps the launch screen until the WebView reports its first paint (no blank flash)', async () => {
     expect(SPLASH_HTML).toContain('@keyframes');
     expect(SPLASH_HTML).toContain('<svg');
     expect(SPLASH_HTML).not.toContain('<?xml');
+    expect(SPLASH_HTML).toContain(PAINTED_MESSAGE);
 
     let renderer!: ReactTestRenderer.ReactTestRenderer;
     await ReactTestRenderer.act(() => {
@@ -23,8 +26,35 @@ describe('AnimatedSplash (native)', () => {
     });
     const webview = renderer.root.findByProps({ testID: 'animated-splash-webview' });
     expect(webview.props.source).toEqual({ html: SPLASH_HTML });
+    // The mock fires onLoadEnd on mount; that alone must not reveal the empty WebView.
+    expect(BootSplash.hide).not.toHaveBeenCalled();
+
+    await ReactTestRenderer.act(() => {
+      webview.props.onMessage({ nativeEvent: { data: 'something-else' } });
+    });
+    expect(BootSplash.hide).not.toHaveBeenCalled();
+
+    await ReactTestRenderer.act(() => {
+      webview.props.onMessage({ nativeEvent: { data: PAINTED_MESSAGE } });
+    });
+    expect(BootSplash.hide).toHaveBeenCalledTimes(1);
     expect(BootSplash.hide).toHaveBeenCalledWith({ fade: false });
     ReactTestRenderer.act(() => renderer.unmount());
+  });
+
+  test('hides the launch screen after a fallback delay if the paint signal never arrives', async () => {
+    jest.useFakeTimers();
+    let renderer!: ReactTestRenderer.ReactTestRenderer;
+    await ReactTestRenderer.act(() => {
+      renderer = ReactTestRenderer.create(<AnimatedSplash onFinish={jest.fn()} />);
+    });
+    expect(BootSplash.hide).not.toHaveBeenCalled();
+    await ReactTestRenderer.act(() => {
+      jest.advanceTimersByTime(PAINT_FALLBACK_MS);
+    });
+    expect(BootSplash.hide).toHaveBeenCalledTimes(1);
+    ReactTestRenderer.act(() => renderer.unmount());
+    jest.useRealTimers();
   });
 
   test('falls back to the static logo when the WebView native module is missing', async () => {
