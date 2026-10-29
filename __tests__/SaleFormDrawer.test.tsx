@@ -5,7 +5,6 @@ import * as authApi from '../src/api/auth';
 import { t } from '../src/i18n';
 import { localDateValue } from '../src/screens/franchise/dashboardDates';
 import { SaleFormDrawer } from '../src/screens/franchise/sales/SaleFormDrawer';
-import { nextDay } from '../src/screens/franchise/sales/utils';
 import type { SaleRecord } from '../src/screens/franchise/types';
 import { buttonByLabel, buttons, containsText, flushEffects, renderSafeArea, response } from './testUtils';
 
@@ -55,7 +54,7 @@ describe('SaleFormDrawer', () => {
     act(() => renderer.unmount());
   });
 
-  it('validates required fields, manages expenses, and posts a new sale with save & next day', async () => {
+  it('validates required fields, manages expenses, and posts a new sale without advancing its date', async () => {
     const api = jest.spyOn(authApi, 'apiRequest').mockResolvedValue(response(201, {}));
     const onSaved = jest.fn();
     const renderer = renderSafeArea(
@@ -78,14 +77,13 @@ describe('SaleFormDrawer', () => {
     act(() => buttonByLabel(renderer, t('franchiseSaveExpense')).props.onPress());
     expect(renderer.root.findAllByProps({ accessibilityLabel: t('franchiseDeleteExpense', { name: 'Milk' }) }).length).toBeGreaterThan(0);
 
-    pressText(renderer, t('franchiseSaveAddNextDay'));
+    pressText(renderer, t('franchiseSaveSale'));
     await flushEffects();
     expect(api).toHaveBeenCalledWith('/sales', expect.objectContaining({ method: 'POST' }));
     const body = JSON.parse(api.mock.calls[0][1]!.body as string);
     expect(body).toMatchObject({ storeId: 'store-1', date: yesterday, totalSale: 1000, swiggy: 100, zomato: 50, upi: 200, upiCharge: 2, expenses: [{ name: 'Milk', amount: 40 }] });
-    expect(onSaved).toHaveBeenCalledWith(t('franchiseSaleSaved'), true);
-    expect(renderer.root.findByType(DateInput).props.value).toBe(nextDay(yesterday));
-    expect(renderer.root.findAllByProps({ message: t('franchiseSaleSaved') }).length).toBeGreaterThan(0);
+    expect(onSaved).toHaveBeenCalledWith(t('franchiseSaleSaved'));
+    expect(renderer.root.findByType(DateInput).props.value).toBe(yesterday);
     act(() => renderer.unmount());
   });
 
@@ -99,7 +97,7 @@ describe('SaleFormDrawer', () => {
     const renderer = renderSafeArea(
       <SaleFormDrawer visible storeId="store-1" editingSale={sale} existingDates={[today]} onClose={jest.fn()} onSaved={onSaved} />,
     );
-    expect(buttons(renderer).some((node) => containsText(node.props.children, t('franchiseSaveAddNextDay')))).toBe(false);
+    expect(buttons(renderer).some((node) => containsText(node.props.children, t('adminSaveChanges')))).toBe(true);
     pressText(renderer, t('adminSaveChanges'));
     await flushEffects();
     expect(api).toHaveBeenCalledWith('/sales/sale-1', expect.objectContaining({ method: 'PUT' }));

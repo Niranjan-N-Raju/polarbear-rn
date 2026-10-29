@@ -99,12 +99,6 @@ export function validateSaleForm(
   return errors;
 }
 
-export function nextDay(date: string): string {
-  const value = new Date(`${date}T00:00:00`);
-  value.setDate(value.getDate() + 1);
-  return localDateValue(value);
-}
-
 export function salePayload(storeId: string, form: SaleForm) {
   return {
     storeId,

@@ -1,6 +1,6 @@
 import { t } from '../src/i18n';
 import {
-  calculateCash, emptySaleForm, nextDay, salePayload, salePresetRange, saleRangeError,
+  calculateCash, emptySaleForm, salePayload, salePresetRange, saleRangeError,
   sanitizeAmount, summarizeSales, validateSaleForm,
 } from '../src/screens/franchise/sales/utils';
 import type { SaleRecord } from '../src/screens/franchise/types';
@@ -28,10 +28,9 @@ describe('sales utils', () => {
     expect(validateSaleForm({ ...form, date: '2026-13-45' }, [], null, '2026-01-20').date).toBe(t('franchiseSaleDateInvalid'));
   });
 
-  it('computes cash, next day, sanitized amounts and payload', () => {
+  it('computes cash, sanitized amounts and payload', () => {
     const form = { ...emptySaleForm('2026-01-31'), totalSale: '1000', swiggy: '100', zomato: '50.5', upi: '200', upiCharge: '2', expenses: [{ name: ' Milk ', amount: 20 }] };
     expect(calculateCash(form)).toBe(649.5);
-    expect(nextDay('2026-01-31')).toBe('2026-02-01');
     expect(sanitizeAmount('12a.3.4')).toBe('12.34');
     expect(salePayload('store-1', form)).toEqual({
       storeId: 'store-1', date: '2026-01-31', totalSale: 1000, swiggy: 100, zomato: 50.5, upi: 200, upiCharge: 2,

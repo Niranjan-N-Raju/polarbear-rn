@@ -90,10 +90,8 @@ export function useFranchiseSales({ storeId }: FranchiseSalesScreenProps) {
     setEditingSale(sale);
     setIsFormOpen(true);
   }, []);
-  const handleSaved = (message: string, keepOpen: boolean) => {
+  const handleSaved = (message: string) => {
     setReloadKey((key) => key + 1);
-    // Save-and-continue leaves feedback in the form; ordinary saves defer it until drawer close.
-    if (keepOpen) return;
     setPendingToast(message);
     setIsFormOpen(false);
   };

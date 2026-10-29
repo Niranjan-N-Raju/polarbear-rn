@@ -16,7 +16,6 @@ import {
   calculateCash,
   emptySaleForm,
   isValidAmount,
-  nextDay,
   parseAmount,
   type SaleAmountField,
   type SaleForm,
@@ -35,7 +34,7 @@ interface SaleFormDrawerProps {
   existingDates: string[];
   onClose: () => void;
   onAfterClose?: () => void;
-  onSaved: (message: string, keepOpen: boolean) => void;
+  onSaved: (message: string) => void;
 }
 
 interface ExpenseDraft {
@@ -65,7 +64,7 @@ export function SaleFormDrawer({
   const [errors, setErrors] = useState<SaleFormErrors>({});
   const [expenseDraft, setExpenseDraft] = useState<ExpenseDraft | null>(null);
   const [expenseError, setExpenseError] = useState<string | null>(null);
-  const [savingMode, setSavingMode] = useState<'save' | 'next' | null>(null);
+  const [saving, setSaving] = useState(false);
   const [toast, setToast] = useState<{ message: string; tone: 'error' | 'success' } | null>(null);
 
   useEffect(() => {
@@ -111,13 +110,13 @@ export function SaleFormDrawer({
     if (expenseDraft?.index === removeIndex) setExpenseDraft(null);
   };
 
-  const save = async (mode: 'save' | 'next') => {
-    if (savingMode) return;
+  const save = async () => {
+    if (saving) return;
     const nextErrors = validateSaleForm(form, dates, editingSale?.date ?? null);
     setErrors(nextErrors);
     if (Object.values(nextErrors).some(Boolean)) return;
 
-    setSavingMode(mode);
+    setSaving(true);
     try {
       const response = await apiRequest(editingSale ? `/sales/${encodeURIComponent(editingSale._id)}` : '/sales', {
         method: editingSale ? 'PUT' : 'POST',
@@ -131,18 +130,11 @@ export function SaleFormDrawer({
         return;
       }
       const message = data.message || t('franchiseSaleSaved');
-      if (mode === 'next') {
-        // Advance only after persistence succeeds, leaving the current draft intact on failure.
-        setForm(emptySaleForm(nextDay(form.date)));
-        setErrors({});
-        setExpenseDraft(null);
-        setToast({ message, tone: 'success' });
-      }
-      onSaved(message, mode === 'next');
+      onSaved(message);
     } catch {
       setToast({ message: t('adminNetworkError'), tone: 'error' });
     } finally {
-      setSavingMode(null);
+      setSaving(false);
     }
   };
 
@@ -302,18 +294,6 @@ export function SaleFormDrawer({
           </View>
         </ScrollView>
         <View style={salesStyles.formActions}>
-          {!editingSale ? (
-            <Pressable
-              accessibilityRole="button"
-              disabled={Boolean(savingMode)}
-              onPress={() => void save('next')}
-              style={[styles.secondaryButton, styles.drawerActionButton]}
-            >
-              {savingMode === 'next'
-                ? <AppLoader variant="inline" color={theme.colors.teal} />
-                : <Text style={styles.secondaryButtonText}>{t('franchiseSaveAddNextDay')}</Text>}
-            </Pressable>
-          ) : null}
           <View style={styles.modalActions}>
             <View style={styles.drawerActionSlot}>
               <Pressable accessibilityRole="button" onPress={onClose} style={[styles.secondaryButton, styles.drawerActionButton]}>
@@ -323,11 +303,11 @@ export function SaleFormDrawer({
             <View style={styles.drawerActionSlot}>
               <Pressable
                 accessibilityRole="button"
-                disabled={Boolean(savingMode)}
-                onPress={() => void save('save')}
+                disabled={saving}
+                onPress={() => void save()}
                 style={[styles.primaryButton, styles.drawerActionButton]}
               >
-                {savingMode === 'save'
+                {saving
                   ? <AppLoader variant="inline" color={theme.colors.white} />
                   : <Text style={styles.primaryButtonText}>{t(editingSale ? 'adminSaveChanges' : 'franchiseSaveSale')}</Text>}
               </Pressable>

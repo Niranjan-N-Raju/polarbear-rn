@@ -171,7 +171,6 @@ export const en = {
   franchiseSaveExpense: 'Save expense',
   franchiseExpenseInvalid: 'Enter a name and a valid amount.',
   franchiseSaveSale: 'Save Sale',
-  franchiseSaveAddNextDay: 'Save & add next day',
   franchiseSaleSaved: 'Sale saved successfully.',
   franchiseFieldRequired: 'This field is required.',
   franchiseInvalidNumber: 'Enter a valid number.',
