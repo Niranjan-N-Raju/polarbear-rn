@@ -100,7 +100,7 @@ export function WeeklyRosterDrawer({ visible, storeId, employees, onClose, onSav
   function update(employeeId: string, date: string, value: string) {
     setSchedules((current) => current.map((schedule) => schedule.employeeId !== employeeId ? schedule : {
       ...schedule,
-      days: schedule.days.map((day) => day.date === date || (value !== 'leave' && date === weekDates[0] && day.date >= weekDates[0] && day.date <= weekDates[6]) ? { ...day, shift: value } : day),
+      days: schedule.days.map((day) => day.date === date || (value !== 'off' && value !== 'leave' && date === weekDates[0] && day.date >= weekDates[0] && day.date <= weekDates[6]) ? { ...day, shift: value } : day),
     }));
   }
 
