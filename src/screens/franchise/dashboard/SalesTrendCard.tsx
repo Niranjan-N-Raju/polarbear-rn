@@ -1,4 +1,4 @@
-import { Pressable, Text, View } from 'react-native';
+import { Platform, Pressable, Text, useWindowDimensions, View } from 'react-native';
 import { AppLoader } from '../../../components/AppLoader';
 import type { DateRange } from '../../../components/DateRangeFilterDrawer';
 import { theme } from '../../../config/theme';
@@ -22,6 +22,8 @@ interface SalesTrendCardProps {
 }
 
 export function SalesTrendCard({ compact, sales, range, loading, loaded = false, error, onApplyRange, onOpenFilters }: SalesTrendCardProps) {
+  const { width } = useWindowDimensions();
+  const compactBars = Platform.OS !== 'web' || width < theme.layout.tabletBreakpoint;
   const salesByDate = new Map(sales.map((sale) => [sale.date, sale.totalSale]));
   const shortcuts = [
     { label: 'franchiseThisWeek', getRange: thisWeekRange },
@@ -47,7 +49,7 @@ export function SalesTrendCard({ compact, sales, range, loading, loaded = false,
       {loading && !loaded ? <AppLoader variant="inline" /> : error ? (
         <Text accessibilityRole="alert" style={styles.error}>{error}</Text>
       ) : (
-        <DashboardBars items={datesBetween(range.from, range.to).map((date) => {
+        <DashboardBars compact={compactBars} items={datesBetween(range.from, range.to).map((date) => {
           const value = salesByDate.get(date) ?? 0;
           return { label: date, values: [value], description: formatMoney(value) };
         })} />
