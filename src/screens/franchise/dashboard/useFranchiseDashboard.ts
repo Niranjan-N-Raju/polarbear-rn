@@ -16,7 +16,17 @@ export function useFranchiseDashboard(storeId: string) {
   const [salesError, setSalesError] = useState('');
   const [loading, setLoading] = useState(true);
   const [salesLoading, setSalesLoading] = useState(true);
+  const [salesLoaded, setSalesLoaded] = useState(false);
   const [version, setVersion] = useState(0);
+
+  useEffect(() => {
+    setStats(null);
+  }, [storeId]);
+
+  useEffect(() => {
+    setSales([]);
+    setSalesLoaded(false);
+  }, [storeId, appliedRange]);
 
   useEffect(() => {
     // Abort saves work; the active guard also blocks late responses after a store switch.
@@ -24,7 +34,6 @@ export function useFranchiseDashboard(storeId: string) {
     const controller = new AbortController();
     setLoading(true);
     setError('');
-    setStats(null);
     apiRequest(`/dashboard?storeId=${encodeURIComponent(storeId)}`, { signal: controller.signal })
       .then(async (response) => {
         if (!response.ok) throw new Error(t('adminLoadFailed'));
@@ -44,12 +53,14 @@ export function useFranchiseDashboard(storeId: string) {
     const controller = new AbortController();
     setSalesLoading(true);
     setSalesError('');
-    setSales([]);
     apiRequest(`/sales?storeId=${encodeURIComponent(storeId)}&from=${appliedRange.from}&to=${appliedRange.to}`, { signal: controller.signal })
       .then(async (response) => {
         if (!response.ok) throw new Error(t('franchiseSalesLoadFailed'));
         const data = await response.json().catch(() => { throw new Error(t('franchiseSalesLoadFailed')); }) as { sales: DailySale[] };
-        if (active) setSales(data.sales);
+        if (active) {
+          setSales(data.sales);
+          setSalesLoaded(true);
+        }
       })
       .catch((reason: unknown) => {
         if (active) setSalesError(reason instanceof Error ? reason.message : t('franchiseSalesLoadFailed'));
@@ -83,7 +94,7 @@ export function useFranchiseDashboard(storeId: string) {
 
   return {
     stats, sales, range, appliedRange, filtersOpen, filterError,
-    error, salesError, loading, salesLoading, applyRange, openFilters, changeRange,
+    error, salesError, loading, salesLoading, salesLoaded, applyRange, openFilters, changeRange,
     closeFilters: () => setFiltersOpen(false),
     clearFilters: () => applyRange(currentMonthRange()),
     refresh: () => setVersion((value) => value + 1),

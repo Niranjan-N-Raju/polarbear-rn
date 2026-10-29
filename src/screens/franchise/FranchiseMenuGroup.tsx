@@ -20,7 +20,7 @@ export function FranchiseMenuGroup({ label, Icon, expanded, onPress, children }:
   useEffect(() => {
     const animation = Animated.timing(progress, {
       toValue: expanded ? 1 : 0,
-      duration: 220,
+      duration: 320,
       useNativeDriver: false,
     });
     animation.start();

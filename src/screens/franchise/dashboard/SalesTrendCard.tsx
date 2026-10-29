@@ -15,12 +15,13 @@ interface SalesTrendCardProps {
   sales: DailySale[];
   range: DateRange;
   loading: boolean;
+  loaded?: boolean;
   error: string;
   onApplyRange: (range: DateRange) => void;
   onOpenFilters: () => void;
 }
 
-export function SalesTrendCard({ compact, sales, range, loading, error, onApplyRange, onOpenFilters }: SalesTrendCardProps) {
+export function SalesTrendCard({ compact, sales, range, loading, loaded = false, error, onApplyRange, onOpenFilters }: SalesTrendCardProps) {
   const salesByDate = new Map(sales.map((sale) => [sale.date, sale.totalSale]));
   const shortcuts = [
     { label: 'franchiseThisWeek', getRange: thisWeekRange },
@@ -43,7 +44,7 @@ export function SalesTrendCard({ compact, sales, range, loading, error, onApplyR
         </View>
       </View>
       <Text style={styles.subtitle}>{range.from} - {range.to}</Text>
-      {loading ? <AppLoader variant="inline" /> : error ? (
+      {loading && !loaded ? <AppLoader variant="inline" /> : error ? (
         <Text accessibilityRole="alert" style={styles.error}>{error}</Text>
       ) : (
         <DashboardBars items={datesBetween(range.from, range.to).map((date) => {

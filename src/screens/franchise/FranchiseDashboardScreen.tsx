@@ -28,6 +28,7 @@ export function FranchiseDashboardScreen({ storeId }: { storeId: string }) {
 
   return (
     <>
+      {dashboard.loading || dashboard.salesLoading ? <AppLoader variant="screen" /> : null}
       <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
         <View style={styles.card}>
           <View style={styles.dashboardHeading}>
@@ -38,9 +39,10 @@ export function FranchiseDashboardScreen({ storeId }: { storeId: string }) {
           </View>
           <Text style={styles.body}>{t('adminOverviewDescription')}</Text>
         </View>
-        {dashboard.loading ? <AppLoader /> : dashboard.error ? (
+        {dashboard.error ? (
           <Text accessibilityRole="alert" style={styles.error}>{dashboard.error}</Text>
-        ) : stats ? (
+        ) : null}
+        {stats ? (
           <>
             <SummaryCards cards={summaryCards} isWeb={layout.isWeb} perRow={perRow} />
             <Text style={styles.subtitle}>{t('franchiseAttendancePending')}</Text>
@@ -49,6 +51,7 @@ export function FranchiseDashboardScreen({ storeId }: { storeId: string }) {
               sales={dashboard.sales}
               range={dashboard.appliedRange}
               loading={dashboard.salesLoading}
+              loaded={dashboard.salesLoaded}
               error={dashboard.salesError}
               onApplyRange={dashboard.applyRange}
               onOpenFilters={dashboard.openFilters}
