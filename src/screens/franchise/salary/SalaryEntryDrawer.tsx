@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, Switch, Text, View } from 'react-native';
 import { X } from '../../../icons';
 import { apiRequest } from '../../../api/auth';
 import { AdminFormField } from '../../../components/AdminFormField';
@@ -10,7 +10,7 @@ import { t } from '../../../i18n';
 import { adminStyles as styles } from '../../../styles/adminStyles';
 
 export type SalaryEntryKind = 'advances' | 'incentives' | 'extra-days';
-export interface SalaryEntry { id: string; employeeId: string; type: string; amount?: number; days?: number }
+export interface SalaryEntry { id: string; employeeId: string; type: string; amount?: number; days?: number; paidEarly?: boolean }
 interface Props { visible: boolean; storeId: string; period: string; employeeId: string; kind: SalaryEntryKind; entry: SalaryEntry | null; onClose: () => void; onAfterClose?: () => void; onSaved: (message: string) => void }
 const options: Record<SalaryEntryKind, string[]> = {
   advances: ['Cash Advance', 'Emergency', 'Loan Repayment', 'Other'],
@@ -31,10 +31,12 @@ export function SalaryEntryDrawer({ visible, storeId, period, employeeId, kind, 
   const [error, setError] = useState<string | null>(null);
   const [customType, setCustomType] = useState('');
   const [busy, setBusy] = useState(false);
+  const [paidEarly, setPaidEarly] = useState(false);
   useEffect(() => {
     if (!visible) return;
     setType(entry && options[kind].includes(entry.type) ? entry.type : entry ? 'Other' : options[kind][0]);
     setAmount(String(kind === 'extra-days' ? entry?.days ?? '' : entry?.amount ?? ''));
+    setPaidEarly(entry?.paidEarly === true);
     setError(null); setCustomType(entry && !options[kind].includes(entry.type) ? entry.type : '');
   }, [visible, entry, kind]);
   const save = async () => {
@@ -46,6 +48,7 @@ export function SalaryEntryDrawer({ visible, storeId, period, employeeId, kind, 
       const payload: Record<string, unknown> = entry
         ? { storeId, type: resolvedType, [kind === 'extra-days' ? 'days' : 'amount']: parsed }
         : { storeId, employeeId, period, type: resolvedType, [kind === 'extra-days' ? 'days' : 'amount']: parsed };
+      if (kind === 'incentives') payload.paidEarly = paidEarly;
       const response = await apiRequest(entry ? `/${kind}/${encodeURIComponent(entry.id)}` : `/${kind}`, { method: entry ? 'PUT' : 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
       const result = await response.json().catch(() => ({})) as { message?: string };
       if (!response.ok) { setError(result.message ?? t('adminSaveFailed')); return; }
@@ -62,6 +65,7 @@ export function SalaryEntryDrawer({ visible, storeId, period, employeeId, kind, 
         <View style={salaryEntryStyles.options}>{options[kind].map((option) => <Pressable key={option} onPress={() => setType(option)} style={[salaryEntryStyles.option, type === option && salaryEntryStyles.selectedOption]}><Text style={{ color: theme.colors.ink }}>{t(optionLabelKey[option])}</Text></Pressable>)}</View>
         {type === 'Other' ? <AdminFormField label={t('franchiseSalaryCustomType')} value={customType} onChangeText={setCustomType} /> : null}
         <AdminFormField label={t((kind === 'extra-days' ? 'franchiseSalaryDays' : 'franchiseSalaryAmount') as Parameters<typeof t>[0])} placeholder="0" value={amount} onChangeText={(value) => { setAmount(value.replace(/[^\d.]/g, '')); setError(null); }} keyboardType="decimal-pad" error={error ?? undefined} />
+        {kind === 'incentives' ? <View style={salaryEntryStyles.paymentRow}><Text style={styles.fieldLabel}>{t('franchiseSalaryPaidEarly')}</Text><Switch accessibilityLabel={t('franchiseSalaryPaidEarly')} value={paidEarly} onValueChange={setPaidEarly} disabled={busy} trackColor={{ true: theme.colors.teal }} /></View> : null}
       </ScrollView>
       <View style={styles.modalActions}><View style={styles.drawerActionSlot}><Pressable accessibilityRole="button" onPress={onClose} style={[styles.secondaryButton, styles.drawerActionButton]}><Text style={styles.secondaryButtonText}>{t('adminCancel')}</Text></Pressable></View><View style={styles.drawerActionSlot}><Pressable accessibilityRole="button" disabled={busy} onPress={save} style={[styles.primaryButton, styles.drawerActionButton]}>{busy ? <AppLoader variant="inline" color={theme.colors.white} /> : <Text style={styles.primaryButtonText}>{t(entry ? 'adminSave' : 'franchiseSalaryAddEntryAction')}</Text>}</Pressable></View></View>
     </View>
@@ -72,4 +76,5 @@ const salaryEntryStyles = StyleSheet.create({
   options: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 16 },
   option: { paddingVertical: 8, paddingHorizontal: 12, borderRadius: 18, backgroundColor: theme.colors.paleBackground, borderWidth: 1, borderColor: theme.colors.beige },
   selectedOption: { backgroundColor: theme.colors.ice, borderColor: theme.colors.teal },
+  paymentRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: 16, gap: 12 },
 });

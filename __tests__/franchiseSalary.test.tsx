@@ -1,4 +1,4 @@
-import { Text, TextInput } from 'react-native';
+import { Switch, Text, TextInput } from 'react-native';
 import { act } from 'react-test-renderer';
 import * as authApi from '../src/api/auth';
 import { t } from '../src/i18n';
@@ -58,6 +58,25 @@ describe('FranchiseSalaryScreen', () => {
     await act(async () => { await addButton!.props.onPress(); });
     expect(api.mock.calls[1][0]).toBe('/advances');
     expect(JSON.parse(String(api.mock.calls[1][1]?.body))).toMatchObject({ storeId: 'store-1', employeeId: 'employee-1', period: expect.any(String), amount: 75 });
+    act(() => renderer.unmount());
+  });
+
+  it('records an incentive as paid early for the selected employee', async () => {
+    const api = jest.spyOn(authApi, 'apiRequest')
+      .mockResolvedValueOnce(response(200, data))
+      .mockResolvedValueOnce(response(201, { message: 'Incentive added successfully.' }));
+    const renderer = renderSafeArea(<FranchiseSalaryScreen storeId="store-1" />);
+    await flushEffects();
+    act(() => buttonByLabel(renderer, t('franchiseSalaryAddEntry', { entry: t('franchiseSalaryIncentive') })).props.onPress());
+    expect(renderer.root.findByType(Switch).props.value).toBe(false);
+    act(() => {
+      renderer.root.findByType(TextInput).props.onChangeText('200');
+      renderer.root.findByType(Switch).props.onValueChange(true);
+    });
+    const addButton = buttons(renderer).find((node) => containsText(node.props.children, t('franchiseSalaryAddEntryAction')));
+    await act(async () => { await addButton!.props.onPress(); });
+    expect(api.mock.calls[1][0]).toBe('/incentives');
+    expect(JSON.parse(String(api.mock.calls[1][1]?.body))).toMatchObject({ employeeId: 'employee-1', amount: 200, paidEarly: true });
     act(() => renderer.unmount());
   });
 
