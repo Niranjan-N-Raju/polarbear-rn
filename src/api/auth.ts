@@ -1,4 +1,5 @@
 import { apiBaseUrl } from '../config/apiBaseUrl';
+import { Platform } from 'react-native';
 import { t } from '../i18n';
 import type { AuthenticatedUser, LoginResponse } from './types';
 
@@ -26,6 +27,7 @@ export function setAccessToken(token: string | null): void {
 
 export async function apiRequest(path: string, init: RequestInit = {}): Promise<Response> {
   const headers = new Headers(init.headers);
+  if (Platform.OS === 'web') headers.set('X-Web-Session', '1');
   // Responses are only allowed to end the session that actually sent them.
   const requestToken = accessToken;
   if (accessToken) headers.set('Authorization', `Bearer ${accessToken}`);
@@ -37,7 +39,12 @@ export async function apiRequest(path: string, init: RequestInit = {}): Promise<
   const timeout = setTimeout(() => controller.abort(), API_REQUEST_TIMEOUT_MS);
   let response: Response;
   try {
-    response = await fetch(`${apiBaseUrl}${path}`, { ...init, headers, signal: controller.signal });
+    response = await fetch(`${apiBaseUrl}${path}`, {
+      ...init,
+      ...(Platform.OS === 'web' ? { credentials: 'include' as const } : {}),
+      headers,
+      signal: controller.signal,
+    });
   } finally {
     clearTimeout(timeout);
     init.signal?.removeEventListener('abort', abortFromCaller);
@@ -63,7 +70,11 @@ export async function login(email: string, password: string): Promise<LoginRespo
   try {
     response = await fetch(`${apiBaseUrl}/auth/login`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        ...(Platform.OS === 'web' ? { 'X-Web-Session': '1' } : {}),
+      },
+      ...(Platform.OS === 'web' ? { credentials: 'include' as const } : {}),
       body: JSON.stringify({ email, password }),
       signal: controller.signal,
     });
@@ -96,4 +107,13 @@ export async function login(email: string, password: string): Promise<LoginRespo
 
   setAccessToken(data.token);
   return { token: data.token, user: data.user };
+}
+
+export async function restoreSession(signal: AbortSignal): Promise<LoginResponse | null> {
+  const response = await apiRequest('/auth/session', { method: 'POST', signal });
+  if (response.status === 401) return null;
+  if (!response.ok) throw new Error(t('unableToReachServer'));
+  const data = await response.json() as LoginResponse;
+  if (!data.token || !data.user?.id || !data.user.name) throw new Error(t('invalidLoginResponse'));
+  return data;
 }

@@ -1,6 +1,6 @@
-import { useCallback, useState } from 'react';
-import { Keyboard } from 'react-native';
-import { login, setAccessToken } from '../api/auth';
+import { useCallback, useEffect, useState } from 'react';
+import { Keyboard, Platform } from 'react-native';
+import { apiRequest, login, restoreSession, setAccessToken } from '../api/auth';
 import { defaultLoginCredentials } from '../config/testLoginCredentials';
 import { defaultLanguage, setLanguage, t } from '../i18n';
 
@@ -13,6 +13,29 @@ export function useLogin() {
   const [passwordError, setPasswordError] = useState('');
   const [formError, setFormError] = useState('');
   const [session, setSession] = useState<Awaited<ReturnType<typeof login>> | null>(null);
+  const [isRestoring, setIsRestoring] = useState(Platform.OS === 'web');
+
+  useEffect(() => {
+    if (Platform.OS !== 'web') return;
+    let active = true;
+    const controller = new AbortController();
+    restoreSession(controller.signal)
+      .then((result) => {
+        if (!active || !result) return;
+        if (!['admin', 'franchise_admin'].includes(result.user.role)) {
+          setFormError(t('mobileRoleNotSupported'));
+          return;
+        }
+        setAccessToken(result.token);
+        setLanguage(result.user.preferredLanguage ?? defaultLanguage);
+        setSession(result);
+      })
+      .catch(() => {
+        if (active) setFormError(t('unableToReachServer'));
+      })
+      .finally(() => { if (active) setIsRestoring(false); });
+    return () => { active = false; controller.abort(); };
+  }, []);
 
   async function submit(): Promise<void> {
     const normalizedEmail = email.trim();
@@ -66,7 +89,7 @@ export function useLogin() {
   }, []);
 
   const signOut = useCallback((): void => {
-    // Tokens and session state stay in memory; workspace callers handle remote revocation first.
+    if (Platform.OS === 'web') void apiRequest('/auth/session', { method: 'DELETE' }).catch(() => undefined);
     setAccessToken(null);
     setSession(null);
     // Never leave the previous user's credentials (or dev defaults) in the form after a real sign-out.
@@ -83,6 +106,7 @@ export function useLogin() {
     password,
     showPassword,
     isPending,
+    isRestoring,
     emailError,
     passwordError,
     formError,

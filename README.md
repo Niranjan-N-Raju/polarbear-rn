@@ -52,7 +52,16 @@ Production must continue to use an explicitly configured HTTPS endpoint.
 
 Release builds read `.env.production` (copy `.env.production.example`). Every `TEST_*` key must be empty and `API_BASE_URL` must be an `https://` URL; the Android `preReleaseBuild` task and the iOS Release bundle phase (`scripts/check-release-env.sh`) fail the build otherwise. Build iOS Release with `ENVFILE=.env.production`. Web production builds (`vite build`) require an `https://` `VITE_API_BASE_URL`, inject a Content-Security-Policy, never include test credentials, and emit no source maps. Development builds may use `http://` only for localhost, the Android emulator host, and private LAN addresses.
 
-Release Android builds set `FLAG_SECURE` to block screenshots and the recents preview; iOS covers the app with a blank view before the app-switcher snapshot. The session token lives only in memory, and API requests time out after 30 seconds.
+Release Android builds set `FLAG_SECURE` to block screenshots and the recents preview; iOS covers the app with a blank view before the app-switcher snapshot. Native session tokens live only in memory, and API requests time out after 30 seconds.
+
+Web sessions survive browser refresh using an HTTP-only API cookie, without
+storing tokens in browser-accessible storage. Startup shows a loader while the
+API validates the session; expired or revoked sessions return to login. This
+requires the updated backend and a fresh sign-in after rollout. Configure the
+web origin in the backend's `WEB_ORIGINS`; production requires HTTPS. Serve the
+frontend and API on the same site, or proxy API requests through the frontend,
+when the browser blocks third-party cookies. Sign-out clears the web cookie as
+well as the in-memory session.
 
 ## Franchise-admin workspace
 

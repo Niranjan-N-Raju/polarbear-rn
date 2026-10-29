@@ -52,6 +52,7 @@ export function LoginScreen() {
     dismissAuthToast,
     safeAreaStyles,
   } = useLoginScreen();
+  if (loginState.isRestoring) return <AppLoader variant="screen" />;
   if (loginState.session) {
     if (loginState.session.user.mustChangePassword === true) {
       return (
