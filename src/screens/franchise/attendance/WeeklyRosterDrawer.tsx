@@ -100,14 +100,14 @@ export function WeeklyRosterDrawer({ visible, storeId, employees, onClose, onSav
   function update(employeeId: string, date: string, value: string) {
     setSchedules((current) => current.map((schedule) => schedule.employeeId !== employeeId ? schedule : {
       ...schedule,
-      days: schedule.days.map((day) => day.date === date || (date === weekDates[0] && day.date >= weekDates[0] && day.date <= weekDates[6]) ? { ...day, shift: value } : day),
+      days: schedule.days.map((day) => day.date === date || (value !== 'leave' && date === weekDates[0] && day.date >= weekDates[0] && day.date <= weekDates[6]) ? { ...day, shift: value } : day),
     }));
   }
 
   async function save() {
     if (saving || !isLoaded) return;
     if (!shifts.length) { setToast(t('franchiseAttendanceNoShifts')); return; }
-    if (schedules.some((schedule) => schedule.days.some((day) => day.shift !== 'off' && !shifts.some((shift) => shift.id === day.shift)))) {
+    if (schedules.some((schedule) => schedule.days.some((day) => day.shift !== 'off' && day.shift !== 'leave' && !shifts.some((shift) => shift.id === day.shift)))) {
       setToast(t('franchiseAttendanceNoShifts'));
       return;
     }
@@ -153,10 +153,11 @@ export function WeeklyRosterDrawer({ visible, storeId, employees, onClose, onSav
                   const selectedShift = shifts.find((shift) => shift.id === selected);
                   return <View key={date} style={local.rosterDayRow}>
                     <Text style={local.rosterDayLabel}>{labelDate(date)}</Text>
-                    <Text style={local.rosterShiftText}>{selected === 'off' ? t('franchiseAttendanceDayOff') : selectedShift ? `${selectedShift.name} ${t('franchiseAttendanceShift', { start: selectedShift.startTime, end: selectedShift.endTime })}` : '—'}</Text>
+                    <Text style={local.rosterShiftText}>{selected === 'leave' ? t('franchiseAttendanceLeave') : selected === 'off' ? t('franchiseAttendanceDayOff') : selectedShift ? `${selectedShift.name} ${t('franchiseAttendanceShift', { start: selectedShift.startTime, end: selectedShift.endTime })}` : '—'}</Text>
                     <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={local.rosterShiftChoices}>
                       {shifts.map((shift) => <Pressable key={shift.id} accessibilityRole="button" accessibilityLabel={`${employee.name} ${labelDate(date)} ${shift.name}`} onPress={() => update(employee._id, index === 0 ? weekDates[0] : date, shift.id)} style={[local.rosterShiftButton, selected === shift.id && local.rosterShiftSelected]}><Text style={[local.rosterShiftLabel, selected === shift.id && local.rosterShiftLabelSelected]}>{shift.name}</Text></Pressable>)}
                       <Pressable accessibilityRole="button" accessibilityLabel={`${employee.name} ${labelDate(date)} ${t('franchiseAttendanceDayOff')}`} onPress={() => update(employee._id, index === 0 ? weekDates[0] : date, 'off')} style={[local.rosterShiftButton, selected === 'off' && local.rosterShiftSelected]}><Text style={[local.rosterShiftLabel, selected === 'off' && local.rosterShiftLabelSelected]}>{t('franchiseAttendanceDayOff')}</Text></Pressable>
+                      <Pressable accessibilityRole="button" accessibilityLabel={`${employee.name} ${labelDate(date)} ${t('franchiseAttendanceLeave')}`} accessibilityState={{ selected: selected === 'leave' }} onPress={() => update(employee._id, date, 'leave')} style={[local.rosterShiftButton, selected === 'leave' && local.rosterShiftSelected]}><Text style={[local.rosterShiftLabel, selected === 'leave' && local.rosterShiftLabelSelected]}>{t('franchiseAttendanceLeave')}</Text></Pressable>
                     </ScrollView>
                   </View>;
                 })}

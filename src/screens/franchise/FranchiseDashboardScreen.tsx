@@ -28,7 +28,7 @@ export function FranchiseDashboardScreen({ storeId }: { storeId: string }) {
 
   return (
     <>
-      {dashboard.loading || dashboard.salesLoading ? <AppLoader variant="screen" /> : null}
+      {dashboard.loading || dashboard.salesLoading ? <AppLoader variant="screen" artwork="splash" /> : null}
       <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
         <View style={styles.card}>
           <View style={styles.dashboardHeading}>

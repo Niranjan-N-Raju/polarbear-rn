@@ -51,6 +51,7 @@ export type AppLoaderVariant = 'screen' | 'inline';
 export interface AppLoaderProps {
   variant?: AppLoaderVariant;
   color?: ColorValue;
+  artwork?: 'splash';
 }
 
 export interface ResponsiveDrawerModalProps {
