@@ -1,14 +1,14 @@
-import { Platform, Pressable, Text, useWindowDimensions, View } from 'react-native';
+import { Pressable, Text, View } from 'react-native';
 import { AppLoader } from '../../../components/AppLoader';
 import type { DateRange } from '../../../components/DateRangeFilterDrawer';
 import { theme } from '../../../config/theme';
 import { t } from '../../../i18n';
 import { Filter } from '../../../icons';
 import { adminStyles } from '../../../styles/adminStyles';
-import { DashboardBars, formatMoney } from '../DashboardCharts';
-import { currentMonthRange, datesBetween, thisWeekRange } from '../dashboardDates';
+import { currentMonthRange, thisWeekRange } from '../dashboardDates';
 import { franchiseStyles as styles } from '../franchiseStyles';
 import type { DailySale } from '../types';
+import { SalesTrendChart } from './SalesTrendChart';
 
 interface SalesTrendCardProps {
   compact: boolean;
@@ -22,9 +22,6 @@ interface SalesTrendCardProps {
 }
 
 export function SalesTrendCard({ compact, sales, range, loading, loaded = false, error, onApplyRange, onOpenFilters }: SalesTrendCardProps) {
-  const { width } = useWindowDimensions();
-  const compactBars = Platform.OS !== 'web' || width < theme.layout.tabletBreakpoint;
-  const salesByDate = new Map(sales.map((sale) => [sale.date, sale.totalSale]));
   const shortcuts = [
     { label: 'franchiseThisWeek', getRange: thisWeekRange },
     { label: 'franchiseThisMonth', getRange: currentMonthRange },
@@ -49,10 +46,7 @@ export function SalesTrendCard({ compact, sales, range, loading, loaded = false,
       {loading && !loaded ? <AppLoader variant="inline" /> : error ? (
         <Text accessibilityRole="alert" style={styles.error}>{error}</Text>
       ) : (
-        <DashboardBars compact={compactBars} items={datesBetween(range.from, range.to).map((date) => {
-          const value = salesByDate.get(date) ?? 0;
-          return { label: date, values: [value], description: formatMoney(value) };
-        })} />
+        <SalesTrendChart sales={sales} dateFrom={range.from} dateTo={range.to} />
       )}
     </View>
   );

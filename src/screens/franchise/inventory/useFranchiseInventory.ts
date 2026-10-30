@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useWindowDimensions } from 'react-native';
 import { apiRequest } from '../../../api/auth';
+import { pageSize } from '../../../config/pagination';
 import { theme } from '../../../config/theme';
 import { t } from '../../../i18n';
 import { CalendarClock, Clock, Package, TriangleAlert } from '../../../icons';
@@ -14,7 +15,7 @@ import {
   type InventoryFilters,
   summarizeInventory,
 } from './utils';
-export const pageSize = 10;
+export { pageSize };
 export type DrawerState =
   | { type: 'filters'; }
   | { type: 'stock'; }

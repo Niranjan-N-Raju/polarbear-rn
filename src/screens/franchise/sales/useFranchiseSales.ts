@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useWindowDimensions } from 'react-native';
 import { apiRequest } from '../../../api/auth';
+import { pageSize } from '../../../config/pagination';
 import { theme } from '../../../config/theme';
 import { t } from '../../../i18n';
 import { Banknote, CreditCard, IndianRupee, Receipt } from '../../../icons';
@@ -8,7 +9,7 @@ import { getAdminLayout } from '../../../utils/adminLayout';
 import { formatMoney } from '../DashboardCharts';
 import type { SaleRecord } from '../types';
 import { defaultSaleRange, type SaleRange, saleRangeError, summarizeSales } from './utils';
-export const pageSize = 10;
+export { pageSize };
 export interface FranchiseSalesScreenProps {
   storeId: string;
 }

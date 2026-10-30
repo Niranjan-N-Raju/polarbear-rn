@@ -48,7 +48,12 @@ export default defineConfig(({ command, mode }) => {
 
   return {
     plugins: [react(), ...(isBuild ? [contentSecurityPolicy(apiBaseUrl)] : [])],
-    define: { global: 'globalThis', __DEV__: JSON.stringify(!isBuild), ...devCredentialDefines },
+    define: {
+      global: 'globalThis',
+      __DEV__: JSON.stringify(!isBuild),
+      'import.meta.env.VITE_PAGE_SIZE': JSON.stringify(env.PAGE_SIZE ?? ''),
+      ...devCredentialDefines,
+    },
     envPrefix: ['VITE_'],
     optimizeDeps: {
       esbuildOptions: {

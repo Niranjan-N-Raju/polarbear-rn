@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useWindowDimensions } from 'react-native';
 import { apiRequest } from '../../../api/auth';
+import { pageSize } from '../../../config/pagination';
 import { t } from '../../../i18n';
 import { getAdminLayout } from '../../../utils/adminLayout';
 import { defaultStoreFilters, emptyForm } from './defaults';
@@ -63,7 +64,7 @@ export function useAdminStores({ onToast }: AdminStoresScreenProps) {
     try {
       const query = new URLSearchParams({
         page: String(page),
-        limit: '9',
+        limit: String(pageSize),
         status: filters.status,
         type: filters.type,
       });

@@ -1,4 +1,4 @@
-import { Modal, Pressable, ScrollView, Text, View } from 'react-native';
+import { Modal, Platform, Pressable, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { AppLoader } from '../../components/AppLoader';
 import { ResponsiveDrawerModal } from '../../components/ResponsiveDrawerModal';
@@ -170,6 +170,7 @@ export function FranchiseHomeScreen({ user: initialUser, onLogout }: FranchiseHo
             <Text numberOfLines={1} style={styles.subtitle}>{user.name} · {activeStore.name}</Text>
           </View>
         </View>
+        <View style={[styles.page, Platform.OS === 'web' && tab !== 'dashboard' && styles.pageWeb]}>
         {tab === 'dashboard' ? <FranchiseDashboardScreen key={activeStore._id} storeId={activeStore._id} /> : tab === 'sales' ? (
           <FranchiseSalesScreen key={activeStore._id} storeId={activeStore._id} />
         ) : tab === 'inventory' ? (
@@ -189,6 +190,7 @@ export function FranchiseHomeScreen({ user: initialUser, onLogout }: FranchiseHo
         ) : (
           <AdminProfileScreen user={user} onUserUpdated={setUser} />
         )}
+        </View>
       </View>
       {!hasSidebar && !pickerOpen ? (
         <Modal transparent visible={drawerOpen} animationType="fade" onRequestClose={() => setDrawerOpen(false)}>

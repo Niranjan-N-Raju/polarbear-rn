@@ -1,4 +1,4 @@
-import { Platform, Text, useWindowDimensions, View } from 'react-native';
+import { Text, View } from 'react-native';
 import { theme } from '../../../config/theme';
 import { t } from '../../../i18n';
 import { DashboardBars, formatMoney } from '../DashboardCharts';
@@ -6,9 +6,6 @@ import { franchiseStyles as styles } from '../franchiseStyles';
 import type { FranchiseDashboardStats } from '../types';
 
 export function DashboardInsights({ stats }: { stats: FranchiseDashboardStats }) {
-  const { width } = useWindowDimensions();
-  const compactCharts = Platform.OS !== 'web' || width < theme.layout.tabletBreakpoint;
-  const maxExpense = Math.max(1, ...stats.expenseBreakdown.map((expense) => expense.amount));
   return (
     <>
       <View style={styles.card}>
@@ -33,18 +30,11 @@ export function DashboardInsights({ stats }: { stats: FranchiseDashboardStats })
       <View style={styles.card}>
         <Text style={styles.sectionTitle}>{t('franchiseExpenseBreakdown')}</Text>
         <Text style={styles.body}>{t('franchiseExpenseDescription')}</Text>
-        {stats.expenseBreakdown.length === 0 ? <Text style={styles.body}>{t('franchiseNoExpenses')}</Text> : compactCharts ? (
+        {stats.expenseBreakdown.length === 0 ? <Text style={styles.body}>{t('franchiseNoExpenses')}</Text> : (
           <DashboardBars items={stats.expenseBreakdown.map((item) => ({
             label: item.name, values: [item.amount], description: formatMoney(item.amount),
           }))} />
-        ) : stats.expenseBreakdown.map((item) => (
-          <View key={item.name} style={styles.expenseRow}>
-            <Text style={styles.body}>{item.name}: {formatMoney(item.amount)}</Text>
-            <View style={styles.expenseTrack}>
-              <View style={[styles.expenseBar, { width: `${(item.amount / maxExpense) * 100}%` }]} />
-            </View>
-          </View>
-        ))}
+        )}
       </View>
       <View style={styles.card}>
         <Text style={styles.sectionTitle}>{t('franchisePaymentMix')}</Text>

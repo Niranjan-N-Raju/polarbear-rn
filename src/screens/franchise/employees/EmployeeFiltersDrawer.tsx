@@ -1,4 +1,4 @@
-import { Pressable, Text, View } from 'react-native';
+import { Platform, Pressable, Text, View } from 'react-native';
 import { AdminFormField } from '../../../components/AdminFormField';
 import { FilterDrawer } from '../../../components/FilterDrawer';
 import { t } from '../../../i18n';
@@ -18,7 +18,7 @@ interface EmployeeFiltersDrawerProps {
 }
 
 export function EmployeeFiltersDrawer({ visible, search, status, onClose, onSearchChange, onStatusChange, onClear, onApply }: EmployeeFiltersDrawerProps) {
-  const hasDraftFilters = Boolean(search.trim() || status !== 'all');
+  const hasDraftFilters = Boolean(search.trim() || status !== (Platform.OS === 'web' ? 'active' : 'all'));
   return (
     <FilterDrawer
       visible={visible}

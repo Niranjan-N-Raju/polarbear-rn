@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useWindowDimensions } from 'react-native';
 import { apiRequest } from '../../../api/auth';
+import { pageSize } from '../../../config/pagination';
 import { t, translateRole } from '../../../i18n';
 import { getAdminLayout } from '../../../utils/adminLayout';
 import { blankForm, defaultUserFilters } from './defaults';
@@ -76,7 +77,7 @@ export function useAdminUsers({ onToast }: AdminUsersScreenProps) {
         excludeEmployees: 'true',
         includeArchived: 'true',
         page: String(page),
-        limit: '9',
+        limit: String(pageSize),
         status: filters.status,
       });
       if (filters.search.trim()) query.set('search', filters.search.trim());

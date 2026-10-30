@@ -7,6 +7,8 @@ export const franchiseStyles = StyleSheet.create({
   root: { flex: 1, backgroundColor: colors.paleBackground },
   wideRoot: { flexDirection: 'row' },
   main: { flex: 1, minWidth: 0, backgroundColor: colors.paleBackground },
+  page: { flex: 1, minWidth: 0, minHeight: 0 },
+  pageWeb: { width: '100%', maxWidth: theme.layout.adminWebContentMaxWidth, alignSelf: 'center', padding: spacing['2xl'] },
   header: {
     flexDirection: 'row', alignItems: 'center', gap: spacing.lg,
     padding: spacing['2xl'], borderBottomWidth: 1, borderColor: colors.beige,

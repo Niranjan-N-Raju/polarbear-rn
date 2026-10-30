@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { useWindowDimensions } from 'react-native';
+import { Platform, useWindowDimensions } from 'react-native';
 import { apiRequest } from '../../../api/auth';
+import { pageSize } from '../../../config/pagination';
 import { theme } from '../../../config/theme';
 import { t } from '../../../i18n';
 import { Archive, UserRound, UsersRound } from '../../../icons';
@@ -9,6 +10,7 @@ import { businessDate } from '../../../utils/businessDate';
 import { type EmployeeStatusFilter } from './EmployeeFiltersDrawer';
 export interface Employee {
   _id: string;
+  employeeCode?: string;
   name: string;
   email?: string;
   phone?: string;
@@ -22,7 +24,8 @@ export interface Employee {
   panDocument?: { fileName: string; };
 }
 export interface EmployeeData { users?: Employee[]; pagination?: { total: number; }; message?: string; }
-export const pageSize = 9;
+export { pageSize };
+const defaultStatus: EmployeeStatusFilter = Platform.OS === 'web' ? 'active' : 'all';
 
 export function useFranchiseEmployees({ storeId }: { storeId: string; }) {
   const { width } = useWindowDimensions();
@@ -34,8 +37,8 @@ export function useFranchiseEmployees({ storeId }: { storeId: string; }) {
   const [filterVisible, setFilterVisible] = useState(false);
   const [search, setSearch] = useState('');
   const [draftSearch, setDraftSearch] = useState('');
-  const [status, setStatus] = useState<EmployeeStatusFilter>('all');
-  const [draftStatus, setDraftStatus] = useState<EmployeeStatusFilter>('all');
+  const [status, setStatus] = useState<EmployeeStatusFilter>(defaultStatus);
+  const [draftStatus, setDraftStatus] = useState<EmployeeStatusFilter>(defaultStatus);
   const [visibleCount, setVisibleCount] = useState(pageSize);
   const [formVisible, setFormVisible] = useState(false);
   const [editing, setEditing] = useState<Employee | null>(null);
@@ -62,13 +65,13 @@ export function useFranchiseEmployees({ storeId }: { storeId: string; }) {
   // Search/status and visibleCount operate on the loaded roster, not server-side pagination.
   const filtered = useMemo(() => employees.filter((employee) => {
     const needle = search.trim().toLocaleLowerCase();
-    const matchesSearch = !needle || employee.name.toLocaleLowerCase().includes(needle) || (employee.phone ?? '').toLocaleLowerCase().includes(needle);
+    const matchesSearch = !needle || employee.name.toLocaleLowerCase().includes(needle) || (employee.phone ?? '').toLocaleLowerCase().includes(needle) || (employee.employeeCode ?? '').toLocaleLowerCase().includes(needle);
     const matchesStatus = status === 'all' || (status === 'active' ? employee.isActive !== false : employee.isActive === false);
     return matchesSearch && matchesStatus;
   }), [employees, search, status]);
   const activeCount = employees.filter((employee) => employee.isActive !== false).length;
   const archivedCount = employees.length - activeCount;
-  const hasActiveFilters = Boolean(search.trim() || status !== 'all');
+  const hasActiveFilters = Boolean(search.trim() || status !== defaultStatus);
   const summary = [
     { label: t('franchiseEmployeesAll'), value: String(employees.length), color: theme.colors.teal, Icon: UsersRound },
     { label: t('franchiseEmployeesActive'), value: String(activeCount), color: theme.colors.orange, Icon: UserRound },
@@ -76,7 +79,7 @@ export function useFranchiseEmployees({ storeId }: { storeId: string; }) {
   ];
   const openFilters = () => { setDraftSearch(search); setDraftStatus(status); setFilterVisible(true); };
   const applyFilters = () => { setSearch(draftSearch.trim()); setStatus(draftStatus); setVisibleCount(pageSize); setFilterVisible(false); };
-  const clearFilters = () => { setDraftSearch(''); setDraftStatus('all'); setSearch(''); setStatus('all'); setVisibleCount(pageSize); setFilterVisible(false); };
+  const clearFilters = () => { setDraftSearch(''); setDraftStatus(defaultStatus); setSearch(''); setStatus(defaultStatus); setVisibleCount(pageSize); setFilterVisible(false); };
   const openCreate = () => { setEditing(null); setFormVisible(true); };
   const openEdit = (employee: Employee) => { setEditing(employee); setFormVisible(true); };
   const saved = (message: string) => { setPendingToast(message); setFormVisible(false); setReloadKey((key) => key + 1); };
