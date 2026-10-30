@@ -6,6 +6,7 @@ import { theme } from '../../../config/theme';
 import { t } from '../../../i18n';
 import { Banknote, CreditCard, IndianRupee, Receipt } from '../../../icons';
 import { getAdminLayout } from '../../../utils/adminLayout';
+import { getDashboardCardColor } from '../../../utils/dashboardConfig';
 import { formatMoney } from '../DashboardCharts';
 import type { SaleRecord } from '../types';
 import { defaultSaleRange, type SaleRange, saleRangeError, summarizeSales } from './utils';
@@ -97,11 +98,11 @@ export function useFranchiseSales({ storeId }: FranchiseSalesScreenProps) {
     setIsFormOpen(false);
   };
   const summaryCards = [
-    { label: t('franchiseTotalSales'), value: formatMoney(summary.totalSales), color: theme.colors.teal, Icon: IndianRupee },
-    { label: t('franchiseOnlineSales'), value: formatMoney(summary.onlineSales), color: theme.colors.orange, Icon: CreditCard },
-    { label: t('franchiseTotalExpenses'), value: formatMoney(summary.totalExpenses), color: theme.colors.orange, Icon: Receipt },
-    { label: t('franchiseSaleBankingCash'), value: formatMoney(summary.bankingCash), color: theme.colors.teal, Icon: Banknote },
-  ];
+    { label: t('franchiseTotalSales'), value: formatMoney(summary.totalSales), Icon: IndianRupee },
+    { label: t('franchiseOnlineSales'), value: formatMoney(summary.onlineSales), Icon: CreditCard },
+    { label: t('franchiseTotalExpenses'), value: formatMoney(summary.totalExpenses), Icon: Receipt },
+    { label: t('franchiseSaleBankingCash'), value: formatMoney(summary.bankingCash), Icon: Banknote },
+  ].map((card, index) => ({ ...card, color: theme.colors[getDashboardCardColor(index, layout.desktopWeb ? 4 : 2)] }));
   return {
     height,
     layout,
