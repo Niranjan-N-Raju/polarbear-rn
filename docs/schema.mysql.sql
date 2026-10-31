@@ -109,6 +109,9 @@ CREATE TABLE user_stores (
 -- Preserve existing EMP codes by explicitly importing their numeric suffix here.
 -- Import older employees first when assigning missing IDs; never reseed downward.
 -- Create user + employee profile + store assignment in one backend transaction.
+-- Employee creation must allocate and return the public code server-side;
+-- clients must never supply or change employee numbers. MongoDB uses the shared
+-- employee_counters collection; SQL uses this table's AUTO_INCREMENT instead.
 CREATE TABLE employee_profiles (
     employee_number BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
     user_id BIGINT UNSIGNED NOT NULL,

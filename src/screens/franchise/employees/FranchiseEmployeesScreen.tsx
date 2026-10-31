@@ -82,7 +82,7 @@ export function FranchiseEmployeesScreen({ storeId }: { storeId: string; }) {
               <View style={styles.storeCardHeader}>
                 <View style={employeeStyles.identity}>
                   <View style={employeeStyles.avatar}><Text style={employeeStyles.avatarText}>{employee.name.charAt(0).toUpperCase()}</Text></View>
-                  <View style={employeeStyles.identityCopy}><Text numberOfLines={1} style={styles.userCardName}>{employee.name}</Text><Text style={styles.rowSubtext}>{employee.position || '—'}</Text></View>
+                  <View style={employeeStyles.identityCopy}><Text style={styles.userCardName}>{employee.name}{employee.employeeCode ? ` (${employee.employeeCode})` : ''}</Text><Text style={styles.rowSubtext}>{employee.position || '—'}</Text></View>
                 </View>
                 <View style={styles.storeCardHeaderActions}>
                   <Pressable accessibilityRole="button" accessibilityLabel={`${t('franchiseEmployeesEdit')} ${employee.name}`} onPress={() => openEdit(employee)} style={styles.userIconAction}><Pencil color={theme.colors.teal} size={16} /></Pressable>
@@ -92,7 +92,6 @@ export function FranchiseEmployeesScreen({ storeId }: { storeId: string; }) {
                 </View>
               </View>
               <View style={styles.storeCardBody}>
-                {employee.employeeCode ? <Text style={employeeStyles.detail}>{t('franchiseEmployeesId')}: {employee.employeeCode}</Text> : null}
                 {employee.phone ? <Text style={employeeStyles.detail}>{employee.phone}</Text> : null}
                 <View style={employeeStyles.metrics}><Text style={employeeStyles.detail}>{t('franchiseEmployeesSalaryLabel')}: {employee.salary == null ? '—' : `₹${employee.salary.toLocaleString(getLocale())}`}</Text><Text style={employeeStyles.detail}>{t('franchiseEmployeesJoinedLabel')}: {employee.dateOfJoining ? new Date(employee.dateOfJoining).toLocaleDateString(getLocale()) : '—'}</Text></View>
                 <View style={[employeeStyles.badge, employee.isActive === false ? employeeStyles.inactiveBadge : employeeStyles.activeBadge]}><Text style={employeeStyles.badgeText}>{t(employee.isActive === false ? 'franchiseEmployeesArchived' : 'franchiseEmployeesActive')}</Text></View>
