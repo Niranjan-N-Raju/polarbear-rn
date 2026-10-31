@@ -95,8 +95,10 @@ describe('SaleFormDrawer', () => {
     const api = jest.spyOn(authApi, 'apiRequest').mockResolvedValue(response(409, { message: 'Sale already exists' }));
     const onSaved = jest.fn();
     const renderer = renderSafeArea(
-      <SaleFormDrawer visible storeId="store-1" editingSale={sale} existingDates={[today]} onClose={jest.fn()} onSaved={onSaved} />,
+      <SaleFormDrawer visible storeId="store-1" editingSale={sale} existingDates={[today, yesterday]} onClose={jest.fn()} onSaved={onSaved} />,
     );
+    expect(renderer.root.findByType(DateInput).props.disabledDates).toContain(yesterday);
+    expect(renderer.root.findByType(DateInput).props.disabledDates).not.toContain(today);
     expect(buttons(renderer).some((node) => containsText(node.props.children, t('adminSaveChanges')))).toBe(true);
     pressText(renderer, t('adminSaveChanges'));
     await flushEffects();
@@ -104,6 +106,23 @@ describe('SaleFormDrawer', () => {
     expect(onSaved).not.toHaveBeenCalled();
     expect(renderer.root.findAllByProps({ children: t('franchiseSaleDuplicateDate') }).length).toBeGreaterThan(0);
     expect(renderer.root.findAllByProps({ message: 'Sale already exists' }).length).toBeGreaterThan(0);
+    act(() => renderer.unmount());
+  });
+
+  it('loads occupied dates for the browsed calendar month outside the sales filter', async () => {
+    const api = jest.spyOn(authApi, 'apiRequest').mockResolvedValue(response(200, { sales: [{ date: '2026-01-02' }] }));
+    const renderer = renderSafeArea(<SaleFormDrawer visible storeId="store-1" editingSale={null} existingDates={[]} onClose={jest.fn()} onSaved={jest.fn()} />);
+    act(() => renderer.root.findByType(DateInput).props.onMonthChange('2026-01-01', '2026-01-31'));
+    expect(renderer.root.findByType(DateInput).props.calendarLoading).toBe(true);
+    expect(renderer.root.findByType(DateInput).props.disabledDates).not.toContain('2026-01-03');
+    await flushEffects();
+    const query = new URLSearchParams(String(api.mock.calls[0][0]).split('?')[1]);
+    expect(query.get('storeId')).toBe('store-1');
+    expect(query.get('from')).toBe('2026-01-01');
+    expect(query.get('to')).toBe('2026-01-31');
+    expect(renderer.root.findByType(DateInput).props.calendarLoading).toBe(false);
+    expect(renderer.root.findByType(DateInput).props.disabledDates).toContain('2026-01-02');
+    expect(renderer.root.findByType(DateInput).props.disabledDates).not.toContain('2026-01-03');
     act(() => renderer.unmount());
   });
 });

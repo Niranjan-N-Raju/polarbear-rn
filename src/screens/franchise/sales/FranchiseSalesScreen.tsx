@@ -11,6 +11,7 @@ import { SaleCard } from './SaleCard';
 import { SaleFiltersDrawer } from './SaleFiltersDrawer';
 import { SaleFormDrawer } from './SaleFormDrawer';
 import { pageSize, useFranchiseSales, type FranchiseSalesScreenProps } from './useFranchiseSales';
+import { salesStyles } from './salesStyles';
 
 
 export function FranchiseSalesScreen({ storeId }: FranchiseSalesScreenProps) {
@@ -52,11 +53,11 @@ export function FranchiseSalesScreen({ storeId }: FranchiseSalesScreenProps) {
   } = useFranchiseSales({ storeId });
   return (
     <View style={styles.screen}>
-      <View style={[styles.screenHeader, layout.desktopWeb && styles.screenHeaderInline, layout.compactWeb && styles.screenHeaderStack]}>
+      <View style={[styles.screenHeader, layout.desktopWeb && styles.screenHeaderInline, layout.compactWeb && styles.screenHeaderStack, layout.isWeb && salesStyles.webHeader]}>
         <View style={layout.isWeb ? styles.screenHeaderCopy : styles.screenHeaderCopyNative}>
-          <View style={styles.screenTitleRow}>
+          <View style={[styles.screenTitleRow, layout.isWeb && salesStyles.webTitleRow]}>
             <Text style={[styles.screenTitle, styles.screenTitleInline]}>{t('franchiseSales')}</Text>
-            <Pressable
+            {!layout.isWeb ? <Pressable
               accessibilityRole="button"
               accessibilityLabel={t('franchiseFilterSales')}
               onPress={openFilters}
@@ -64,18 +65,20 @@ export function FranchiseSalesScreen({ storeId }: FranchiseSalesScreenProps) {
             >
               <Filter color={theme.colors.teal} size={18} />
               {hasActiveFilters ? <View style={styles.filterActiveDot} /> : null}
-            </Pressable>
+            </Pressable> : null}
+            {layout.isWeb ? <View style={[styles.screenHeaderActions, salesStyles.webHeaderActions]}>
+              <Pressable accessibilityRole="button" accessibilityLabel={t('franchiseFilterSales')} onPress={openFilters} style={styles.filterIconButton}>
+                <Filter color={theme.colors.teal} size={18} />
+                {hasActiveFilters ? <View style={styles.filterActiveDot} /> : null}
+              </Pressable>
+              <Pressable accessibilityRole="button" onPress={openCreate} style={[styles.primaryButton, styles.screenHeaderAction, salesStyles.webHeaderButton]}>
+                <Text style={styles.primaryButtonText}>{t('franchiseAddSale')}</Text>
+              </Pressable>
+            </View> : null}
           </View>
           <Text style={styles.screenDescription}>
             {t('franchiseSalesRange', { from: range.from, to: range.to, count: sales.length })}
           </Text>
-        </View>
-        <View style={styles.screenHeaderActions}>
-          {layout.desktopWeb ? (
-            <Pressable accessibilityRole="button" onPress={openCreate} style={[styles.primaryButton, styles.screenHeaderAction]}>
-              <Text style={styles.primaryButtonText}>{t('franchiseAddSale')}</Text>
-            </Pressable>
-          ) : null}
         </View>
       </View>
 
@@ -85,8 +88,8 @@ export function FranchiseSalesScreen({ storeId }: FranchiseSalesScreenProps) {
         <AppErrorState message={error} onRetry={() => setReloadKey((key) => key + 1)} />
       ) : (
         <ScrollView
-          style={[styles.list, !layout.desktopWeb && styles.storeListFabViewport]}
-          contentContainerStyle={[styles.listContent, !layout.desktopWeb && styles.storeListWithFab]}
+          style={[styles.list, !layout.isWeb && styles.storeListFabViewport]}
+          contentContainerStyle={[styles.listContent, !layout.isWeb && styles.storeListWithFab]}
         >
           {isLoading ? <AppLoader variant="inline" /> : null}
           <SummaryCards cards={summaryCards} isWeb={layout.isWeb} perRow={layout.desktopWeb ? 4 : 2} />
@@ -99,7 +102,7 @@ export function FranchiseSalesScreen({ storeId }: FranchiseSalesScreenProps) {
                 key={sale._id}
                 sale={sale}
                 cardStyle={layout.storeCardStyle}
-                actionsAtBottom={layout.storeCardActionsAtBottom}
+                actionsAtBottom={false}
                 onEdit={openEdit}
               />
             ))}
@@ -118,7 +121,7 @@ export function FranchiseSalesScreen({ storeId }: FranchiseSalesScreenProps) {
         </ScrollView>
       )}
 
-      {!layout.desktopWeb ? (
+      {!layout.isWeb ? (
         <Pressable accessibilityRole="button" accessibilityLabel={t('franchiseAddSale')} onPress={openCreate} style={styles.fab}>
           <Plus color={theme.colors.white} size={24} />
         </Pressable>

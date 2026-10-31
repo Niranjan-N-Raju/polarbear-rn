@@ -190,5 +190,37 @@ export const salesStyles = StyleSheet.create({
   },
   formActions: {
     flexWrap: 'wrap',
+    alignItems: 'stretch',
+  },
+  formActionsWeb: {
+    width: '100%',
+    alignSelf: 'stretch',
+    flexWrap: 'nowrap',
+  },
+  formActionsRowWeb: {
+    width: '100%',
+    marginHorizontal: 0,
+    paddingHorizontal: 0,
+  },
+  webHeader: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: spacing.lg,
+  },
+  webHeaderActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginLeft: 'auto',
+    gap: spacing.md,
+  },
+  webTitleRow: {
+    flexWrap: 'wrap',
+    gap: spacing.md,
+  },
+  webHeaderButton: {
+    alignSelf: 'center',
+    marginTop: 0,
   },
 });

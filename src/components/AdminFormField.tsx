@@ -26,6 +26,10 @@ export function AdminFormField({
   date,
   minimumDate,
   maximumDate,
+  disabledDates,
+  calendarLoading,
+  calendarError,
+  onMonthChange,
 }: AdminFormFieldProps) {
   const input = date ? (
     <DateInput
@@ -36,6 +40,10 @@ export function AdminFormField({
       editable={editable}
       minimumDate={minimumDate}
       maximumDate={maximumDate}
+      disabledDates={disabledDates}
+      calendarLoading={calendarLoading}
+      calendarError={calendarError}
+      onMonthChange={onMonthChange}
       style={[styles.fieldInput, error && styles.inputError, !editable && styles.fieldInputDisabled]}
     />
   ) : (

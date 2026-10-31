@@ -1,5 +1,5 @@
-import { useEffect, useMemo, useState } from 'react';
-import { Pressable, ScrollView, Text, TextInput, View } from 'react-native';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { Platform, Pressable, ScrollView, Text, TextInput, View } from 'react-native';
 import { Check, Pencil, Plus, Trash2, X } from '../../../icons';
 import { apiRequest } from '../../../api/auth';
 import { AdminFormField } from '../../../components/AdminFormField';
@@ -12,6 +12,7 @@ import { adminStyles as styles } from '../../../styles/adminStyles';
 import { formatMoney } from '../DashboardCharts';
 import type { SaleRecord } from '../types';
 import { salesStyles } from './salesStyles';
+import { businessDate } from '../../../utils/businessDate';
 import {
   calculateCash,
   emptySaleForm,
@@ -65,6 +66,10 @@ export function SaleFormDrawer({
   const [expenseDraft, setExpenseDraft] = useState<ExpenseDraft | null>(null);
   const [expenseError, setExpenseError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
+  const [calendarRange, setCalendarRange] = useState<{ from: string; to: string } | null>(null);
+  const [dateAvailability, setDateAvailability] = useState<Record<string, string[]>>({});
+  const [datesLoading, setDatesLoading] = useState(false);
+  const [dateLoadError, setDateLoadError] = useState<string | null>(null);
   const [toast, setToast] = useState<{ message: string; tone: 'error' | 'success' } | null>(null);
 
   useEffect(() => {
@@ -75,12 +80,42 @@ export function SaleFormDrawer({
     setExpenseDraft(null);
     setExpenseError(null);
     setToast(null);
+    setCalendarRange(null);
+    setDateAvailability({});
+    setDatesLoading(false);
+    setDateLoadError(null);
   }, [visible, editingSale]);
+
+  const loadCalendarMonth = useCallback((from: string, to: string) => {
+    setDatesLoading(true);
+    setDateLoadError(null);
+    setCalendarRange({ from, to });
+  }, []);
+
+  useEffect(() => {
+    if (!visible || !calendarRange) return;
+    const today = businessDate();
+    if (calendarRange.from > today) { setDatesLoading(false); return; }
+    const controller = new AbortController();
+    const query = new URLSearchParams({ storeId, from: calendarRange.from, to: calendarRange.to > today ? today : calendarRange.to });
+    apiRequest(`/sales?${query.toString()}`, { signal: controller.signal })
+      .then(async (response) => {
+        const data = await response.json().catch(() => ({})) as { sales?: SaleRecord[]; message?: string };
+        if (controller.signal.aborted) return;
+        if (!response.ok) throw new Error(data.message ?? t('adminLoadFailed'));
+        if (!Array.isArray(data.sales)) throw new Error(t('adminLoadFailed'));
+        setDateAvailability((current) => ({ ...current, [calendarRange.from]: data.sales!.map((sale) => sale.date) }));
+      })
+      .catch(() => { if (!controller.signal.aborted) setDateLoadError(t('adminLoadFailed')); })
+      .finally(() => { if (!controller.signal.aborted) setDatesLoading(false); });
+    return () => controller.abort();
+  }, [visible, calendarRange, storeId]);
 
   const cash = calculateCash(form);
   const totalExpenses = sumExpenses(form.expenses);
   const bankingCash = cash - totalExpenses;
-  const dates = useMemo(() => existingDates, [existingDates]);
+  const dates = useMemo(() => [...new Set([...existingDates, ...Object.values(dateAvailability).flat()])], [existingDates, dateAvailability]);
+  const disabledDates = useMemo(() => dates.filter((date) => date !== editingSale?.date), [dates, editingSale?.date]);
 
   const updateField = (field: 'date' | SaleAmountField, value: string) => {
     setForm((current) => ({ ...current, [field]: field === 'date' ? value : sanitizeAmount(value) }));
@@ -111,7 +146,7 @@ export function SaleFormDrawer({
   };
 
   const save = async () => {
-    if (saving) return;
+    if (saving || datesLoading || dateLoadError) return;
     const nextErrors = validateSaleForm(form, dates, editingSale?.date ?? null);
     setErrors(nextErrors);
     if (Object.values(nextErrors).some(Boolean)) return;
@@ -182,7 +217,12 @@ export function SaleFormDrawer({
             onChangeText={(value) => updateField('date', value)}
             keyboardType="numbers-and-punctuation"
             autoCapitalize="none"
-            error={errors.date}
+            maximumDate={businessDate()}
+            disabledDates={disabledDates}
+            calendarLoading={datesLoading}
+            calendarError={dateLoadError}
+            onMonthChange={loadCalendarMonth}
+            error={errors.date ?? dateLoadError ?? undefined}
           />
           {amountField('totalSale')}
           <View style={salesStyles.formRow}>
@@ -293,8 +333,8 @@ export function SaleFormDrawer({
             </View>
           </View>
         </ScrollView>
-        <View style={salesStyles.formActions}>
-          <View style={styles.modalActions}>
+        <View style={[salesStyles.formActions, Platform.OS === 'web' && salesStyles.formActionsWeb]}>
+          <View style={[styles.modalActions, Platform.OS === 'web' && salesStyles.formActionsRowWeb]}>
             <View style={styles.drawerActionSlot}>
               <Pressable accessibilityRole="button" onPress={onClose} style={[styles.secondaryButton, styles.drawerActionButton]}>
                 <Text style={styles.secondaryButtonText}>{t('adminCancel')}</Text>
@@ -303,7 +343,7 @@ export function SaleFormDrawer({
             <View style={styles.drawerActionSlot}>
               <Pressable
                 accessibilityRole="button"
-                disabled={saving}
+                disabled={saving || datesLoading || Boolean(dateLoadError)}
                 onPress={() => void save()}
                 style={[styles.primaryButton, styles.drawerActionButton]}
               >

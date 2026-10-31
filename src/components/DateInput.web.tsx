@@ -6,6 +6,7 @@ import { getLocale, t } from '../i18n';
 import { formatDateOnly, parseDateOnly } from '../utils/dateOnly';
 import type { DateInputProps } from './DateInput.types';
 import { businessDate } from '../utils/businessDate';
+import { CalendarDateInput } from './CalendarDateInput';
 
 const POPOVER_WIDTH = 296;
 const POPOVER_HEIGHT = 360;
@@ -13,7 +14,11 @@ const WEEKDAYS = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'];
 
 interface Anchor { x: number; y: number; width: number; height: number }
 
-export function DateInput({
+export function DateInput(props: DateInputProps) {
+  return props.disabledDates ? <CalendarDateInput {...props} /> : <DefaultDateInput {...props} />;
+}
+
+function DefaultDateInput({
   value, onChangeText, accessibilityLabel, placeholder, editable = true, allowClear = true,
   minimumDate, maximumDate, style,
 }: DateInputProps) {

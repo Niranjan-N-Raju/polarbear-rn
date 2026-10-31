@@ -8,8 +8,13 @@ import { theme } from '../config/theme';
 import { t } from '../i18n';
 import { formatDateOnly, parseDateOnly } from '../utils/dateOnly';
 import type { DateInputProps } from './DateInput.types';
+import { CalendarDateInput } from './CalendarDateInput';
 
-export function DateInput({
+export function DateInput(props: DateInputProps) {
+  return props.disabledDates ? <CalendarDateInput {...props} /> : <NativeDateInput {...props} />;
+}
+
+function NativeDateInput({
   value, onChangeText, accessibilityLabel, placeholder, editable = true, allowClear = true,
   minimumDate, maximumDate, style,
 }: DateInputProps) {

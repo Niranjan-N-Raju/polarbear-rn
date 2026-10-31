@@ -9,5 +9,9 @@ export interface DateInputProps {
   allowClear?: boolean;
   minimumDate?: string;
   maximumDate?: string;
+  disabledDates?: string[];
+  calendarLoading?: boolean;
+  calendarError?: string | null;
+  onMonthChange?: (from: string, to: string) => void;
   style?: StyleProp<TextStyle>;
 }

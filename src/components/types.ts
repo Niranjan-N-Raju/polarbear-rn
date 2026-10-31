@@ -16,6 +16,10 @@ export interface AdminFormFieldProps {
   date?: boolean;
   minimumDate?: string;
   maximumDate?: string;
+  disabledDates?: string[];
+  calendarLoading?: boolean;
+  calendarError?: string | null;
+  onMonthChange?: (from: string, to: string) => void;
   label: string;
   value: string;
   onChangeText: (value: string) => void;

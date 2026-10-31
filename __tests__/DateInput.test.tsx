@@ -168,3 +168,55 @@ describe('browser date input', () => {
     act(() => renderer.unmount());
   });
 });
+
+describe('individually disabled calendar dates', () => {
+  it.each(['android', 'ios', 'web'] as const)('hides dates until calendar loading finishes on %s', (platform) => {
+    Object.defineProperty(Platform, 'OS', { configurable: true, value: platform });
+    const Input = platform === 'web' ? WebDateInput : DateInput;
+    const change = jest.fn();
+    const props = { value: '2026-10-10', onChangeText: change, accessibilityLabel: 'Sale date', disabledDates: ['2026-10-11'] };
+    const renderer = renderSafeArea(<Input {...props} calendarLoading />);
+    act(() => buttons(renderer).find((button) => button.props.accessibilityLabel === 'Sale date')!.props.onPress());
+    expect(buttons(renderer).some((button) => button.props.accessibilityLabel === '2026-10-11')).toBe(false);
+    act(() => renderer.update(<SafeAreaProvider initialMetrics={initialMetrics}><Input {...props} calendarLoading={false} /></SafeAreaProvider>));
+    expect(buttons(renderer).find((button) => button.props.accessibilityLabel === '2026-10-11')!.props.disabled).toBe(true);
+    expect(buttons(renderer).find((button) => button.props.accessibilityLabel === '2026-10-12')!.props.disabled).toBe(false);
+    act(() => renderer.update(<SafeAreaProvider initialMetrics={initialMetrics}><Input {...props} calendarError="Unable to load dates" /></SafeAreaProvider>));
+    expect(buttons(renderer).some((button) => button.props.accessibilityLabel === '2026-10-11')).toBe(false);
+    expect(renderer.root.findAllByProps({ accessibilityRole: 'alert' }).length).toBeGreaterThan(0);
+    expect(change).not.toHaveBeenCalled();
+    act(() => renderer.unmount());
+  });
+
+  it.each(['android', 'ios', 'web'] as const)('blocks occupied dates on %s', (platform) => {
+    Object.defineProperty(Platform, 'OS', { configurable: true, value: platform });
+    const Input = platform === 'web' ? WebDateInput : DateInput;
+    const change = jest.fn();
+    const monthChange = jest.fn();
+    const renderer = renderSafeArea(<Input value="2026-10-10" onChangeText={change} accessibilityLabel="Sale date" disabledDates={['2026-10-11']} maximumDate="2026-10-30" onMonthChange={monthChange} />);
+    act(() => buttons(renderer).find((button) => button.props.accessibilityLabel === 'Sale date')!.props.onPress());
+    expect(monthChange).toHaveBeenCalledWith('2026-10-01', '2026-10-31');
+    const occupied = buttons(renderer).find((button) => button.props.accessibilityLabel === '2026-10-11')!;
+    expect(occupied.props.disabled).toBe(true);
+    act(() => occupied.props.onPress());
+    expect(change).not.toHaveBeenCalled();
+    const available = buttons(renderer).find((button) => button.props.accessibilityLabel === '2026-10-12')!;
+    expect(available.props.disabled).toBe(false);
+    act(() => available.props.onPress());
+    expect(change).toHaveBeenCalledWith('2026-10-12');
+    act(() => renderer.unmount());
+  });
+
+  it('hosts the iOS blocked-date calendar inside the existing drawer modal', () => {
+    Object.defineProperty(Platform, 'OS', { configurable: true, value: 'ios' });
+    const renderer = renderSafeArea(
+      <ResponsiveDrawerModal visible closeLabel="Close" onClose={() => {}}>
+        <DateInput value="2026-10-10" onChangeText={() => {}} accessibilityLabel="Sale date" disabledDates={['2026-10-11']} />
+      </ResponsiveDrawerModal>,
+    );
+    act(() => buttons(renderer).find((button) => button.props.accessibilityLabel === 'Sale date')!.props.onPress());
+    expect(renderer.root.findAllByType(Modal)).toHaveLength(1);
+    expect(buttons(renderer).find((button) => button.props.accessibilityLabel === '2026-10-11')!.props.disabled).toBe(true);
+    act(() => renderer.unmount());
+  });
+});
