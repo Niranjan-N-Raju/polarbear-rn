@@ -6,6 +6,7 @@ export const employeesEn = {
   franchiseEmployeesSearch: 'Search by employee ID, name or phone',
   franchiseEmployeesId: 'Employee ID',
   franchiseEmployeesStatus: 'Status',
+  franchiseEmployeesActions: 'Actions',
   franchiseEmployeesAll: 'All employees',
   franchiseEmployeesActive: 'Active',
   franchiseEmployeesArchived: 'Archived',

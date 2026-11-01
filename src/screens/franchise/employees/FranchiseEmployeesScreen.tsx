@@ -11,6 +11,7 @@ import { Archive, Filter, Pencil, Plus, RotateCcw, X } from '../../../icons';
 import { adminStyles as styles } from '../../../styles/adminStyles';
 import { EmployeeFiltersDrawer } from './EmployeeFiltersDrawer';
 import { EmployeeFormDrawer } from './EmployeeFormDrawer';
+import { EmployeeTable } from './EmployeeTable';
 import { employeeStyles } from './employeeStyles';
 import { pageSize, useFranchiseEmployees } from './useFranchiseEmployees';
 import { businessDate } from '../../../utils/businessDate';
@@ -76,7 +77,9 @@ export function FranchiseEmployeesScreen({ storeId }: { storeId: string; }) {
       <ScrollView style={[styles.list, !layout.desktopWeb && styles.storeListFabViewport]} contentContainerStyle={[styles.listContent, !layout.desktopWeb && styles.storeListWithFab]}>
         <SummaryCards cards={summary} isWeb={layout.isWeb} perRow={layout.desktopWeb ? 3 : 2} />
         {filtered.length === 0 ? <Text style={styles.stateMessage}>{employees.length === 0 ? t('franchiseEmployeesNoEmployees') : t('franchiseEmployeesNoMatches')}</Text> : null}
-        <View style={layout.isWeb ? styles.storeGrid : undefined}>
+        {layout.isWeb ? (
+          filtered.length > 0 ? <EmployeeTable employees={filtered.slice(0, visibleCount)} onEdit={openEdit} onArchive={(employee) => { setExitDate(businessDate()); setArchiveTarget(employee); }} onRestore={(employee) => void restore(employee)} /> : null
+        ) : <View>
           {filtered.slice(0, visibleCount).map((employee) => (
             <View key={employee._id} style={[styles.storeCard, employeeStyles.employeeCard, layout.storeCardStyle ? styles[layout.storeCardStyle] : undefined]}>
               <View style={styles.storeCardHeader}>
@@ -99,7 +102,7 @@ export function FranchiseEmployeesScreen({ storeId }: { storeId: string; }) {
               </View>
             </View>
           ))}
-        </View>
+        </View>}
         {filtered.length > visibleCount ? <Pressable accessibilityRole="button" onPress={() => setVisibleCount((count) => count + pageSize)} style={[styles.loadMoreButton, employeeStyles.loadMore]}><Text style={styles.loadMoreButtonText}>{t('franchiseEmployeesLoadMore')}</Text></Pressable> : null}
       </ScrollView>
       {!layout.desktopWeb ? <Pressable accessibilityRole="button" accessibilityLabel={t('franchiseEmployeesAdd')} onPress={openCreate} style={styles.fab}><Plus color={theme.colors.white} size={24} /></Pressable> : null}
