@@ -1,4 +1,5 @@
-import { Modal, Pressable, Text, View } from 'react-native';
+import { useEffect } from 'react';
+import { Modal, Platform, Pressable, Text, View } from 'react-native';
 import { AppLoader } from '../../components/AppLoader';
 import { AppToast } from '../../components/AppToast';
 import { theme } from '../../config/theme';
@@ -37,6 +38,15 @@ export function AdminHomeScreen({
     tabs,
     primaryTabs,
   } = useAdminHome({ user: initialUser, onLogout });
+  const activeLabel =
+    tabs.find(tab => tab.key === activeTab)?.label ?? 'adminDashboard';
+  const documentTitle = `${t(activeLabel)} · ${t('brandName')}`;
+  useEffect(() => {
+    if (Platform.OS === 'web') {
+      document.title = documentTitle;
+    }
+  }, [documentTitle]);
+
   return (
     <View
       style={[

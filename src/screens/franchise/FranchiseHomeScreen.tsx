@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import {
   Modal,
   Platform,
@@ -69,6 +70,13 @@ export function FranchiseHomeScreen({
     navigate,
     logout,
   } = useFranchiseHome({ user: initialUser, onLogout });
+  const documentTitle = `${t(currentLabel)} · ${t('brandName')}`;
+  useEffect(() => {
+    if (Platform.OS === 'web') {
+      document.title = documentTitle;
+    }
+  }, [documentTitle]);
+
   function renderNavItem(item: MenuItem) {
     const Icon = menuIcons[item.key];
     const active = tab === item.key;

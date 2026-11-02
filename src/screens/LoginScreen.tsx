@@ -8,6 +8,7 @@ import {
   TextInput,
   View,
 } from 'react-native';
+import { useEffect } from 'react';
 import { AppLoader } from '../components/AppLoader';
 import { AppToast } from '../components/AppToast';
 import { theme } from '../config/theme';
@@ -49,6 +50,16 @@ export function LoginScreen() {
     dismissAuthToast,
     safeAreaStyles,
   } = useLoginScreen();
+  const documentTitle = !loginState.session
+    ? t('pageTitle')
+    : loginState.session.user.mustChangePassword === true
+    ? `${t('forcePasswordTitle')} · ${t('brandName')}`
+    : null;
+  useEffect(() => {
+    if (Platform.OS !== 'web') return;
+    if (documentTitle) document.title = documentTitle;
+  }, [documentTitle]);
+
   if (loginState.isRestoring) return <AppLoader variant="screen" />;
   if (loginState.session) {
     if (loginState.session.user.mustChangePassword === true) {
