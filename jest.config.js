@@ -2,6 +2,7 @@ module.exports = {
   preset: '@react-native/jest-preset',
   setupFilesAfterEnv: ['<rootDir>/jest.setup.js'],
   // Full-screen render tests run close to the 5s default under parallel workers.
+  maxWorkers: 2,
   testTimeout: 15000,
   testPathIgnorePatterns: [
     '/node_modules/',

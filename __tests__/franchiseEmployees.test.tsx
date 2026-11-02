@@ -15,6 +15,7 @@ import {
 } from './testUtils';
 
 describe('FranchiseEmployeesScreen', () => {
+  beforeEach(() => jest.useRealTimers());
   afterEach(() => jest.restoreAllMocks());
 
   it('loads scoped employees and exposes create, filters, and pagination controls', async () => {

@@ -34,6 +34,7 @@ const texts = (renderer: ReturnType<typeof renderSafeArea>, value: string) =>
   renderer.root.findAllByProps({ children: value });
 
 describe('FranchiseWithdrawalsScreen', () => {
+  beforeEach(() => jest.useRealTimers());
   it('loads the selected month and displays monthly and all-time totals', async () => {
     const api = jest.spyOn(authApi, 'apiRequest').mockResolvedValue(
       response(200, {

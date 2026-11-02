@@ -87,8 +87,7 @@ describe('sales utils', () => {
     };
     expect(calculateCash(form)).toBe(649.5);
     expect(sanitizeAmount('12a.3.4')).toBe('12.34');
-    expect(salePayload('store-1', form)).toEqual({
-      storeId: 'store-1',
+    expect(salePayload(form)).toEqual({
       date: '2026-01-31',
       totalSale: 1000,
       swiggy: 100,

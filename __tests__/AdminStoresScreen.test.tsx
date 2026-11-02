@@ -22,6 +22,8 @@ afterEach(() => {
 });
 
 describe('AdminStoresScreen', () => {
+  beforeEach(() => jest.useRealTimers());
+
   it('loads stores, validates and creates a store, and archives a store', async () => {
     const existing = {
       _id: 'store-1',

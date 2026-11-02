@@ -24,6 +24,8 @@ afterEach(() => {
 });
 
 describe('AdminUsersScreen', () => {
+  beforeEach(() => jest.useRealTimers());
+
   it('loads users, validates and creates a user, applies filters, and deletes a user', async () => {
     const existing = {
       _id: 'user-1',

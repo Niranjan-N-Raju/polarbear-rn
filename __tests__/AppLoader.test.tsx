@@ -54,8 +54,8 @@ describe('AppLoader', () => {
     let renderer!: TestRenderer.ReactTestRenderer;
     const render = (first: boolean, second: boolean) => (
       <AppLoaderProvider>
-        {first ? <AppLoader key="first" color="red" /> : null}
-        {second ? <AppLoader key="second" color="blue" /> : null}
+        {first ? <AppLoader key="first" color="red" artwork="spinner" /> : null}
+        {second ? <AppLoader key="second" color="blue" artwork="spinner" /> : null}
         <AppLoader variant="inline" />
       </AppLoaderProvider>
     );
