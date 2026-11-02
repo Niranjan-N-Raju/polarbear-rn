@@ -17,6 +17,7 @@ export interface Employee {
   position?: string;
   employmentType?: 'full_time' | 'part_time';
   salary?: number | null;
+  latestSalary?: number | null;
   dateOfJoining?: string;
   isActive?: boolean;
   archivedAt?: string;
@@ -42,6 +43,7 @@ export function useFranchiseEmployees({ storeId }: { storeId: string; }) {
   const [visibleCount, setVisibleCount] = useState(pageSize);
   const [formVisible, setFormVisible] = useState(false);
   const [editing, setEditing] = useState<Employee | null>(null);
+  const [hikeEmployee, setHikeEmployee] = useState<Employee | null>(null);
   const [archiveTarget, setArchiveTarget] = useState<Employee | null>(null);
   const [exitDate, setExitDate] = useState(() => businessDate());
   const [busy, setBusy] = useState(false);
@@ -131,6 +133,8 @@ export function useFranchiseEmployees({ storeId }: { storeId: string; }) {
     formVisible,
     setFormVisible,
     editing,
+    hikeEmployee,
+    setHikeEmployee,
     archiveTarget,
     setArchiveTarget,
     exitDate,

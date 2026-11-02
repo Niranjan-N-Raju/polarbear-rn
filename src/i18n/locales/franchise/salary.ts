@@ -1,5 +1,7 @@
 export const salaryEn = {
   franchiseSalaryTitle: 'Salary projections',
+  franchiseSalaryHikesPromotions: 'Hikes & Promotions',
+  franchiseSalaryNoEmployeesForHikes: 'No active employees found.',
   franchiseSalaryDescription: 'Review employee pay, attendance and cycle settings.',
   franchiseSalaryBase: 'Base salaries',
   franchiseSalaryEarned: 'Salary to be paid',

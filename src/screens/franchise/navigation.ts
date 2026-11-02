@@ -1,5 +1,5 @@
 import type { TranslationKey } from '../../i18n';
-import { Banknote, CalendarCheck, ChartNoAxesCombined, LayoutDashboard, Package, Receipt, Settings, UserRound, UsersRound, Wallet } from '../../icons';
+import { Banknote, CalendarCheck, ChartNoAxesCombined, Gift, LayoutDashboard, Package, Receipt, Settings, UserRound, UsersRound, Wallet } from '../../icons';
 export const menuIcons = {
   dashboard: LayoutDashboard,
   sales: Receipt,
@@ -9,6 +9,7 @@ export const menuIcons = {
   employees: UsersRound,
   attendance: CalendarCheck,
   salary: Banknote,
+  'salary-hikes': Gift,
   profile: UserRound,
   'store-config': Settings,
 };
@@ -29,6 +30,7 @@ export const menuGroups: { label?: TranslationKey; items: MenuItem[]; }[] = [
       { key: 'employees', label: 'adminEmployees' },
       { key: 'attendance', label: 'franchiseAttendance' },
       { key: 'salary', label: 'franchiseSalary' },
+      { key: 'salary-hikes', label: 'franchiseSalaryHikesPromotions' },
     ]
   },
 ];

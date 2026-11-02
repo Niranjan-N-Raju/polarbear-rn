@@ -15,6 +15,7 @@ import { FranchiseInventoryScreen } from './inventory/FranchiseInventoryScreen';
 import { menuGroups, menuIcons, type MenuItem } from './navigation';
 import { FranchisePnlScreen } from './pnl/FranchisePnlScreen';
 import { FranchiseSalaryScreen } from './salary/FranchiseSalaryScreen';
+import { SalaryHikesScreen } from './salary-hikes/SalaryHikesScreen';
 import { FranchiseSalesScreen } from './sales/FranchiseSalesScreen';
 import { FranchiseStoreConfigScreen } from './store-config/FranchiseStoreConfigScreen';
 import { StorePicker } from './StorePicker';
@@ -185,6 +186,8 @@ export function FranchiseHomeScreen({ user: initialUser, onLogout }: FranchiseHo
           <FranchiseAttendanceScreen key={activeStore._id} storeId={activeStore._id} />
         ) : tab === 'salary' ? (
           <FranchiseSalaryScreen key={activeStore._id} storeId={activeStore._id} />
+        ) : tab === 'salary-hikes' ? (
+          <SalaryHikesScreen key={activeStore._id} storeId={activeStore._id} />
         ) : tab === 'store-config' ? (
           <FranchiseStoreConfigScreen key={activeStore._id} storeId={activeStore._id} />
         ) : (

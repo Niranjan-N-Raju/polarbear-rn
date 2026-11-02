@@ -1,6 +1,6 @@
 import { type SalaryEntry } from './SalaryEntryDrawer';
 export interface Projection {
-  employeeId: string; name: string; position: string; employmentType: string; salary: number;
+  employeeId: string; name: string; position: string; employmentType: string; salary: number; basicSalary?: number;
   paidDays: number; absentDays: number; weekOffDays: number; missingDays: number; futureDays: number; eligibleDays: number;
   incentives: SalaryEntry[]; incentiveTotal: number; paidEarlyIncentiveTotal?: number; extraDays: SalaryEntry[]; extraDaysTotal: number;
   advances: SalaryEntry[]; advanceTotal: number; earnedSalary: number; projectedSalary: number;

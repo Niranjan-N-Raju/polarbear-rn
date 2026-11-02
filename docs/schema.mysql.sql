@@ -118,6 +118,7 @@ CREATE TABLE employee_profiles (
     position VARCHAR(100) NULL,
     employment_type ENUM('full_time', 'part_time') NULL,
     salary DECIMAL(14,2) NULL,
+    salary_baseline DECIMAL(14,2) NULL,
     date_of_joining DATE NULL,
     actual_dob DATE NULL,
     dob_in_records DATE NULL,
@@ -135,7 +136,33 @@ CREATE TABLE employee_profiles (
     PRIMARY KEY (employee_number),
     UNIQUE KEY uq_employee_profiles_user (user_id),
     CONSTRAINT fk_employee_profiles_user FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE RESTRICT,
-    CONSTRAINT ck_employee_profiles_salary CHECK (salary IS NULL OR salary >= 0)
+    CONSTRAINT ck_employee_profiles_salary CHECK (salary IS NULL OR salary >= 0),
+    CONSTRAINT ck_employee_profiles_salary_baseline CHECK (salary_baseline IS NULL OR salary_baseline >= 0)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+-- Salary stores the latest approved rate; baseline preserves the rate before the
+-- first hike. Embedded MongoDB salaryRevisions are normalized here. Apply each
+-- rate only from its effective date; payroll prorates individual paid days.
+-- A non-NULL revision position records a promotion effective on the same date.
+-- Period-level extra days have no work date and use the cycle-end salary rate.
+-- The API must reject salary decreases, duplicate/out-of-order effective dates,
+-- archived employees, and concurrent stale updates. Changes after the first hike
+-- must use this history rather than overwriting the baseline in profile edits.
+CREATE TABLE employee_salary_revisions (
+    id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+    employee_id BIGINT UNSIGNED NOT NULL,
+    store_id BIGINT UNSIGNED NOT NULL,
+    effective_from DATE NOT NULL,
+    salary DECIMAL(14,2) NOT NULL,
+    position VARCHAR(100) NULL,
+    created_by BIGINT UNSIGNED NOT NULL,
+    created_at DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+    PRIMARY KEY (id),
+    UNIQUE KEY uq_salary_revisions_effective (employee_id, effective_from),
+    CONSTRAINT fk_salary_revisions_employee FOREIGN KEY (employee_id) REFERENCES employee_profiles (employee_number) ON DELETE RESTRICT,
+    CONSTRAINT fk_salary_revisions_store FOREIGN KEY (store_id) REFERENCES stores (id) ON DELETE RESTRICT,
+    CONSTRAINT fk_salary_revisions_creator FOREIGN KEY (created_by) REFERENCES users (id) ON DELETE RESTRICT,
+    CONSTRAINT ck_salary_revisions_amount CHECK (salary > 0)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 CREATE TABLE employee_documents (
@@ -457,9 +484,25 @@ SELECT employee.employee_number AS employee_id,
        account.is_active,
        account.archived_at,
        account.created_at,
-       employee.position,
+       COALESCE((
+           SELECT revision.position
+           FROM employee_salary_revisions AS revision
+           WHERE revision.employee_id = employee.employee_number
+               AND revision.position IS NOT NULL
+               AND revision.effective_from <= DATE(CONVERT_TZ(UTC_TIMESTAMP(), '+00:00', '+05:30'))
+           ORDER BY revision.effective_from DESC
+           LIMIT 1
+       ), employee.position) AS position,
        employee.employment_type,
-       employee.salary,
+             COALESCE((
+                     SELECT revision.salary
+                     FROM employee_salary_revisions AS revision
+                     WHERE revision.employee_id = employee.employee_number
+                         AND revision.effective_from <= DATE(CONVERT_TZ(UTC_TIMESTAMP(), '+00:00', '+05:30'))
+                     ORDER BY revision.effective_from DESC
+                     LIMIT 1
+             ), employee.salary_baseline, employee.salary) AS salary,
+             employee.salary AS latest_salary,
        employee.date_of_joining
 FROM employee_profiles AS employee
 JOIN users AS account ON account.id = employee.user_id;

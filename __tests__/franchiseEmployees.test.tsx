@@ -40,6 +40,24 @@ describe('FranchiseEmployeesScreen', () => {
 
   const details = { _id: 'employee-1', name: 'Asha', phone: '9876543210', position: 'Cook', employmentType: 'full_time', dateOfJoining: '2025-01-02T00:00:00.000Z', salary: 15000, bankName: 'Bank' };
   const fieldByLabel = (renderer: ReturnType<typeof renderSafeArea>, label: string) => renderer.root.findAllByType(AdminFormField).find((node) => node.props.label === label)!;
+  it('opens the salary-hike action and submits a new salary with its effective date', async () => {
+    const api = jest.spyOn(authApi, 'apiRequest').mockImplementation(async (_path, init) =>
+      init?.method === 'POST' ? response(200, { message: 'Salary hike saved.' }) : response(200, { users: [details], pagination: { total: 1 } }),
+    );
+    const renderer = renderSafeArea(<FranchiseEmployeesScreen storeId="store-1" />);
+    await flushEffects();
+    act(() => buttonByLabel(renderer, `${t('franchiseEmployeesSalaryHike')} ${details.name}`).props.onPress());
+    act(() => {
+      fieldByLabel(renderer, t('franchiseEmployeesNewSalary')).props.onChangeText('18000');
+      fieldByLabel(renderer, t('franchiseEmployeesHikeEffective')).props.onChangeText('2026-02-01');
+    });
+    await act(async () => { await buttons(renderer).find((button) => containsText(button.props.children, t('adminSave')))!.props.onPress(); });
+    const hike = api.mock.calls.find(([path]) => path.includes('/salary-hikes'))!;
+    expect(hike[0]).toBe('/users/employee-1/salary-hikes?storeId=store-1');
+    expect(JSON.parse(String(hike[1]?.body))).toEqual({ salary: 18000, effectiveFrom: '2026-02-01' });
+    act(() => renderer.unmount());
+  });
+
   const pressSection = (renderer: ReturnType<typeof renderSafeArea>, label: string) => act(() => buttons(renderer).find((node) => containsText(node.props.children, label))!.props.onPress());
   const pressSave = async (renderer: ReturnType<typeof renderSafeArea>) => {
     await act(async () => { await buttons(renderer).find((node) => containsText(node.props.children, t('franchiseEmployeesSave')))!.props.onPress(); });
