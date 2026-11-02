@@ -60,14 +60,12 @@ describe('apiRequest PASSWORD_CHANGE_REQUIRED handling', () => {
   it('ignores the code when no token is present', async () => {
     const handler = jest.fn();
     authApi.setPasswordChangeRequiredHandler(handler);
-    global.fetch = jest
-      .fn()
-      .mockResolvedValue({
-        ...response(403, {}),
-        clone: () => ({
-          json: async () => ({ code: 'PASSWORD_CHANGE_REQUIRED' }),
-        }),
-      });
+    global.fetch = jest.fn().mockResolvedValue({
+      ...response(403, {}),
+      clone: () => ({
+        json: async () => ({ code: 'PASSWORD_CHANGE_REQUIRED' }),
+      }),
+    });
     await authApi.apiRequest('/public');
     expect(handler).not.toHaveBeenCalled();
   });
