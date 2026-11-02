@@ -38,7 +38,7 @@ describe('FranchiseMenuGroup', () => {
     act(() => renderer.update(group(true)));
     expect(timing).toHaveBeenLastCalledWith(expect.anything(), {
       toValue: 1,
-      duration: 220,
+      duration: 320,
       useNativeDriver: false,
     });
     expect(button().props.accessibilityState.expanded).toBe(true);
@@ -49,7 +49,7 @@ describe('FranchiseMenuGroup', () => {
     act(() => renderer.update(group(false)));
     expect(timing).toHaveBeenLastCalledWith(expect.anything(), {
       toValue: 0,
-      duration: 220,
+      duration: 320,
       useNativeDriver: false,
     });
     act(() => renderer.unmount());
