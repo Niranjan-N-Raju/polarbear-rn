@@ -52,7 +52,10 @@ describe('AdminHomeScreen', () => {
     );
     act(() => usersTab?.props.onPress());
     await flushEffects();
-    expect(apiRequest).toHaveBeenCalledWith(expect.stringContaining('/users?'));
+    expect(apiRequest).toHaveBeenCalledWith(
+      expect.stringContaining('/users?'),
+      expect.anything(),
+    );
 
     act(() => buttonByLabel(renderer, t('adminOpenMenu')).props.onPress());
     await act(async () => {
@@ -122,11 +125,12 @@ describe('AdminHomeScreen', () => {
     await flushEffects();
     expect(apiRequest).toHaveBeenCalledWith(
       expect.stringContaining('/stores?'),
+      expect.anything(),
     );
     const profileTab = buttonByLabel(renderer, t('adminProfile'));
     act(() => profileTab.props.onPress());
     await flushEffects();
-    expect(apiRequest).toHaveBeenCalledWith('/me');
+    expect(apiRequest).toHaveBeenCalledWith('/me', expect.anything());
     expect(
       renderer.root.findAllByProps({ children: t('adminProfileTitle') }).length,
     ).toBeGreaterThan(0);

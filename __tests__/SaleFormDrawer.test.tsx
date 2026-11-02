@@ -148,8 +148,8 @@ describe('SaleFormDrawer', () => {
       expect.objectContaining({ method: 'POST' }),
     );
     const body = JSON.parse(api.mock.calls[0][1]!.body as string);
+    expect(body).not.toHaveProperty('storeId');
     expect(body).toMatchObject({
-      storeId: 'store-1',
       date: yesterday,
       totalSale: 1000,
       swiggy: 100,
@@ -249,7 +249,7 @@ describe('SaleFormDrawer', () => {
     const query = new URLSearchParams(
       String(api.mock.calls[0][0]).split('?')[1],
     );
-    expect(query.get('storeId')).toBe('store-1');
+    expect(query.has('storeId')).toBe(false);
     expect(query.get('from')).toBe('2026-01-01');
     expect(query.get('to')).toBe('2026-01-31');
     expect(renderer.root.findByType(DateInput).props.calendarLoading).toBe(

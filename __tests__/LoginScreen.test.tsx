@@ -67,7 +67,7 @@ describe('LoginScreen', () => {
     act(() => renderer.unmount());
   });
 
-  it('renders the desktop hero layout on wide web screens', () => {
+  it('renders the desktop hero layout on wide web screens', async () => {
     Object.defineProperty(Platform, 'OS', { configurable: true, value: 'web' });
     jest.spyOn(require('react-native'), 'useWindowDimensions').mockReturnValue({
       width: 1440,
@@ -76,6 +76,7 @@ describe('LoginScreen', () => {
       fontScale: 1,
     });
     const renderer = renderSafeArea(<LoginScreen />);
+    await flushEffects();
     expect(
       renderer.root.findAllByProps({ children: t('heroHeadline') }).length,
     ).toBeGreaterThan(0);
@@ -119,7 +120,7 @@ describe('LoginScreen', () => {
     act(() => renderer.unmount());
   });
 
-  it('uses iOS keyboard avoidance and compact tablet web layout', () => {
+  it('uses iOS keyboard avoidance and compact tablet web layout', async () => {
     Object.defineProperty(Platform, 'OS', { configurable: true, value: 'ios' });
     const nativeRenderer = renderSafeArea(<LoginScreen />);
     expect(
@@ -138,6 +139,7 @@ describe('LoginScreen', () => {
       fontScale: 1,
     });
     const tabletRenderer = renderSafeArea(<LoginScreen />);
+    await flushEffects();
     expect(
       tabletRenderer.root.findAllByProps({ children: t('heroHeadline') }),
     ).toHaveLength(0);
