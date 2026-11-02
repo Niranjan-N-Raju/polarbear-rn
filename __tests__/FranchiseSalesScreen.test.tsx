@@ -58,7 +58,7 @@ describe('FranchiseSalesScreen', () => {
     await flushEffects();
 
     expect(api.mock.calls[0][0]).toBe(
-      `/sales?storeId=store-1&from=${range.from}&to=${range.to}`,
+      `/sales?from=${range.from}&to=${range.to}`,
     );
     expect(texts(renderer, formatMoney(3000)).length).toBeGreaterThan(0);
     expect(texts(renderer, formatMoney(200)).length).toBeGreaterThan(0);
@@ -99,7 +99,7 @@ describe('FranchiseSalesScreen', () => {
     await flushEffects();
 
     expect(api).toHaveBeenLastCalledWith(
-      '/sales?storeId=store-1&from=2025-12-01&to=2025-12-31',
+      '/sales?from=2025-12-01&to=2025-12-31',
       expect.anything(),
     );
     act(() => renderer.unmount());

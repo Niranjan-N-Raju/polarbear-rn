@@ -16,7 +16,6 @@ import { businessDate } from '../../../utils/businessDate';
 
 interface WithdrawalFormDrawerProps {
   visible: boolean;
-  storeId: string;
   editingRecord: WithdrawalRecord | null;
   onClose: () => void;
   onAfterClose?: () => void;
@@ -27,7 +26,6 @@ type EntryType = WithdrawalRecord['type'];
 
 export function WithdrawalFormDrawer({
   visible,
-  storeId,
   editingRecord,
   onClose,
   onAfterClose,
@@ -64,13 +62,10 @@ export function WithdrawalFormDrawer({
 
     setSaving(true);
     try {
-      const query = new URLSearchParams({ storeId });
       const response = await apiRequest(
         editingRecord
-          ? `/withdrawals/${encodeURIComponent(
-              editingRecord.id,
-            )}?${query.toString()}`
-          : `/withdrawals?${query.toString()}`,
+          ? `/withdrawals/${encodeURIComponent(editingRecord.id)}`
+          : '/withdrawals',
         {
           method: editingRecord ? 'PUT' : 'POST',
           headers: { 'Content-Type': 'application/json' },

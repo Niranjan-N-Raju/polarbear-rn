@@ -167,7 +167,7 @@ describe('FranchiseDashboardScreen', () => {
       act(() => button.props.onPress());
       await flushEffects();
       expect(api).toHaveBeenLastCalledWith(
-        `/sales?storeId=store-1&from=${range.from}&to=${range.to}`,
+        `/sales?from=${range.from}&to=${range.to}`,
         expect.objectContaining({ signal: expect.anything() }),
       );
       act(() =>
@@ -241,7 +241,7 @@ describe('FranchiseDashboardScreen', () => {
       }),
     ]);
     expect(
-      api.mock.calls.every(([path]) => path.includes('storeId=store-1')),
+      api.mock.calls.every(([path]) => !String(path).includes('storeId=')),
     ).toBe(true);
     for (const label of [
       'franchiseMyStores',
@@ -270,6 +270,8 @@ describe('FranchiseDashboardScreen', () => {
       renderer.root
         .findByProps({ accessibilityLabel: t('franchiseFrom') })
         .props.onChangeText('2026-10-01');
+    });
+    act(() => {
       renderer.root
         .findByProps({ accessibilityLabel: t('franchiseTo') })
         .props.onChangeText('2026-10-08');
@@ -280,12 +282,9 @@ describe('FranchiseDashboardScreen', () => {
     )!;
     act(() => apply.props.onPress());
     await flushEffects();
-    expect(
-      api.mock.calls.some(
-        ([path]) =>
-          path === '/sales?storeId=store-1&from=2026-10-01&to=2026-10-08',
-      ),
-    ).toBe(true);
+    expect(api.mock.calls.map(([path]) => String(path))).toContain(
+      '/sales?from=2026-10-01&to=2026-10-08',
+    );
     expect(renderer.root.findByType(ResponsiveDrawerModal).props.visible).toBe(
       false,
     );
@@ -339,7 +338,7 @@ describe('FranchiseDashboardScreen', () => {
     await flushEffects();
     const reset = currentMonthRange();
     expect(api).toHaveBeenLastCalledWith(
-      `/sales?storeId=store-1&from=${reset.from}&to=${reset.to}`,
+      `/sales?from=${reset.from}&to=${reset.to}`,
       expect.anything(),
     );
     expect(renderer.root.findByType(ResponsiveDrawerModal).props.visible).toBe(
@@ -380,11 +379,11 @@ describe('FranchiseDashboardScreen', () => {
     await flushEffects();
     expect(api).toHaveBeenCalledTimes(2);
     expect(
-      api.mock.calls.some(([path]) => path === '/dashboard?storeId=store-1'),
+      api.mock.calls.some(([path]) => path === '/dashboard'),
     ).toBe(true);
     expect(
       api.mock.calls.some(([path]) =>
-        path.startsWith('/sales?storeId=store-1'),
+        path.startsWith('/sales?'),
       ),
     ).toBe(true);
     expect(
@@ -401,7 +400,7 @@ describe('FranchiseDashboardScreen', () => {
   it('ignores stale store responses and refetches every query when the store changes', async () => {
     let resolveOld!: (value: Response) => void;
     const api = jest.spyOn(authApi, 'apiRequest').mockImplementation(path => {
-      if (path === '/dashboard?storeId=store-1')
+      if (path === '/dashboard')
         return new Promise(resolve => {
           resolveOld = resolve;
         });
@@ -423,11 +422,11 @@ describe('FranchiseDashboardScreen', () => {
       resolveOld(response(200, { ...stats, employeeSummary: 999 })),
     );
     expect(
-      api.mock.calls.some(([path]) => path === '/dashboard?storeId=store-2'),
+      api.mock.calls.some(([path]) => path === '/dashboard'),
     ).toBe(true);
     expect(
       api.mock.calls.some(([path]) =>
-        path.startsWith('/sales?storeId=store-2'),
+        path.startsWith('/sales?'),
       ),
     ).toBe(true);
     expect(renderer.root.findAllByProps({ children: '999' })).toHaveLength(0);

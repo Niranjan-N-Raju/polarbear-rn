@@ -31,7 +31,7 @@ describe('FranchiseEmployeesScreen', () => {
       }),
     );
     const renderer = renderSafeArea(
-      <FranchiseEmployeesScreen storeId="store-1" />,
+      <FranchiseEmployeesScreen />,
     );
     await flushEffects();
     expect(renderer.root.findByProps({ children: 'Employees' })).toBeTruthy();
@@ -39,7 +39,7 @@ describe('FranchiseEmployeesScreen', () => {
     expect(buttonByLabel(renderer, 'Add employee')).toBeTruthy();
     expect(renderer.root.findByProps({ children: 'Load more' })).toBeTruthy();
     expect(authApi.apiRequest).toHaveBeenCalledWith(
-      expect.stringContaining('/users?storeId=store-1'),
+      expect.stringContaining('/users?includeArchived=true'),
     );
   });
 
@@ -50,7 +50,7 @@ describe('FranchiseEmployeesScreen', () => {
         response(200, { users: [], pagination: { total: 0 } }),
       );
     const renderer = renderSafeArea(
-      <FranchiseEmployeesScreen storeId="store-1" />,
+      <FranchiseEmployeesScreen />,
     );
     await flushEffects();
     await act(async () => {
@@ -88,47 +88,25 @@ describe('FranchiseEmployeesScreen', () => {
     renderer.root
       .findAllByType(AdminFormField)
       .find(node => node.props.label === label)!;
-  it('opens the salary-hike action and submits a new salary with its effective date', async () => {
-    const api = jest
+  it('keeps salary hike actions out of the employee list', async () => {
+    jest
       .spyOn(authApi, 'apiRequest')
-      .mockImplementation(async (_path, init) =>
-        init?.method === 'POST'
-          ? response(200, { message: 'Salary hike saved.' })
-          : response(200, { users: [details], pagination: { total: 1 } }),
+      .mockResolvedValue(
+        response(200, { users: [details], pagination: { total: 1 } }),
       );
     const renderer = renderSafeArea(
-      <FranchiseEmployeesScreen storeId="store-1" />,
+      <FranchiseEmployeesScreen />,
     );
     await flushEffects();
-    act(() =>
-      buttonByLabel(
-        renderer,
-        `${t('franchiseEmployeesSalaryHike')} ${details.name}`,
-      ).props.onPress(),
-    );
-    act(() => {
-      fieldByLabel(
-        renderer,
-        t('franchiseEmployeesNewSalary'),
-      ).props.onChangeText('18000');
-      fieldByLabel(
-        renderer,
-        t('franchiseEmployeesHikeEffective'),
-      ).props.onChangeText('2026-02-01');
-    });
-    await act(async () => {
-      await buttons(renderer)
-        .find(button => containsText(button.props.children, t('adminSave')))!
-        .props.onPress();
-    });
-    const hike = api.mock.calls.find(([path]) =>
-      path.includes('/salary-hikes'),
-    )!;
-    expect(hike[0]).toBe('/users/employee-1/salary-hikes?storeId=store-1');
-    expect(JSON.parse(String(hike[1]?.body))).toEqual({
-      salary: 18000,
-      effectiveFrom: '2026-02-01',
-    });
+    expect(
+      renderer.root.findAll(
+        node =>
+          typeof node.props.accessibilityLabel === 'string' &&
+          node.props.accessibilityLabel.includes(
+            t('franchiseEmployeesSalaryHike'),
+          ),
+      ),
+    ).toHaveLength(0);
     act(() => renderer.unmount());
   });
 
@@ -163,7 +141,6 @@ describe('FranchiseEmployeesScreen', () => {
     const renderer = renderSafeArea(
       <EmployeeFormDrawer
         visible
-        storeId="store-1"
         employee={details as never}
         onClose={jest.fn()}
         onSaved={onSaved}
@@ -209,7 +186,7 @@ describe('FranchiseEmployeesScreen', () => {
     );
     await pressSave(renderer);
     const patch = api.mock.calls.find(([, init]) => init?.method === 'PATCH')!;
-    expect(patch[0]).toBe('/users/employee-1?storeId=store-1');
+    expect(patch[0]).toBe('/users/employee-1');
     expect(JSON.parse(patch[1]!.body as string)).toMatchObject({
       name: 'Asha',
       phone: '',
@@ -230,7 +207,6 @@ describe('FranchiseEmployeesScreen', () => {
     let renderer = renderSafeArea(
       <EmployeeFormDrawer
         visible
-        storeId="store-1"
         employee={null}
         onClose={jest.fn()}
         onSaved={jest.fn()}
@@ -245,9 +221,9 @@ describe('FranchiseEmployeesScreen', () => {
     const body = JSON.parse(api.mock.calls[0][1]!.body as string);
     expect(body).toMatchObject({
       name: 'New Hire',
-      storeId: 'store-1',
       role: 'employee',
     });
+    expect(body).not.toHaveProperty('storeId');
     expect(body).not.toHaveProperty('phone');
     expect(body).not.toHaveProperty('salary');
     act(() => renderer.unmount());
@@ -257,7 +233,6 @@ describe('FranchiseEmployeesScreen', () => {
     renderer = renderSafeArea(
       <EmployeeFormDrawer
         visible
-        storeId="store-1"
         employee={details as never}
         onClose={jest.fn()}
         onSaved={jest.fn()}

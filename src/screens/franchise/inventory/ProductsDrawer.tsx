@@ -14,14 +14,12 @@ import { inventoryStyles } from './inventoryStyles';
 
 interface ProductsDrawerProps {
   visible: boolean;
-  storeId: string;
   onClose: () => void;
   onAfterClose?: () => void;
 }
 
 export function ProductsDrawer({
   visible,
-  storeId,
   onClose,
   onAfterClose,
 }: ProductsDrawerProps) {
@@ -35,7 +33,7 @@ export function ProductsDrawer({
     const controller = new AbortController();
     setLoading(true);
     setError('');
-    apiRequest(`/products?storeId=${encodeURIComponent(storeId)}`, {
+    apiRequest('/products', {
       signal: controller.signal,
     })
       .then(async response => {
@@ -59,7 +57,7 @@ export function ProductsDrawer({
         if (!controller.signal.aborted) setLoading(false);
       });
     return () => controller.abort();
-  }, [visible, storeId, version]);
+  }, [visible, version]);
 
   return (
     <ResponsiveDrawerModal

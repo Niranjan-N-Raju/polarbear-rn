@@ -53,7 +53,7 @@ describe('FranchisePnlScreen', () => {
     const renderer = renderSafeArea(<FranchisePnlScreen storeId="store-1" />);
     await flushEffects();
 
-    expect(api.mock.calls[0][0]).toBe('/pnl?storeId=store-1');
+    expect(api.mock.calls[0][0]).toBe('/pnl');
     expect(texts(renderer, formatMoney(1000)).length).toBeGreaterThan(0);
     expect(texts(renderer, formatMoney(650)).length).toBeGreaterThan(0);
     expect(
@@ -86,7 +86,7 @@ describe('FranchisePnlScreen', () => {
     );
     await flushEffects();
     expect(api.mock.calls[1][0]).toBe(
-      `/pnl/inputs?storeId=store-1&period=${period}`,
+      `/pnl/inputs?period=${period}`,
     );
     const rentInput = renderer.root
       .findAllByType(TextInput)

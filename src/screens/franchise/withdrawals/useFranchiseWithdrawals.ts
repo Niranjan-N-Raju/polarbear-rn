@@ -52,7 +52,6 @@ export function useFranchiseWithdrawals({ storeId }: { storeId: string }) {
     setLoading(true);
     setError(null);
     const query = new URLSearchParams({
-      storeId,
       from: range.from,
       to: range.to,
     });
@@ -141,11 +140,8 @@ export function useFranchiseWithdrawals({ storeId }: { storeId: string }) {
     setDeleteBusy(true);
     setDeleteError(null);
     try {
-      const query = new URLSearchParams({ storeId });
       const response = await apiRequest(
-        `/withdrawals/${encodeURIComponent(
-          deleteRecord.id,
-        )}?${query.toString()}`,
+        `/withdrawals/${encodeURIComponent(deleteRecord.id)}`,
         { method: 'DELETE' },
       );
       const data = (await response.json().catch(() => ({}))) as {

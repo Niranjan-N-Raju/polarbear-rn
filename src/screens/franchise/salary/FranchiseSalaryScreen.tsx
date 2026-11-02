@@ -576,7 +576,6 @@ export function FranchiseSalaryScreen({ storeId }: { storeId: string }) {
 
       <SalaryEntryDrawer
         visible={Boolean(entryRequest)}
-        storeId={storeId}
         period={period}
         employeeId={entryRequest?.employeeId ?? ''}
         kind={entryRequest?.kind ?? 'advances'}

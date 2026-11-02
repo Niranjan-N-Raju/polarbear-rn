@@ -43,7 +43,6 @@ export function useFranchiseSales({ storeId }: FranchiseSalesScreenProps) {
     setIsLoading(true);
     setError(null);
     const query = new URLSearchParams({
-      storeId,
       from: range.from,
       to: range.to,
     });

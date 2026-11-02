@@ -34,7 +34,7 @@ export function useFranchiseDashboard(storeId: string) {
     const controller = new AbortController();
     setLoading(true);
     setError('');
-    apiRequest(`/dashboard?storeId=${encodeURIComponent(storeId)}`, {
+    apiRequest('/dashboard', {
       signal: controller.signal,
     })
       .then(async response => {
@@ -66,9 +66,7 @@ export function useFranchiseDashboard(storeId: string) {
     setSalesLoading(true);
     setSalesError('');
     apiRequest(
-      `/sales?storeId=${encodeURIComponent(storeId)}&from=${
-        appliedRange.from
-      }&to=${appliedRange.to}`,
+      `/sales?from=${appliedRange.from}&to=${appliedRange.to}`,
       { signal: controller.signal },
     )
       .then(async response => {

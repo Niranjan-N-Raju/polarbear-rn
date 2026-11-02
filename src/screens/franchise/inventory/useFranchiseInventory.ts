@@ -26,9 +26,7 @@ export interface FranchiseInventoryScreenProps {
   storeId: string;
 }
 
-export function useFranchiseInventory({
-  storeId,
-}: FranchiseInventoryScreenProps) {
+export function useFranchiseInventory() {
   const { width, height } = useWindowDimensions();
   const layout = getAdminLayout(width);
   const [items, setItems] = useState<InventoryStockItem[]>([]);
@@ -54,7 +52,7 @@ export function useFranchiseInventory({
     let active = true;
     setIsLoading(true);
     setError(null);
-    apiRequest(`/inventory?storeId=${encodeURIComponent(storeId)}`, {
+    apiRequest('/inventory', {
       signal: controller.signal,
     })
       .then(async response => {
@@ -79,7 +77,7 @@ export function useFranchiseInventory({
       active = false;
       controller.abort();
     };
-  }, [storeId, reloadKey]);
+  }, [reloadKey]);
   const summary = useMemo(() => summarizeInventory(items), [items]);
   // Summary badges describe all loaded stock, while filters only narrow the visible list.
   const filteredItems = useMemo(

@@ -27,7 +27,6 @@ export interface SalaryEntry {
 }
 interface Props {
   visible: boolean;
-  storeId: string;
   period: string;
   employeeId: string;
   kind: SalaryEntryKind;
@@ -64,7 +63,6 @@ const translationKey: Record<SalaryEntryKind, Parameters<typeof t>[0]> = {
 
 export function SalaryEntryDrawer({
   visible,
-  storeId,
   period,
   employeeId,
   kind,
@@ -108,12 +106,10 @@ export function SalaryEntryDrawer({
     try {
       const payload: Record<string, unknown> = entry
         ? {
-            storeId,
             type: resolvedType,
             [kind === 'extra-days' ? 'days' : 'amount']: parsed,
           }
         : {
-            storeId,
             employeeId,
             period,
             type: resolvedType,

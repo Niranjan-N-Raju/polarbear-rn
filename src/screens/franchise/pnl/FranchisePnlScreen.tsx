@@ -190,7 +190,6 @@ export function FranchisePnlScreen({ storeId }: FranchisePnlScreenProps) {
       {drawerMonth ? (
         <PnlMonthDrawer
           visible={drawerVisible}
-          storeId={storeId}
           month={drawerMonth}
           onClose={closeDrawer}
           onAfterClose={finishDrawerClose}

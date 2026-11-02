@@ -86,7 +86,11 @@ describe('FranchiseHomeScreen', () => {
   it('requires selecting a store for multiple assignments and supports switching and cancellation', async () => {
     const api = jest
       .spyOn(authApi, 'apiRequest')
-      .mockResolvedValue(response(200, { franchises: stores }));
+      .mockImplementation(async path =>
+        path === '/auth/select-store'
+          ? response(200, { token: 'scoped-token' })
+          : response(200, { franchises: stores }),
+      );
     const logout = jest.fn();
     const renderer = renderSafeArea(
       <FranchiseHomeScreen user={user} onLogout={logout} />,
@@ -100,15 +104,15 @@ describe('FranchiseHomeScreen', () => {
         accessibilityLabel: t('franchiseCloseSelector'),
       }),
     ).toHaveLength(0);
-    act(() =>
-      renderer.root
+    await act(async () => {
+      await renderer.root
         .findByProps({
           accessibilityLabel: t('franchiseSelectStoreName', {
             name: 'Central',
           }),
         })
-        .props.onPress(),
-    );
+        .props.onPress();
+    });
     expect(
       renderer.root.findByType(FranchiseDashboardScreen).props.storeId,
     ).toBe('store-1');
@@ -144,17 +148,19 @@ describe('FranchiseHomeScreen', () => {
         .props.onPress(),
     );
     await flushEffects();
-    act(() =>
-      renderer.root
+    await act(async () => {
+      await renderer.root
         .findByProps({
           accessibilityLabel: t('franchiseSelectStoreName', { name: 'North' }),
         })
-        .props.onPress(),
-    );
+        .props.onPress();
+    });
     expect(
       renderer.root.findByType(FranchiseDashboardScreen).props.storeId,
     ).toBe('store-2');
-    expect(api).toHaveBeenCalledTimes(3);
+    expect(api).toHaveBeenCalledTimes(5);
+    expect(api.mock.calls.filter(([path]) => path === '/auth/select-store'))
+      .toHaveLength(2);
 
     act(() =>
       renderer.root
@@ -172,9 +178,13 @@ describe('FranchiseHomeScreen', () => {
   });
 
   it('automatically selects the only store and exposes the complete source navigation', async () => {
-    jest
+    const api = jest
       .spyOn(authApi, 'apiRequest')
-      .mockResolvedValue(response(200, { franchises: [stores[0]] }));
+      .mockImplementation(async path =>
+        path === '/auth/select-store'
+          ? response(200, { token: 'scoped-token' })
+          : response(200, { franchises: [stores[0]] }),
+      );
     const renderer = renderSafeArea(
       <FranchiseHomeScreen user={user} onLogout={jest.fn()} />,
     );
@@ -182,6 +192,8 @@ describe('FranchiseHomeScreen', () => {
     expect(
       renderer.root.findByType(FranchiseDashboardScreen).props.storeId,
     ).toBe('store-1');
+    expect(api.mock.calls.some(([path]) => path === '/auth/select-store'))
+      .toBe(true);
     const safeArea = renderer.root.findByType(SafeAreaView);
     expect(StyleSheet.flatten(safeArea.props.style).backgroundColor).toBe(
       theme.colors.paleBackground,
@@ -295,23 +307,31 @@ describe('FranchiseHomeScreen', () => {
     jest
       .spyOn(require('react-native'), 'useWindowDimensions')
       .mockReturnValue({ width: 1440, height: 900, scale: 1, fontScale: 1 });
-    jest
+    let storesResponse = 0;
+    const api = jest
       .spyOn(authApi, 'apiRequest')
-      .mockResolvedValueOnce(response(200, { franchises: stores }))
-      .mockResolvedValueOnce(response(200, { franchises: [stores[1]] }));
+      .mockImplementation(async path => {
+        if (path === '/auth/select-store')
+          return response(200, { token: 'scoped-token' });
+        storesResponse += 1;
+        return response(
+          200,
+          { franchises: storesResponse === 1 ? stores : [stores[1]] },
+        );
+      });
     const renderer = renderSafeArea(
       <FranchiseHomeScreen user={user} onLogout={jest.fn()} />,
     );
     await flushEffects();
-    act(() =>
-      renderer.root
+    await act(async () => {
+      await renderer.root
         .findByProps({
           accessibilityLabel: t('franchiseSelectStoreName', {
             name: 'Central',
           }),
         })
-        .props.onPress(),
-    );
+        .props.onPress();
+    });
     expect(
       renderer.root.findAllByProps({ accessibilityLabel: t('adminOpenMenu') }),
     ).toHaveLength(0);
@@ -334,6 +354,8 @@ describe('FranchiseHomeScreen', () => {
     expect(
       renderer.root.findByType(FranchiseDashboardScreen).props.storeId,
     ).toBe('store-2');
+    expect(api.mock.calls.filter(([path]) => path === '/auth/select-store'))
+      .toHaveLength(2);
     expect(
       renderer.root.findAllByProps({
         accessibilityLabel: t('franchiseSelectStoreName', { name: 'Central' }),
@@ -346,22 +368,26 @@ describe('FranchiseHomeScreen', () => {
     jest
       .spyOn(require('react-native'), 'useWindowDimensions')
       .mockReturnValue({ width: 390, height: 480, scale: 1, fontScale: 1.6 });
-    jest
+    const api = jest
       .spyOn(authApi, 'apiRequest')
-      .mockResolvedValue(response(200, { franchises: stores }));
+      .mockImplementation(async path =>
+        path === '/auth/select-store'
+          ? response(200, { token: 'scoped-token' })
+          : response(200, { franchises: stores }),
+      );
     const renderer = renderSafeArea(
       <FranchiseHomeScreen user={user} onLogout={jest.fn()} />,
     );
     await flushEffects();
-    act(() =>
-      renderer.root
+    await act(async () => {
+      await renderer.root
         .findByProps({
           accessibilityLabel: t('franchiseSelectStoreName', {
             name: 'Central',
           }),
         })
-        .props.onPress(),
-    );
+        .props.onPress();
+    });
     act(() =>
       renderer.root
         .findByProps({ accessibilityLabel: t('adminOpenMenu') })

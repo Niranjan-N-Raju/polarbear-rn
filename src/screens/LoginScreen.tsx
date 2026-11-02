@@ -56,7 +56,7 @@ export function LoginScreen() {
     ? `${t('forcePasswordTitle')} · ${t('brandName')}`
     : null;
   useEffect(() => {
-    if (Platform.OS !== 'web') return;
+    if (Platform.OS !== 'web' || typeof document === 'undefined') return;
     if (documentTitle) document.title = documentTitle;
   }, [documentTitle]);
 

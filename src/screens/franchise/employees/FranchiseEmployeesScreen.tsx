@@ -15,7 +15,7 @@ import { employeeStyles } from './employeeStyles';
 import { pageSize, useFranchiseEmployees } from './useFranchiseEmployees';
 import { businessDate } from '../../../utils/businessDate';
 
-export function FranchiseEmployeesScreen({ storeId }: { storeId: string }) {
+export function FranchiseEmployeesScreen() {
   const {
     layout,
     employees,
@@ -53,7 +53,7 @@ export function FranchiseEmployeesScreen({ storeId }: { storeId: string }) {
     restore,
     afterFormClose,
     afterArchiveClose,
-  } = useFranchiseEmployees({ storeId });
+  } = useFranchiseEmployees();
   return (
     <View style={styles.screen}>
       <View
@@ -303,7 +303,6 @@ export function FranchiseEmployeesScreen({ storeId }: { storeId: string }) {
       />
       <EmployeeFormDrawer
         visible={formVisible}
-        storeId={storeId}
         employee={editing}
         onClose={() => setFormVisible(false)}
         onAfterClose={afterFormClose}

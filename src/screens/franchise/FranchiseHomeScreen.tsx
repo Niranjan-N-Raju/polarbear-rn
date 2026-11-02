@@ -72,7 +72,7 @@ export function FranchiseHomeScreen({
   } = useFranchiseHome({ user: initialUser, onLogout });
   const documentTitle = `${t(currentLabel)} · ${t('brandName')}`;
   useEffect(() => {
-    if (Platform.OS === 'web') {
+    if (Platform.OS === 'web' && typeof document !== 'undefined') {
       document.title = documentTitle;
     }
   }, [documentTitle]);
@@ -345,10 +345,7 @@ export function FranchiseHomeScreen({
               storeId={activeStore._id}
             />
           ) : tab === 'employees' ? (
-            <FranchiseEmployeesScreen
-              key={activeStore._id}
-              storeId={activeStore._id}
-            />
+            <FranchiseEmployeesScreen key={activeStore._id} />
           ) : tab === 'attendance' ? (
             <FranchiseAttendanceScreen
               key={activeStore._id}
@@ -360,10 +357,7 @@ export function FranchiseHomeScreen({
               storeId={activeStore._id}
             />
           ) : tab === 'salary-hikes' ? (
-            <SalaryHikesScreen
-              key={activeStore._id}
-              storeId={activeStore._id}
-            />
+            <SalaryHikesScreen key={activeStore._id} />
           ) : tab === 'store-config' ? (
             <FranchiseStoreConfigScreen
               key={activeStore._id}

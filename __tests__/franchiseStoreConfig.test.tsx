@@ -37,12 +37,12 @@ describe('FranchiseStoreConfigScreen', () => {
 
     expect(api.mock.calls.map(([path]) => String(path))).toEqual(
       expect.arrayContaining([
-        '/stores/branding?storeId=store-1',
+        '/stores/branding',
         expect.stringMatching(
-          /^\/stores\/cycle\?storeId=store-1&period=\d{4}-\d{2}$/,
+          /^\/stores\/cycle\?period=\d{4}-\d{2}$/,
         ),
-        '/stores/positions?storeId=store-1',
-        '/stores/shifts?storeId=store-1',
+        '/stores/positions',
+        '/stores/shifts',
       ]),
     );
     expect(

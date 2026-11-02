@@ -52,7 +52,7 @@ export function FranchiseInventoryScreen({
     completeWithToast,
     handleAfterClose,
     summaryCards,
-  } = useFranchiseInventory({ storeId });
+  } = useFranchiseInventory();
   return (
     <View style={styles.screen}>
       <View
@@ -231,7 +231,6 @@ export function FranchiseInventoryScreen({
 
       <StockFormDrawer
         visible={drawer?.type === 'stock'}
-        storeId={storeId}
         onClose={() => setDrawer(null)}
         onAfterClose={handleAfterClose}
         onSaved={completeWithToast}
@@ -239,14 +238,12 @@ export function FranchiseInventoryScreen({
 
       <ProductsDrawer
         visible={drawer?.type === 'products'}
-        storeId={storeId}
         onClose={() => setDrawer(null)}
         onAfterClose={handleAfterClose}
       />
 
       <InventoryActionDrawer
         visible={drawer?.type === 'action'}
-        storeId={storeId}
         item={
           drawer?.type === 'action' ? drawer.item : lastAction?.item ?? null
         }

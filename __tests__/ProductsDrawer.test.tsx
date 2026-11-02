@@ -14,7 +14,7 @@ it('shows the shared catalog without mutation controls or requests', async () =>
     }),
   );
   const renderer = renderSafeArea(
-    <ProductsDrawer visible storeId="store-1" onClose={jest.fn()} />,
+    <ProductsDrawer visible onClose={jest.fn()} />,
   );
   await flushEffects();
   expect(
@@ -40,7 +40,7 @@ it('shows the shared catalog without mutation controls or requests', async () =>
   ).toHaveLength(0);
   expect(api).toHaveBeenCalledTimes(1);
   expect(api).toHaveBeenCalledWith(
-    '/products?storeId=store-1',
+    '/products',
     expect.objectContaining({ signal: expect.anything() }),
   );
   act(() => renderer.unmount());

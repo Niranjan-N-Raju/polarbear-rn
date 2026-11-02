@@ -46,14 +46,14 @@ describe('FranchiseAttendanceScreen', () => {
     expect(
       api.mock.calls.some(
         ([path]) =>
-          path === '/users?franchiseId=store-1&includeArchived=true&limit=500',
+          path === '/users?includeArchived=true&limit=500',
       ),
     ).toBe(true);
     expect(
       api.mock.calls.some(
         ([path]) =>
           path ===
-          '/stores/cycle?franchiseId=store-1&period=' +
+          '/stores/cycle?period=' +
             new Date().getFullYear() +
             '-' +
             String(new Date().getMonth() + 1).padStart(2, '0'),
@@ -62,7 +62,7 @@ describe('FranchiseAttendanceScreen', () => {
     expect(
       api.mock.calls.some(
         ([path]) =>
-          path === '/attendance?storeId=store-1&from=2026-10-01&to=2026-10-31',
+          path === '/attendance?from=2026-10-01&to=2026-10-31',
       ),
     ).toBe(true);
     const dateInput = renderer.root
@@ -90,7 +90,6 @@ describe('FranchiseAttendanceScreen', () => {
     expect(
       JSON.parse(api.mock.calls.at(-1)?.[1]?.body as string),
     ).toMatchObject({
-      storeId: 'store-1',
       date: '2026-10-12',
       records: [{ employeeId: 'employee-1', status: 'Present' }],
     });
@@ -176,7 +175,7 @@ describe('FranchiseAttendanceScreen', () => {
     await flushEffects();
     expect(
       api.mock.calls.some(([path]) =>
-        path.startsWith('/attendance/weekly-roster?storeId=store-1&weekStart='),
+        path.startsWith('/attendance/weekly-roster?weekStart='),
       ),
     ).toBe(true);
     const weekInput = renderer.root
@@ -191,8 +190,7 @@ describe('FranchiseAttendanceScreen', () => {
     expect(
       api.mock.calls.some(
         ([path]) =>
-          path ===
-          '/attendance/weekly-roster?storeId=store-1&weekStart=2026-10-19',
+          path === '/attendance/weekly-roster?weekStart=2026-10-19',
       ),
     ).toBe(true);
     expect(
@@ -272,7 +270,7 @@ describe('FranchiseAttendanceScreen', () => {
       await new Promise(resolve => setImmediate(resolve));
     });
     expect(api).toHaveBeenLastCalledWith(
-      '/attendance?storeId=store-1&date=2026-10-12&employeeId=employee-1',
+      '/attendance?date=2026-10-12&employeeId=employee-1',
       { method: 'DELETE' },
     );
     expect(renderer.root.findByType(ConfirmDrawer).props.visible).toBe(false);

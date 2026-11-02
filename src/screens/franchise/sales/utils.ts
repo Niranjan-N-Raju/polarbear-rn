@@ -141,9 +141,8 @@ export function validateSaleForm(
   return errors;
 }
 
-export function salePayload(storeId: string, form: SaleForm) {
+export function salePayload(form: SaleForm) {
   return {
-    storeId,
     date: form.date,
     totalSale: parseAmount(form.totalSale),
     swiggy: parseAmount(form.swiggy),

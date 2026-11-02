@@ -57,7 +57,7 @@ describe('FranchiseInventoryScreen', () => {
     );
     await flushEffects();
 
-    expect(api.mock.calls[0][0]).toBe('/inventory?storeId=store-1');
+    expect(api.mock.calls[0][0]).toBe('/inventory');
     expect(texts(renderer, 'Vanilla tub').length).toBeGreaterThan(0);
     expect(texts(renderer, 'Choco cone').length).toBeGreaterThan(0);
 
@@ -132,7 +132,6 @@ describe('FranchiseInventoryScreen', () => {
       ([, init]) => (init as RequestInit | undefined)?.method === 'PATCH',
     );
     expect(JSON.parse(String((patch![1] as RequestInit).body))).toMatchObject({
-      storeId: 'store-1',
       action: 'dump',
       inventoryItemId: 'inv-1',
       quantity: 3,

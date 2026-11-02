@@ -56,7 +56,7 @@ export function FranchiseAttendanceScreen({
     setRemoveError,
     cancelRemove,
     confirmRemove,
-  } = useFranchiseAttendance({ storeId });
+  } = useFranchiseAttendance();
   return (
     <View style={styles.screen}>
       <View
@@ -424,7 +424,6 @@ export function FranchiseAttendanceScreen({
       </ResponsiveDrawerModal>
       <WeeklyRosterDrawer
         visible={drawer === 'roster'}
-        storeId={storeId}
         employees={employees}
         onClose={() => setDrawer(null)}
         onSaved={message => {

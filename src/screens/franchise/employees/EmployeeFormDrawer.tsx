@@ -35,7 +35,6 @@ interface Employee {
 }
 interface EmployeeFormDrawerProps {
   visible: boolean;
-  storeId: string;
   employee: Employee | null;
   onClose: () => void;
   onAfterClose?: () => void;
@@ -87,7 +86,6 @@ function dateField(value?: string) {
 
 export function EmployeeFormDrawer({
   visible,
-  storeId,
   employee,
   onClose,
   onAfterClose,
@@ -140,9 +138,7 @@ export function EmployeeFormDrawer({
     const controller = new AbortController();
     setLoading(true);
     apiRequest(
-      `/users/${encodeURIComponent(employee._id)}?storeId=${encodeURIComponent(
-        storeId,
-      )}`,
+      `/users/${encodeURIComponent(employee._id)}`,
       { signal: controller.signal },
     )
       .then(async response => {
@@ -190,7 +186,7 @@ export function EmployeeFormDrawer({
         if (!controller.signal.aborted) setLoading(false);
       });
     return () => controller.abort();
-  }, [visible, employee, storeId]);
+  }, [visible, employee]);
 
   const change = (key: keyof Form, value: string) =>
     setForm(current => ({ ...current, [key]: value }));
@@ -244,17 +240,13 @@ export function EmployeeFormDrawer({
         panNumber: text(form.panNumber),
       };
       const url = employee
-        ? `/users/${encodeURIComponent(
-            employee._id,
-          )}?storeId=${encodeURIComponent(storeId)}`
-        : `/users?storeId=${encodeURIComponent(storeId)}`;
+        ? `/users/${encodeURIComponent(employee._id)}`
+        : '/users';
       const response = await apiRequest(url, {
         method: employee ? 'PATCH' : 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(
-          employee
-            ? values
-            : { ...values, storeId, role: 'employee', franchiseIds: [storeId] },
+          employee ? values : { ...values, role: 'employee' },
         ),
       });
       const data = (await response.json().catch(() => ({}))) as {

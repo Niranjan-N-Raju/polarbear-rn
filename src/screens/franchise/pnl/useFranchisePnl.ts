@@ -34,7 +34,7 @@ export function useFranchisePnl({ storeId }: FranchisePnlScreenProps) {
     let active = true;
     setLoading(true);
     setError(null);
-    apiRequest(`/pnl?${new URLSearchParams({ storeId }).toString()}`, {
+    apiRequest('/pnl', {
       signal: controller.signal,
     })
       .then(async response => {

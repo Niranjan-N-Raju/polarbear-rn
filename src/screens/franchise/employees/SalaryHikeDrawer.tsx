@@ -17,7 +17,6 @@ interface Props {
   employee: Employee | null;
   mode?: 'hike' | 'promotion';
   positions?: string[];
-  storeId: string;
   onClose: () => void;
   onAfterClose: () => void;
   onSaved: (message: string) => void;
@@ -26,7 +25,6 @@ interface Props {
 export function SalaryHikeDrawer({
   visible,
   employee,
-  storeId,
   mode = 'hike',
   positions = [],
   onClose,
@@ -64,7 +62,7 @@ export function SalaryHikeDrawer({
       const response = await apiRequest(
         `/users/${encodeURIComponent(
           employee._id,
-        )}/salary-hikes?storeId=${encodeURIComponent(storeId)}`,
+        )}/salary-hikes`,
         {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },

@@ -52,7 +52,7 @@ describe('FranchiseWithdrawalsScreen', () => {
 
     const { from, to } = monthRange(currentMonthValue());
     expect(api.mock.calls[0][0]).toBe(
-      `/withdrawals?storeId=store-1&from=${from}&to=${to}`,
+      `/withdrawals?from=${from}&to=${to}`,
     );
     expect(texts(renderer, formatMoney(1200)).length).toBeGreaterThan(0);
     expect(texts(renderer, formatMoney(200)).length).toBeGreaterThan(0);
@@ -77,7 +77,7 @@ describe('FranchiseWithdrawalsScreen', () => {
 
     const previous = shiftMonth(currentMonthValue(), -1);
     expect(api.mock.calls[1][0]).toBe(
-      `/withdrawals?storeId=store-1&from=${previous}-01&to=${
+      `/withdrawals?from=${previous}-01&to=${
         monthRange(previous).to
       }`,
     );
@@ -130,7 +130,7 @@ describe('FranchiseWithdrawalsScreen', () => {
     });
     await flushEffects();
 
-    expect(api.mock.calls[1][0]).toMatch(/^\/withdrawals\?storeId=store-1$/);
+    expect(api.mock.calls[1][0]).toBe('/withdrawals');
     expect(api.mock.calls[1][1]).toEqual(
       expect.objectContaining({
         method: 'POST',
@@ -179,7 +179,7 @@ describe('FranchiseWithdrawalsScreen', () => {
     await flushEffects();
 
     expect(api.mock.calls[1][0]).toBe(
-      '/withdrawals/withdrawal-1?storeId=store-1',
+      '/withdrawals/withdrawal-1',
     );
     expect(api.mock.calls[1][1]).toEqual(
       expect.objectContaining({
@@ -217,7 +217,7 @@ describe('FranchiseWithdrawalsScreen', () => {
     await flushEffects();
 
     expect(api.mock.calls[1][0]).toBe(
-      '/withdrawals/withdrawal-1?storeId=store-1',
+      '/withdrawals/withdrawal-1',
     );
     expect(api.mock.calls[1][1]).toEqual(
       expect.objectContaining({ method: 'DELETE' }),

@@ -74,7 +74,7 @@ export function useFranchiseSalary({ storeId }: { storeId: string }) {
     let active = true;
     setIsLoading(true);
     setError(null);
-    const query = new URLSearchParams({ storeId, period });
+    const query = new URLSearchParams({ period });
     apiRequest(`/salary?${query.toString()}`, { signal: controller.signal })
       .then(async response => {
         const result = (await response
@@ -175,7 +175,6 @@ export function useFranchiseSalary({ storeId }: { storeId: string }) {
     setSlipBusy(true);
     try {
       const query = new URLSearchParams({
-        storeId,
         employeeId: employee.employeeId,
         period,
       });
@@ -217,7 +216,6 @@ export function useFranchiseSalary({ storeId }: { storeId: string }) {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          storeId,
           cycleType,
           ...(cycleType === 'custom' ? { startDay: day } : {}),
         }),
@@ -247,8 +245,6 @@ export function useFranchiseSalary({ storeId }: { storeId: string }) {
           deleteRequest.kind +
           '/' +
           encodeURIComponent(deleteRequest.entry.id) +
-          '?storeId=' +
-          encodeURIComponent(storeId),
         { method: 'DELETE' },
       );
 

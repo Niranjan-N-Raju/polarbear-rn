@@ -42,7 +42,7 @@ export function AdminHomeScreen({
     tabs.find(tab => tab.key === activeTab)?.label ?? 'adminDashboard';
   const documentTitle = `${t(activeLabel)} · ${t('brandName')}`;
   useEffect(() => {
-    if (Platform.OS === 'web') {
+    if (Platform.OS === 'web' && typeof document !== 'undefined') {
       document.title = documentTitle;
     }
   }, [documentTitle]);

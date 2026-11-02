@@ -23,7 +23,6 @@ import { pnlStyles } from './pnlStyles';
 
 interface PnlMonthDrawerProps {
   visible: boolean;
-  storeId: string;
   month: PnlMonth;
   onClose: () => void;
   onAfterClose: () => void;
@@ -65,7 +64,6 @@ function percent(value: number) {
 
 export function PnlMonthDrawer({
   visible,
-  storeId,
   month,
   onClose,
   onAfterClose,
@@ -89,7 +87,7 @@ export function PnlMonthDrawer({
     setValues({});
     touchedKeys.current = new Set();
     setToast(null);
-    const query = new URLSearchParams({ storeId, period: month.period });
+    const query = new URLSearchParams({ period: month.period });
     apiRequest(`/pnl/inputs?${query.toString()}`, { signal: controller.signal })
       .then(async response => {
         const data = (await response.json().catch(() => ({}))) as {
@@ -130,7 +128,7 @@ export function PnlMonthDrawer({
         if (!controller.signal.aborted) setLoading(false);
       });
     return () => controller.abort();
-  }, [visible, storeId, month, reloadKey]);
+  }, [visible, month, reloadKey]);
 
   const get = (key: string) => values[key] ?? '';
   const update = (key: string, value: string) => {
@@ -191,7 +189,6 @@ export function PnlMonthDrawer({
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          storeId,
           period: month.period,
           values: payload,
         }),

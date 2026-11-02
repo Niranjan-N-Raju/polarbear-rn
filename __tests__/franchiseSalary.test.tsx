@@ -87,7 +87,7 @@ describe('FranchiseSalaryScreen', () => {
       <FranchiseSalaryScreen storeId="store-1" />,
     );
     await flushEffects();
-    expect(api.mock.calls[0][0]).toContain('/salary?storeId=store-1&period=');
+    expect(api.mock.calls[0][0]).toMatch(/^\/salary\?period=/);
     expect(
       containsText(
         renderer.root.findAllByType(Text).map(node => node.props.children),
@@ -143,11 +143,13 @@ describe('FranchiseSalaryScreen', () => {
     });
     expect(api.mock.calls[1][0]).toBe('/advances');
     expect(JSON.parse(String(api.mock.calls[1][1]?.body))).toMatchObject({
-      storeId: 'store-1',
       employeeId: 'employee-1',
       period: expect.any(String),
       amount: 75,
     });
+    expect(JSON.parse(String(api.mock.calls[1][1]?.body))).not.toHaveProperty(
+      'storeId',
+    );
     act(() => renderer.unmount());
   });
 

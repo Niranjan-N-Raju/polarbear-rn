@@ -33,7 +33,7 @@ export { pageSize };
 const defaultStatus: EmployeeStatusFilter =
   Platform.OS === 'web' ? 'active' : 'all';
 
-export function useFranchiseEmployees({ storeId }: { storeId: string }) {
+export function useFranchiseEmployees() {
   const { width } = useWindowDimensions();
   const layout = getAdminLayout(width);
   const [employees, setEmployees] = useState<Employee[]>([]);
@@ -63,7 +63,6 @@ export function useFranchiseEmployees({ storeId }: { storeId: string }) {
     setLoadError('');
     try {
       const query = new URLSearchParams({
-        storeId,
         includeArchived: 'true',
         limit: '500',
       });
@@ -82,7 +81,7 @@ export function useFranchiseEmployees({ storeId }: { storeId: string }) {
     } finally {
       setLoading(false);
     }
-  }, [storeId]);
+  }, []);
   useEffect(() => {
     load();
   }, [load, reloadKey]);
@@ -170,7 +169,7 @@ export function useFranchiseEmployees({ storeId }: { storeId: string }) {
       const response = await apiRequest(
         `/users/${encodeURIComponent(
           archiveTarget._id,
-        )}?storeId=${encodeURIComponent(storeId)}`,
+        )}`,
         {
           method: 'DELETE',
           headers: { 'Content-Type': 'application/json' },
@@ -202,7 +201,7 @@ export function useFranchiseEmployees({ storeId }: { storeId: string }) {
       const response = await apiRequest(
         `/users/${encodeURIComponent(
           employee._id,
-        )}?storeId=${encodeURIComponent(storeId)}`,
+        )}`,
         { method: 'PUT' },
       );
       const data = (await response.json().catch(() => ({}))) as {

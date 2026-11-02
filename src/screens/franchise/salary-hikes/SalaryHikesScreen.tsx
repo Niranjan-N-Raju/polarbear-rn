@@ -13,7 +13,7 @@ import { SalaryHikeDrawer } from '../employees/SalaryHikeDrawer';
 import type { Employee } from '../employees/useFranchiseEmployees';
 import { franchiseStyles } from '../franchiseStyles';
 
-export function SalaryHikesScreen({ storeId }: { storeId: string }) {
+export function SalaryHikesScreen() {
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -31,16 +31,12 @@ export function SalaryHikesScreen({ storeId }: { storeId: string }) {
       setError('');
       try {
         const query = new URLSearchParams({
-          storeId,
           status: 'active',
           limit: '500',
         });
         const [response, positionsResponse] = await Promise.all([
           apiRequest(`/users?${query}`, { signal }),
-          apiRequest(
-            `/stores/positions?storeId=${encodeURIComponent(storeId)}`,
-            { signal },
-          ),
+          apiRequest('/stores/positions', { signal }),
         ]);
         const data = (await response.json().catch(() => ({}))) as {
           users?: Employee[];
@@ -63,7 +59,7 @@ export function SalaryHikesScreen({ storeId }: { storeId: string }) {
         if (!signal.aborted) setLoading(false);
       }
     },
-    [storeId],
+    [],
   );
 
   useEffect(() => {
@@ -184,7 +180,6 @@ export function SalaryHikesScreen({ storeId }: { storeId: string }) {
       <SalaryHikeDrawer
         visible={Boolean(selectedEmployee)}
         employee={selectedEmployee}
-        storeId={storeId}
         mode={changeMode}
         positions={positions}
         onClose={() => setSelectedEmployee(null)}

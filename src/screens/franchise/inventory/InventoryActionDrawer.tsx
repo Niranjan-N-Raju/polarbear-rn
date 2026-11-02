@@ -16,7 +16,6 @@ import { digitsOnly, formatInventoryDate } from './utils';
 
 interface InventoryActionDrawerProps {
   visible: boolean;
-  storeId: string;
   item: InventoryStockItem | null;
   action: InventoryAction | null;
   onClose: () => void;
@@ -32,7 +31,6 @@ const titles: Record<InventoryAction, Parameters<typeof t>[0]> = {
 
 export function InventoryActionDrawer({
   visible,
-  storeId,
   item,
   action,
   onClose,
@@ -69,7 +67,6 @@ export function InventoryActionDrawer({
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          storeId,
           action: action === 'dump' ? 'dump' : 'consume',
           inventoryItemId: item._id,
           quantity: amount,

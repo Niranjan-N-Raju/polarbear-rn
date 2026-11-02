@@ -116,7 +116,6 @@ export function SaleFormDrawer({
     }
     const controller = new AbortController();
     const query = new URLSearchParams({
-      storeId,
       from: calendarRange.from,
       to: calendarRange.to > today ? today : calendarRange.to,
     });
@@ -209,7 +208,7 @@ export function SaleFormDrawer({
         {
           method: editingSale ? 'PUT' : 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(salePayload(storeId, form)),
+          body: JSON.stringify(salePayload(form)),
         },
       );
       const data = (await response.json().catch(() => ({}))) as {

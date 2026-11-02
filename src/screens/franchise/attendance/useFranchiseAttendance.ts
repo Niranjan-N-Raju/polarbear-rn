@@ -21,9 +21,7 @@ import { businessDate } from '../../../utils/businessDate';
 export interface FranchiseAttendanceScreenProps {
   storeId: string;
 }
-export function useFranchiseAttendance({
-  storeId,
-}: FranchiseAttendanceScreenProps) {
+export function useFranchiseAttendance() {
   const { width } = useWindowDimensions();
   const layout = getAdminLayout(width);
   const [period, setPeriod] = useState(currentMonth);
@@ -44,23 +42,14 @@ export function useFranchiseAttendance({
   const [toastTone, setToastTone] = useState<'success' | 'error'>('success');
   const load = useCallback(
     async (signal: AbortSignal) => {
-      if (!storeId) {
-        setEmployees([]);
-        setRecords([]);
-        setCycle(null);
-        setLoading(false);
-        return;
-      }
       setLoading(true);
       setError(null);
       try {
         const employeeQuery = new URLSearchParams({
-          franchiseId: storeId,
           includeArchived: 'true',
           limit: '500',
         });
         const cycleQuery = new URLSearchParams({
-          franchiseId: storeId,
           period,
         });
         const [employeeResponse, cycleResponse] = await Promise.all([
@@ -84,7 +73,6 @@ export function useFranchiseAttendance({
         const nextCycle = cycleData.cycle;
         // Custom salary cycles may cross calendar months; load attendance for the server-resolved bounds.
         const attendanceQuery = new URLSearchParams({
-          storeId,
           from: nextCycle.from,
           to: nextCycle.to,
         });
@@ -127,7 +115,7 @@ export function useFranchiseAttendance({
         if (!signal.aborted) setLoading(false);
       }
     },
-    [period, storeId],
+    [period],
   );
   useEffect(() => {
     const controller = new AbortController();
@@ -232,7 +220,6 @@ export function useFranchiseAttendance({
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          storeId,
           date: selectedDate,
           records: [
             {
@@ -298,7 +285,6 @@ export function useFranchiseAttendance({
     setRemoveError(null);
     try {
       const query = new URLSearchParams({
-        storeId,
         date,
         employeeId: employee._id,
       });

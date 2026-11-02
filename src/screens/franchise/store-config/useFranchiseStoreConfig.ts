@@ -58,12 +58,10 @@ export function useFranchiseStoreConfig({ storeId }: { storeId: string }) {
     setLoadError(null);
     try {
       const paths = [
-        `/stores/branding?storeId=${encodeURIComponent(storeId)}`,
-        `/stores/cycle?storeId=${encodeURIComponent(
-          storeId,
-        )}&period=${currentPeriod()}`,
-        `/stores/positions?storeId=${encodeURIComponent(storeId)}`,
-        `/stores/shifts?storeId=${encodeURIComponent(storeId)}`,
+        '/stores/branding',
+        `/stores/cycle?period=${currentPeriod()}`,
+        '/stores/positions',
+        '/stores/shifts',
       ];
       const responses = await Promise.all(paths.map(path => apiRequest(path)));
       // Publish a combined configuration only when every section has loaded successfully.
@@ -121,7 +119,7 @@ export function useFranchiseStoreConfig({ storeId }: { storeId: string }) {
       };
     }
     // Fetch with the authenticated API client, then render a data URI without putting a token in the URL.
-    apiRequest(`/stores/logo?storeId=${encodeURIComponent(storeId)}`)
+    apiRequest('/stores/logo')
       .then(async response => {
         if (!response.ok) return;
         const contentType = response.headers.get('content-type') ?? 'image/png';
@@ -148,7 +146,7 @@ export function useFranchiseStoreConfig({ storeId }: { storeId: string }) {
         const response = await apiRequest(path, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ storeId, ...payload }),
+          body: JSON.stringify(payload),
         });
         const result = (await response.json().catch(() => ({}))) as {
           message?: string;
@@ -180,10 +178,7 @@ export function useFranchiseStoreConfig({ storeId }: { storeId: string }) {
   const removeLogo = useCallback(async () => {
     setBusy(true);
     try {
-      const response = await apiRequest(
-        `/stores/logo?storeId=${encodeURIComponent(storeId)}`,
-        { method: 'DELETE' },
-      );
+      const response = await apiRequest('/stores/logo', { method: 'DELETE' });
       const result = (await response.json().catch(() => ({}))) as {
         message?: string;
       };

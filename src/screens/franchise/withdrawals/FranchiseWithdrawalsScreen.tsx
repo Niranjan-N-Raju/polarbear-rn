@@ -249,7 +249,6 @@ export function FranchiseWithdrawalsScreen({ storeId }: { storeId: string }) {
 
       <WithdrawalFormDrawer
         visible={formVisible}
-        storeId={storeId}
         editingRecord={editingRecord}
         onClose={() => setFormVisible(false)}
         onAfterClose={afterDrawerClose}

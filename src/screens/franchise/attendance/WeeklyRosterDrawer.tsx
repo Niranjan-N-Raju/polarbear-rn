@@ -44,7 +44,6 @@ function labelDate(value: string) {
 
 interface WeeklyRosterDrawerProps {
   visible: boolean;
-  storeId: string;
   employees: AttendanceEmployee[];
   onClose: () => void;
   onSaved: (message: string) => void;
@@ -52,7 +51,6 @@ interface WeeklyRosterDrawerProps {
 
 export function WeeklyRosterDrawer({
   visible,
-  storeId,
   employees,
   onClose,
   onSaved,
@@ -97,7 +95,7 @@ export function WeeklyRosterDrawer({
     setLoadError(null);
     setLoadedWeek(null);
     setSchedules([]);
-    const query = new URLSearchParams({ storeId, weekStart });
+    const query = new URLSearchParams({ weekStart });
     apiRequest(`/attendance/weekly-roster?${query.toString()}`, {
       signal: controller.signal,
     })
@@ -148,7 +146,7 @@ export function WeeklyRosterDrawer({
       active = false;
       controller.abort();
     };
-  }, [activeEmployees, storeId, visible, weekDates, weekStart, reloadKey]);
+  }, [activeEmployees, visible, weekDates, weekStart, reloadKey]);
   const isLoaded = loadedWeek === weekStart && !loading && !loadError;
 
   function update(employeeId: string, date: string, value: string) {
@@ -197,7 +195,7 @@ export function WeeklyRosterDrawer({
       const response = await apiRequest('/attendance/weekly-roster', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ storeId, weekStart, entries: schedules }),
+        body: JSON.stringify({ weekStart, entries: schedules }),
       });
       const data = (await response.json().catch(() => ({}))) as {
         message?: string;

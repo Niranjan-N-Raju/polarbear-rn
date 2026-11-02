@@ -16,7 +16,6 @@ import { digitsOnly, isValidDateValue } from './utils';
 
 interface StockFormDrawerProps {
   visible: boolean;
-  storeId: string;
   onClose: () => void;
   onAfterClose?: () => void;
   onSaved: (message: string) => void;
@@ -30,7 +29,6 @@ interface StockErrors {
 
 export function StockFormDrawer({
   visible,
-  storeId,
   onClose,
   onAfterClose,
   onSaved,
@@ -59,7 +57,7 @@ export function StockFormDrawer({
     const controller = new AbortController();
     let active = true;
     setLoadingProducts(true);
-    apiRequest(`/products?storeId=${encodeURIComponent(storeId)}`, {
+    apiRequest('/products', {
       signal: controller.signal,
     })
       .then(async response => {
@@ -88,7 +86,7 @@ export function StockFormDrawer({
       active = false;
       controller.abort();
     };
-  }, [visible, storeId]);
+  }, [visible]);
 
   const filteredProducts = useMemo(() => {
     const query = search.trim().toLowerCase();
@@ -118,7 +116,6 @@ export function StockFormDrawer({
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          storeId,
           productId,
           expiryDate,
           quantity: Number(quantity),

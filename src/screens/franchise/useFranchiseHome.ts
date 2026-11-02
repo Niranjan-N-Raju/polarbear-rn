@@ -1,12 +1,29 @@
 import { useEffect, useState } from 'react';
 import { useWindowDimensions } from 'react-native';
-import { apiRequest } from '../../api/auth';
+import { apiRequest, setAccessToken } from '../../api/auth';
 import type { AuthenticatedUser } from '../../api/types';
 import type { TranslationKey } from '../../i18n';
 import { t } from '../../i18n';
 import { getAdminLayout } from '../../utils/adminLayout';
 import { menuGroups } from './navigation';
 import type { FranchiseStore } from './types';
+
+async function selectStoreSession(storeId: string): Promise<void> {
+  const response = await apiRequest('/auth/select-store', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ storeId }),
+  });
+  const data = (await response.json().catch(() => ({}))) as {
+    token?: string;
+    message?: string;
+  };
+  if (!response.ok || !data.token) {
+    throw new Error(data.message ?? t('franchiseStoresLoadFailed'));
+  }
+  setAccessToken(data.token);
+}
+
 export interface FranchiseHomeScreenProps {
   user: AuthenticatedUser;
   onLogout: () => void;
@@ -60,12 +77,13 @@ export function useFranchiseHome({
         })) as { franchises: FranchiseStore[] };
         if (!active) return;
         setStores(data.franchises);
-        // Refresh preserves an accessible selection; multiple stores require an explicit choice.
-        setActiveStore(
-          current =>
-            data.franchises.find(store => store._id === current?._id) ??
-            (data.franchises.length === 1 ? data.franchises[0] : null),
-        );
+        const selectedStore =
+          data.franchises.find(store => store._id === activeStore?._id) ??
+          (data.franchises.length === 1 ? data.franchises[0] : null);
+        if (selectedStore && data.franchises.length === 1) {
+          await selectStoreSession(selectedStore._id);
+        }
+        if (active) setActiveStore(selectedStore);
       })
       .catch((reason: unknown) => {
         if (active)
@@ -83,11 +101,21 @@ export function useFranchiseHome({
       controller.abort();
     };
   }, [version]);
-  function selectStore(store: FranchiseStore) {
-    setActiveStore(store);
-    setPickerOpen(false);
-    // Enter the new store at a predictable screen rather than retaining the previous feature.
-    setTab('dashboard');
+  async function selectStore(store: FranchiseStore) {
+    setError('');
+    try {
+      await selectStoreSession(store._id);
+      setActiveStore(store);
+      setPickerOpen(false);
+      // Enter the new store at a predictable screen rather than retaining the previous feature.
+      setTab('dashboard');
+    } catch (reason) {
+      setError(
+        reason instanceof Error
+          ? reason.message
+          : t('franchiseStoresLoadFailed'),
+      );
+    }
   }
   function navigate(key: string) {
     setTab(key);
