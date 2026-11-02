@@ -13,7 +13,10 @@ import { useAdminHome } from './useAdminHome';
 import { AdminUsersScreen } from './users/AdminUsersScreen';
 
 export type { AdminTab } from './types';
-export function AdminHomeScreen({ user: initialUser, onLogout }: AdminHomeScreenProps) {
+export function AdminHomeScreen({
+  user: initialUser,
+  onLogout,
+}: AdminHomeScreenProps) {
   const {
     layout,
     user,
@@ -35,14 +38,35 @@ export function AdminHomeScreen({ user: initialUser, onLogout }: AdminHomeScreen
     primaryTabs,
   } = useAdminHome({ user: initialUser, onLogout });
   return (
-    <View style={[styles.root, safeAreaStyles.root, layout.hasSidebar && styles.rootWeb]}>
+    <View
+      style={[
+        styles.root,
+        safeAreaStyles.root,
+        layout.hasSidebar && styles.rootWeb,
+      ]}
+    >
       {layout.hasSidebar ? (
-        <View style={[styles.webSidebar, isSidebarCollapsed && styles.webSidebarCollapsed, drawerSafeAreaStyles.drawerTop]}>
-          <View style={[styles.webSidebarBrand, isSidebarCollapsed && styles.webSidebarBrandCollapsed]}>
+        <View
+          style={[
+            styles.webSidebar,
+            isSidebarCollapsed && styles.webSidebarCollapsed,
+            drawerSafeAreaStyles.drawerTop,
+          ]}
+        >
+          <View
+            style={[
+              styles.webSidebarBrand,
+              isSidebarCollapsed && styles.webSidebarBrandCollapsed,
+            ]}
+          >
             {!isSidebarCollapsed ? (
               <View style={styles.headerIdentity}>
                 <View style={styles.headerBrand}>
-                  <View style={styles.headerMark}><Text style={styles.headerMarkText}>{t('brandInitials')}</Text></View>
+                  <View style={styles.headerMark}>
+                    <Text style={styles.headerMarkText}>
+                      {t('brandInitials')}
+                    </Text>
+                  </View>
                   <Text style={styles.headerName}>{t('brandName')}</Text>
                 </View>
                 <Text style={styles.headerUser}>{user.name}</Text>
@@ -50,11 +74,23 @@ export function AdminHomeScreen({ user: initialUser, onLogout }: AdminHomeScreen
             ) : null}
             <Pressable
               accessibilityRole="button"
-              accessibilityLabel={isSidebarCollapsed ? t('adminExpandSidebar') : t('adminCollapseSidebar')}
-              onPress={() => setIsSidebarCollapsed((collapsed) => !collapsed)}
+              accessibilityLabel={
+                isSidebarCollapsed
+                  ? t('adminExpandSidebar')
+                  : t('adminCollapseSidebar')
+              }
+              onPress={() => setIsSidebarCollapsed(collapsed => !collapsed)}
               style={styles.webSidebarCollapseButton}
             >
-              {isSidebarCollapsed ? <Menu color={theme.colors.muted} size={20} strokeWidth={1.8} /> : <ChevronsLeft color={theme.colors.muted} size={20} strokeWidth={1.8} />}
+              {isSidebarCollapsed ? (
+                <Menu color={theme.colors.muted} size={20} strokeWidth={1.8} />
+              ) : (
+                <ChevronsLeft
+                  color={theme.colors.muted}
+                  size={20}
+                  strokeWidth={1.8}
+                />
+              )}
             </Pressable>
           </View>
           <View style={styles.webSidebarNav}>
@@ -67,10 +103,27 @@ export function AdminHomeScreen({ user: initialUser, onLogout }: AdminHomeScreen
                   accessibilityState={{ selected: active }}
                   onPress={() => setActiveTab(key)}
                   accessibilityLabel={isSidebarCollapsed ? t(label) : undefined}
-                  style={[styles.webSidebarItem, key === 'dashboard' && styles.webSidebarGroupEnd, isSidebarCollapsed && styles.webSidebarItemCollapsed, active && styles.webSidebarItemActive]}
+                  style={[
+                    styles.webSidebarItem,
+                    key === 'dashboard' && styles.webSidebarGroupEnd,
+                    isSidebarCollapsed && styles.webSidebarItemCollapsed,
+                    active && styles.webSidebarItemActive,
+                  ]}
                 >
-                  <Icon color={active ? theme.colors.teal : theme.colors.muted} size={layout.sidebarIconSize} />
-                  {!isSidebarCollapsed ? <Text style={[styles.webSidebarItemText, active && styles.webSidebarItemTextActive]}>{t(label)}</Text> : null}
+                  <Icon
+                    color={active ? theme.colors.teal : theme.colors.muted}
+                    size={layout.sidebarIconSize}
+                  />
+                  {!isSidebarCollapsed ? (
+                    <Text
+                      style={[
+                        styles.webSidebarItemText,
+                        active && styles.webSidebarItemTextActive,
+                      ]}
+                    >
+                      {t(label)}
+                    </Text>
+                  ) : null}
                 </Pressable>
               );
             })}
@@ -80,10 +133,29 @@ export function AdminHomeScreen({ user: initialUser, onLogout }: AdminHomeScreen
               accessibilityRole="button"
               accessibilityLabel={t('adminProfile')}
               onPress={() => setActiveTab('profile')}
-              style={[styles.webSidebarProfile, isSidebarCollapsed && styles.webSidebarProfileCollapsed]}
+              style={[
+                styles.webSidebarProfile,
+                isSidebarCollapsed && styles.webSidebarProfileCollapsed,
+              ]}
             >
-              <UserRound color={activeTab === 'profile' ? theme.colors.teal : theme.colors.muted} size={layout.sidebarIconSize} />
-              {!isSidebarCollapsed ? <Text style={[styles.webSidebarItemText, activeTab === 'profile' && styles.webSidebarItemTextActive]}>{t('adminProfile')}</Text> : null}
+              <UserRound
+                color={
+                  activeTab === 'profile'
+                    ? theme.colors.teal
+                    : theme.colors.muted
+                }
+                size={layout.sidebarIconSize}
+              />
+              {!isSidebarCollapsed ? (
+                <Text
+                  style={[
+                    styles.webSidebarItemText,
+                    activeTab === 'profile' && styles.webSidebarItemTextActive,
+                  ]}
+                >
+                  {t('adminProfile')}
+                </Text>
+              ) : null}
             </Pressable>
             <View style={styles.webSidebarLogoutContainer}>
               <Pressable
@@ -91,10 +163,22 @@ export function AdminHomeScreen({ user: initialUser, onLogout }: AdminHomeScreen
                 accessibilityLabel={t('signOut')}
                 disabled={isLoggingOut}
                 onPress={() => void logout()}
-                style={[styles.webSidebarLogout, isSidebarCollapsed && styles.webSidebarItemCollapsed]}
+                style={[
+                  styles.webSidebarLogout,
+                  isSidebarCollapsed && styles.webSidebarItemCollapsed,
+                ]}
               >
-                {isLoggingOut ? <AppLoader variant="inline" color={theme.colors.muted} /> : <LogOut color={theme.colors.muted} size={layout.sidebarIconSize} />}
-                {!isSidebarCollapsed ? <Text style={styles.logoutText}>{t('signOut')}</Text> : null}
+                {isLoggingOut ? (
+                  <AppLoader variant="inline" color={theme.colors.muted} />
+                ) : (
+                  <LogOut
+                    color={theme.colors.muted}
+                    size={layout.sidebarIconSize}
+                  />
+                )}
+                {!isSidebarCollapsed ? (
+                  <Text style={styles.logoutText}>{t('signOut')}</Text>
+                ) : null}
               </Pressable>
             </View>
           </View>
@@ -110,27 +194,54 @@ export function AdminHomeScreen({ user: initialUser, onLogout }: AdminHomeScreen
             <Menu color={theme.colors.ink} size={theme.layout.iconSize} />
           </Pressable>
           <View style={styles.headerBrand}>
-            <View style={styles.headerMark}><Text style={styles.headerMarkText}>{t('brandInitials')}</Text></View>
+            <View style={styles.headerMark}>
+              <Text style={styles.headerMarkText}>{t('brandInitials')}</Text>
+            </View>
             <View style={styles.headerIdentity}>
-              <Text style={styles.headerName} numberOfLines={1}>{t('brandName')}</Text>
-              <Text style={styles.headerUser} numberOfLines={1}>{user.name} · {translateRole(user.role)}</Text>
-              <Text style={styles.headerTitle}>{t(tabs.find((tab) => tab.key === activeTab)!.label)}</Text>
+              <Text style={styles.headerName} numberOfLines={1}>
+                {t('brandName')}
+              </Text>
+              <Text style={styles.headerUser} numberOfLines={1}>
+                {user.name} · {translateRole(user.role)}
+              </Text>
+              <Text style={styles.headerTitle}>
+                {t(tabs.find(tab => tab.key === activeTab)!.label)}
+              </Text>
             </View>
           </View>
         </View>
       )}
 
-      <View style={[styles.mainPanel, layout.hasSidebar && styles.mainPanelWeb]}>
-        <View style={[styles.content, layout.compactWeb && styles.contentCompact]}>
+      <View
+        style={[styles.mainPanel, layout.hasSidebar && styles.mainPanelWeb]}
+      >
+        <View
+          style={[styles.content, layout.compactWeb && styles.contentCompact]}
+        >
           {activeTab === 'dashboard' ? <AdminDashboardScreen /> : null}
-          {activeTab === 'stores' ? <AdminStoresScreen userId={user.id} onToast={showAppToast} /> : null}
-          {activeTab === 'users' ? <AdminUsersScreen onToast={showAppToast} /> : null}
-          {activeTab === 'profile' ? <AdminProfileScreen user={user} onUserUpdated={setUser} onToast={showAppToast} /> : null}
+          {activeTab === 'stores' ? (
+            <AdminStoresScreen userId={user.id} onToast={showAppToast} />
+          ) : null}
+          {activeTab === 'users' ? (
+            <AdminUsersScreen onToast={showAppToast} />
+          ) : null}
+          {activeTab === 'profile' ? (
+            <AdminProfileScreen
+              user={user}
+              onUserUpdated={setUser}
+              onToast={showAppToast}
+            />
+          ) : null}
         </View>
-
       </View>
 
-      {appToast ? <AppToast message={appToast.message} tone={appToast.tone} onDismiss={dismissAppToast} /> : null}
+      {appToast ? (
+        <AppToast
+          message={appToast.message}
+          tone={appToast.tone}
+          onDismiss={dismissAppToast}
+        />
+      ) : null}
 
       {!layout.hasSidebar ? (
         <Modal
@@ -141,15 +252,30 @@ export function AdminHomeScreen({ user: initialUser, onLogout }: AdminHomeScreen
           onRequestClose={() => setIsDrawerOpen(false)}
         >
           <View style={styles.drawerRoot}>
-            <View style={[styles.drawerPanel, layout.isWeb && styles.drawerPanelWeb, drawerSafeAreaStyles.drawerTop]}>
-              <View style={[styles.drawerHeader, layout.isWeb && styles.drawerHeaderWeb]}>
+            <View
+              style={[
+                styles.drawerPanel,
+                layout.isWeb && styles.drawerPanelWeb,
+                drawerSafeAreaStyles.drawerTop,
+              ]}
+            >
+              <View
+                style={[
+                  styles.drawerHeader,
+                  layout.isWeb && styles.drawerHeaderWeb,
+                ]}
+              >
                 <View style={styles.headerBrand}>
                   <View style={styles.headerMark}>
-                    <Text style={styles.headerMarkText}>{t('brandInitials')}</Text>
+                    <Text style={styles.headerMarkText}>
+                      {t('brandInitials')}
+                    </Text>
                   </View>
                   <View style={styles.headerIdentity}>
                     <Text style={styles.headerName}>{t('brandName')}</Text>
-                    <Text style={styles.headerUser}>{translateRole(user.role)}</Text>
+                    <Text style={styles.headerUser}>
+                      {translateRole(user.role)}
+                    </Text>
                   </View>
                 </View>
                 <Pressable
@@ -162,7 +288,12 @@ export function AdminHomeScreen({ user: initialUser, onLogout }: AdminHomeScreen
                 </Pressable>
               </View>
 
-              <View style={[styles.drawerList, layout.isWeb && styles.drawerListWeb]}>
+              <View
+                style={[
+                  styles.drawerList,
+                  layout.isWeb && styles.drawerListWeb,
+                ]}
+              >
                 {primaryTabs.map(({ key, label, Icon }) => {
                   const active = activeTab === key;
                   return (
@@ -175,22 +306,50 @@ export function AdminHomeScreen({ user: initialUser, onLogout }: AdminHomeScreen
                         setIsDrawerOpen(false);
                       }}
                       style={[
-                        layout.isWeb ? styles.webSidebarItem : styles.drawerItem,
-                        layout.isWeb && key === 'dashboard' && styles.webSidebarGroupEnd,
-                        active && (layout.isWeb ? styles.webSidebarItemActive : styles.drawerItemActive),
+                        layout.isWeb
+                          ? styles.webSidebarItem
+                          : styles.drawerItem,
+                        layout.isWeb &&
+                          key === 'dashboard' &&
+                          styles.webSidebarGroupEnd,
+                        active &&
+                          (layout.isWeb
+                            ? styles.webSidebarItemActive
+                            : styles.drawerItemActive),
                       ]}
                     >
-                      <Icon color={active ? theme.colors.teal : theme.colors.muted} size={layout.isWeb ? layout.sidebarIconSize : theme.layout.iconSize} />
-                      <Text style={[
-                        layout.isWeb ? styles.webSidebarItemText : styles.drawerItemText,
-                        active && (layout.isWeb ? styles.webSidebarItemTextActive : styles.drawerItemTextActive),
-                      ]}>{t(label)}</Text>
+                      <Icon
+                        color={active ? theme.colors.teal : theme.colors.muted}
+                        size={
+                          layout.isWeb
+                            ? layout.sidebarIconSize
+                            : theme.layout.iconSize
+                        }
+                      />
+                      <Text
+                        style={[
+                          layout.isWeb
+                            ? styles.webSidebarItemText
+                            : styles.drawerItemText,
+                          active &&
+                            (layout.isWeb
+                              ? styles.webSidebarItemTextActive
+                              : styles.drawerItemTextActive),
+                        ]}
+                      >
+                        {t(label)}
+                      </Text>
                     </Pressable>
                   );
                 })}
               </View>
 
-              <View style={[layout.isWeb ? styles.webSidebarFooter : styles.drawerFooter, drawerSafeAreaStyles.drawerBottom]}>
+              <View
+                style={[
+                  layout.isWeb ? styles.webSidebarFooter : styles.drawerFooter,
+                  drawerSafeAreaStyles.drawerBottom,
+                ]}
+              >
                 <Pressable
                   accessibilityRole="button"
                   accessibilityLabel={t('adminProfile')}
@@ -198,23 +357,66 @@ export function AdminHomeScreen({ user: initialUser, onLogout }: AdminHomeScreen
                     setActiveTab('profile');
                     setIsDrawerOpen(false);
                   }}
-                  style={layout.isWeb ? styles.webSidebarProfile : styles.drawerItem}
+                  style={
+                    layout.isWeb ? styles.webSidebarProfile : styles.drawerItem
+                  }
                 >
-                  <UserRound color={activeTab === 'profile' ? theme.colors.teal : theme.colors.muted} size={layout.isWeb ? layout.sidebarIconSize : theme.layout.iconSize} />
-                  <Text style={[
-                    layout.isWeb ? styles.webSidebarItemText : styles.drawerItemText,
-                    activeTab === 'profile' && (layout.isWeb ? styles.webSidebarItemTextActive : styles.drawerItemTextActive),
-                  ]}>{t('adminProfile')}</Text>
+                  <UserRound
+                    color={
+                      activeTab === 'profile'
+                        ? theme.colors.teal
+                        : theme.colors.muted
+                    }
+                    size={
+                      layout.isWeb
+                        ? layout.sidebarIconSize
+                        : theme.layout.iconSize
+                    }
+                  />
+                  <Text
+                    style={[
+                      layout.isWeb
+                        ? styles.webSidebarItemText
+                        : styles.drawerItemText,
+                      activeTab === 'profile' &&
+                        (layout.isWeb
+                          ? styles.webSidebarItemTextActive
+                          : styles.drawerItemTextActive),
+                    ]}
+                  >
+                    {t('adminProfile')}
+                  </Text>
                 </Pressable>
-                <View style={layout.isWeb ? styles.webSidebarLogoutContainer : styles.drawerSignOutContainer}>
+                <View
+                  style={
+                    layout.isWeb
+                      ? styles.webSidebarLogoutContainer
+                      : styles.drawerSignOutContainer
+                  }
+                >
                   <Pressable
                     accessibilityRole="button"
                     accessibilityLabel={t('signOut')}
                     disabled={isLoggingOut}
                     onPress={() => void logout()}
-                    style={layout.isWeb ? styles.webSidebarLogout : styles.drawerLogout}
+                    style={
+                      layout.isWeb
+                        ? styles.webSidebarLogout
+                        : styles.drawerLogout
+                    }
                   >
-                    {isLoggingOut ? <AppLoader variant="inline" color={theme.colors.muted} /> : <LogOut color={theme.colors.muted} size={layout.isWeb ? layout.sidebarIconSize : theme.layout.iconSize} />}
+                    {isLoggingOut ? (
+                      <AppLoader variant="inline" color={theme.colors.muted} />
+                    ) : (
+                      <LogOut
+                        color={theme.colors.muted}
+                        size={
+                          layout.isWeb
+                            ? layout.sidebarIconSize
+                            : theme.layout.iconSize
+                        }
+                      />
+                    )}
                     <Text style={styles.logoutText}>{t('signOut')}</Text>
                   </Pressable>
                 </View>

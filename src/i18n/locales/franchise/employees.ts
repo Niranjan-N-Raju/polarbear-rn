@@ -33,7 +33,8 @@ export const employeesEn = {
   franchiseEmployeesLatestSalary: 'Latest approved monthly salary',
   franchiseEmployeesNewSalary: 'New monthly salary',
   franchiseEmployeesHikeEffective: 'Effective from',
-  franchiseEmployeesHikeInvalid: 'Enter a salary above the latest approved salary and choose an effective date.',
+  franchiseEmployeesHikeInvalid:
+    'Enter a salary above the latest approved salary and choose an effective date.',
   franchiseEmployeesHikeSaved: 'Salary hike saved.',
   franchiseEmployeesPromotion: 'Promote',
   franchiseEmployeesNewPosition: 'New position',
@@ -51,14 +52,16 @@ export const employeesEn = {
   franchiseEmployeesDocuments: 'Identity documents',
   franchiseEmployeesUploaded: 'Uploaded',
   franchiseEmployeesNotUploaded: 'Not uploaded',
-  franchiseEmployeesDocumentUploadGap: 'Document upload is unavailable in this app.',
+  franchiseEmployeesDocumentUploadGap:
+    'Document upload is unavailable in this app.',
   franchiseEmployeesSave: 'Save employee',
   franchiseEmployeesSaved: 'Employee saved successfully.',
   franchiseEmployeesSaveFailed: 'Failed to save employee.',
   franchiseEmployeesNameRequired: 'Name is required.',
   franchiseEmployeesPhoneInvalid: 'Phone number must be exactly 10 digits.',
   franchiseEmployeesArchiveTitle: 'Archive employee?',
-  franchiseEmployeesArchiveConfirm: 'This employee will be moved to the archived list.',
+  franchiseEmployeesArchiveConfirm:
+    'This employee will be moved to the archived list.',
   franchiseEmployeesExitDate: 'Exit date',
   franchiseEmployeesConfirmArchive: 'Archive',
   franchiseEmployeesCancel: 'Cancel',

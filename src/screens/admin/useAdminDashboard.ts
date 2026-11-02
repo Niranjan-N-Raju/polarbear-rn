@@ -4,11 +4,14 @@ import { apiRequest } from '../../api/auth';
 import { getDashboardLayout } from '../../utils/dashboardConfig';
 import type { DashboardStats } from '../../utils/types';
 
-
 export function useAdminDashboard() {
   const { width } = useWindowDimensions();
   const layout = getDashboardLayout(width);
-  const perRow = layout.dashboardCardsWide ? 4 : layout.dashboardCardsTablet ? 3 : 2;
+  const perRow = layout.dashboardCardsWide
+    ? 4
+    : layout.dashboardCardsTablet
+    ? 3
+    : 2;
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [hasError, setHasError] = useState(false);
@@ -19,7 +22,9 @@ export function useAdminDashboard() {
     setHasError(false);
     (async () => {
       try {
-        const response = await apiRequest('/dashboard', { signal: controller.signal });
+        const response = await apiRequest('/dashboard', {
+          signal: controller.signal,
+        });
         if (!response.ok) throw new Error('dashboard request failed');
         const data = (await response.json()) as DashboardStats;
         if (!controller.signal.aborted) setStats(data);

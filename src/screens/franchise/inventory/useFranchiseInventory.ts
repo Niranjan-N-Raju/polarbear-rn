@@ -17,27 +17,36 @@ import {
 } from './utils';
 export { pageSize };
 export type DrawerState =
-  | { type: 'filters'; }
-  | { type: 'stock'; }
-  | { type: 'products'; }
-  | { type: 'action'; item: InventoryStockItem; action: InventoryAction; }
+  | { type: 'filters' }
+  | { type: 'stock' }
+  | { type: 'products' }
+  | { type: 'action'; item: InventoryStockItem; action: InventoryAction }
   | null;
 export interface FranchiseInventoryScreenProps {
   storeId: string;
 }
 
-export function useFranchiseInventory({ storeId }: FranchiseInventoryScreenProps) {
+export function useFranchiseInventory({
+  storeId,
+}: FranchiseInventoryScreenProps) {
   const { width, height } = useWindowDimensions();
   const layout = getAdminLayout(width);
   const [items, setItems] = useState<InventoryStockItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [reloadKey, setReloadKey] = useState(0);
-  const [filters, setFilters] = useState<InventoryFilters>(defaultInventoryFilters);
-  const [draftFilters, setDraftFilters] = useState<InventoryFilters>(defaultInventoryFilters);
+  const [filters, setFilters] = useState<InventoryFilters>(
+    defaultInventoryFilters,
+  );
+  const [draftFilters, setDraftFilters] = useState<InventoryFilters>(
+    defaultInventoryFilters,
+  );
   const [visibleCount, setVisibleCount] = useState(pageSize);
   const [drawer, setDrawer] = useState<DrawerState>(null);
-  const [lastAction, setLastAction] = useState<{ item: InventoryStockItem; action: InventoryAction; } | null>(null);
+  const [lastAction, setLastAction] = useState<{
+    item: InventoryStockItem;
+    action: InventoryAction;
+  } | null>(null);
   const [pendingToast, setPendingToast] = useState('');
   const [toast, setToast] = useState<string | null>(null);
   useEffect(() => {
@@ -45,9 +54,14 @@ export function useFranchiseInventory({ storeId }: FranchiseInventoryScreenProps
     let active = true;
     setIsLoading(true);
     setError(null);
-    apiRequest(`/inventory?storeId=${encodeURIComponent(storeId)}`, { signal: controller.signal })
-      .then(async (response) => {
-        const data = await response.json().catch(() => ({})) as { items?: InventoryStockItem[]; message?: string; };
+    apiRequest(`/inventory?storeId=${encodeURIComponent(storeId)}`, {
+      signal: controller.signal,
+    })
+      .then(async response => {
+        const data = (await response.json().catch(() => ({}))) as {
+          items?: InventoryStockItem[];
+          message?: string;
+        };
         if (!active) return;
         if (!response.ok) {
           setError(data.message || t('adminLoadFailed'));
@@ -68,10 +82,17 @@ export function useFranchiseInventory({ storeId }: FranchiseInventoryScreenProps
   }, [storeId, reloadKey]);
   const summary = useMemo(() => summarizeInventory(items), [items]);
   // Summary badges describe all loaded stock, while filters only narrow the visible list.
-  const filteredItems = useMemo(() => filterInventory(items, filters), [items, filters]);
+  const filteredItems = useMemo(
+    () => filterInventory(items, filters),
+    [items, filters],
+  );
   const visibleItems = filteredItems.slice(0, visibleCount);
-  const hasActiveFilters = filters.status !== 'all' || filters.search.trim() !== '';
-  const totalUnits = useMemo(() => items.reduce((sum, item) => sum + item.quantity, 0), [items]);
+  const hasActiveFilters =
+    filters.status !== 'all' || filters.search.trim() !== '';
+  const totalUnits = useMemo(
+    () => items.reduce((sum, item) => sum + item.quantity, 0),
+    [items],
+  );
   const applyFilterState = (next: InventoryFilters) => {
     setFilters(next);
     setVisibleCount(pageSize);
@@ -81,15 +102,21 @@ export function useFranchiseInventory({ storeId }: FranchiseInventoryScreenProps
     setDrawer({ type: 'filters' });
   };
   const toggleStatus = (status: InventoryFilter) => {
-    applyFilterState({ ...filters, status: filters.status === status ? 'all' : status });
+    applyFilterState({
+      ...filters,
+      status: filters.status === status ? 'all' : status,
+    });
   };
-  const openAction = useCallback((item: InventoryStockItem, action: InventoryAction) => {
-    // Retain the action's content separately while the drawer animates out.
-    setLastAction({ item, action });
-    setDrawer({ type: 'action', item, action });
-  }, []);
+  const openAction = useCallback(
+    (item: InventoryStockItem, action: InventoryAction) => {
+      // Retain the action's content separately while the drawer animates out.
+      setLastAction({ item, action });
+      setDrawer({ type: 'action', item, action });
+    },
+    [],
+  );
   const completeWithToast = (message: string) => {
-    setReloadKey((key) => key + 1);
+    setReloadKey(key => key + 1);
     setPendingToast(message);
     setDrawer(null);
   };
@@ -106,11 +133,35 @@ export function useFranchiseInventory({ storeId }: FranchiseInventoryScreenProps
     color: string;
     Icon: typeof Package;
   }[] = [
-      { key: 'expired', label: t('franchiseInventorySummaryExpired'), value: summary.expired, color: theme.colors.orange, Icon: TriangleAlert },
-      { key: 'oneDay', label: t('franchiseInventorySummaryOneDay'), value: summary.oneDay, color: theme.colors.teal, Icon: Clock },
-      { key: 'sevenDays', label: t('franchiseInventorySummarySevenDays'), value: summary.sevenDays, color: theme.colors.teal, Icon: CalendarClock },
-      { key: 'thirtyDays', label: t('franchiseInventorySummaryThirtyDays'), value: summary.thirtyDays, color: theme.colors.orange, Icon: CalendarClock },
-    ];
+    {
+      key: 'expired',
+      label: t('franchiseInventorySummaryExpired'),
+      value: summary.expired,
+      color: theme.colors.orange,
+      Icon: TriangleAlert,
+    },
+    {
+      key: 'oneDay',
+      label: t('franchiseInventorySummaryOneDay'),
+      value: summary.oneDay,
+      color: theme.colors.teal,
+      Icon: Clock,
+    },
+    {
+      key: 'sevenDays',
+      label: t('franchiseInventorySummarySevenDays'),
+      value: summary.sevenDays,
+      color: theme.colors.teal,
+      Icon: CalendarClock,
+    },
+    {
+      key: 'thirtyDays',
+      label: t('franchiseInventorySummaryThirtyDays'),
+      value: summary.thirtyDays,
+      color: theme.colors.orange,
+      Icon: CalendarClock,
+    },
+  ];
   return {
     height,
     layout,

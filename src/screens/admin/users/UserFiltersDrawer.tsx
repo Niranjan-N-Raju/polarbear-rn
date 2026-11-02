@@ -4,7 +4,10 @@ import { AdminFormField } from '../../../components/AdminFormField';
 import { FilterDrawer } from '../../../components/FilterDrawer';
 import { t } from '../../../i18n';
 import { adminStyles as styles } from '../../../styles/adminStyles';
-import type { UserFiltersDrawerProps, UserStoreAutocompleteProps } from './types';
+import type {
+  UserFiltersDrawerProps,
+  UserStoreAutocompleteProps,
+} from './types';
 
 export function UserFiltersDrawer({
   visible,
@@ -65,7 +68,10 @@ export function UserFiltersDrawer({
         label={t('adminStatus')}
         value={filterStatus}
         expanded={openFilter === 'status'}
-        containerStyle={[styles.userFilterDropdown, styles.filterDrawerDropdown]}
+        containerStyle={[
+          styles.userFilterDropdown,
+          styles.filterDrawerDropdown,
+        ]}
         onToggle={() => onToggleFilter('status')}
         onSelect={onFilterStatusChange}
         options={[
@@ -78,7 +84,10 @@ export function UserFiltersDrawer({
         label={t('adminUserTypeFilter')}
         value={filterRole}
         expanded={openFilter === 'type'}
-        containerStyle={[styles.userFilterDropdown, styles.filterDrawerDropdown]}
+        containerStyle={[
+          styles.userFilterDropdown,
+          styles.filterDrawerDropdown,
+        ]}
         optionsPlacement="above"
         onToggle={() => onToggleFilter('type')}
         onSelect={onFilterRoleChange}
@@ -100,14 +109,29 @@ export function UserFiltersDrawer({
   );
 }
 
-function StoreAutocomplete({ stores, value, expanded, containerStyle, onFocus, onChangeText, onSelect }: UserStoreAutocompleteProps) {
+function StoreAutocomplete({
+  stores,
+  value,
+  expanded,
+  containerStyle,
+  onFocus,
+  onChangeText,
+  onSelect,
+}: UserStoreAutocompleteProps) {
   const normalizedSearch = value.trim().toLocaleLowerCase();
   const matches = stores
-    .filter((store) => store.name.toLocaleLowerCase().includes(normalizedSearch))
+    .filter(store => store.name.toLocaleLowerCase().includes(normalizedSearch))
     .slice(0, 8);
 
   return (
-    <View style={[styles.storeFilterDropdown, styles.userStoreAutocomplete, expanded && styles.storeFilterDropdownOpen, containerStyle]}>
+    <View
+      style={[
+        styles.storeFilterDropdown,
+        styles.userStoreAutocomplete,
+        expanded && styles.storeFilterDropdownOpen,
+        containerStyle,
+      ]}
+    >
       <TextInput
         value={value}
         placeholder={t('adminSearchStores')}
@@ -118,10 +142,22 @@ function StoreAutocomplete({ stores, value, expanded, containerStyle, onFocus, o
         style={[styles.fieldInput, styles.storeSearch, styles.userFilterInput]}
       />
       {expanded && matches.length > 0 ? (
-        <View style={[styles.storeFilterDropdownOptions, styles.userStoreAutocompleteOptions]}>
-          {matches.map((store) => (
-            <Pressable key={store._id} accessibilityRole="button" onPress={() => onSelect(store)} style={styles.storeFilterDropdownOption}>
-              <Text style={styles.storeFilterDropdownOptionText}>{store.name}</Text>
+        <View
+          style={[
+            styles.storeFilterDropdownOptions,
+            styles.userStoreAutocompleteOptions,
+          ]}
+        >
+          {matches.map(store => (
+            <Pressable
+              key={store._id}
+              accessibilityRole="button"
+              onPress={() => onSelect(store)}
+              style={styles.storeFilterDropdownOption}
+            >
+              <Text style={styles.storeFilterDropdownOptionText}>
+                {store.name}
+              </Text>
             </Pressable>
           ))}
         </View>

@@ -1,10 +1,21 @@
 import { getLocale, t } from '../../../i18n';
-import { currentMonthRange, localDateValue, thisWeekRange, validDateRange } from '../dashboardDates';
+import {
+  currentMonthRange,
+  localDateValue,
+  thisWeekRange,
+  validDateRange,
+} from '../dashboardDates';
 import type { SaleExpense, SaleRecord } from '../types';
 import { businessDate } from '../../../utils/businessDate';
 
-export const saleAmountFields = ['totalSale', 'swiggy', 'zomato', 'upi', 'upiCharge'] as const;
-export type SaleAmountField = typeof saleAmountFields[number];
+export const saleAmountFields = [
+  'totalSale',
+  'swiggy',
+  'zomato',
+  'upi',
+  'upiCharge',
+] as const;
+export type SaleAmountField = (typeof saleAmountFields)[number];
 
 export interface SaleForm {
   date: string;
@@ -21,7 +32,15 @@ export type SaleFormErrors = Partial<Record<'date' | SaleAmountField, string>>;
 const numberPattern = /^\d*\.?\d*$/;
 
 export function emptySaleForm(date = businessDate()): SaleForm {
-  return { date, totalSale: '', swiggy: '', zomato: '', upi: '', upiCharge: '', expenses: [] };
+  return {
+    date,
+    totalSale: '',
+    swiggy: '',
+    zomato: '',
+    upi: '',
+    upiCharge: '',
+    expenses: [],
+  };
 }
 
 export function saleToForm(sale: SaleRecord): SaleForm {
@@ -32,7 +51,7 @@ export function saleToForm(sale: SaleRecord): SaleForm {
     zomato: String(sale.zomato),
     upi: String(sale.upi),
     upiCharge: String(sale.upiCharge ?? 0),
-    expenses: sale.expenses.map((expense) => ({ ...expense })),
+    expenses: sale.expenses.map(expense => ({ ...expense })),
   };
 }
 
@@ -48,18 +67,33 @@ export function parseAmount(value: string): number {
 }
 
 export function isValidAmount(value: string): boolean {
-  return value.trim() !== '' && value.trim() !== '.' && numberPattern.test(value.trim());
+  return (
+    value.trim() !== '' &&
+    value.trim() !== '.' &&
+    numberPattern.test(value.trim())
+  );
 }
 
-export function calculateCash(form: Pick<SaleForm, 'totalSale' | 'swiggy' | 'zomato' | 'upi'>): number {
-  return parseAmount(form.totalSale) - parseAmount(form.swiggy) - parseAmount(form.zomato) - parseAmount(form.upi);
+export function calculateCash(
+  form: Pick<SaleForm, 'totalSale' | 'swiggy' | 'zomato' | 'upi'>,
+): number {
+  return (
+    parseAmount(form.totalSale) -
+    parseAmount(form.swiggy) -
+    parseAmount(form.zomato) -
+    parseAmount(form.upi)
+  );
 }
 
 export function sumExpenses(expenses: SaleExpense[]): number {
   return expenses.reduce((sum, expense) => sum + expense.amount, 0);
 }
 
-export function onlinePercent(total: number, swiggy: number, zomato: number): number {
+export function onlinePercent(
+  total: number,
+  swiggy: number,
+  zomato: number,
+): number {
   return total > 0 ? ((swiggy + zomato) / total) * 100 : 0;
 }
 
@@ -69,7 +103,10 @@ export function formatPercent(value: number): string {
 
 export function summarizeSales(sales: SaleRecord[]) {
   const totalSales = sales.reduce((sum, sale) => sum + sale.totalSale, 0);
-  const onlineSales = sales.reduce((sum, sale) => sum + sale.swiggy + sale.zomato, 0);
+  const onlineSales = sales.reduce(
+    (sum, sale) => sum + sale.swiggy + sale.zomato,
+    0,
+  );
   return {
     totalSales,
     onlineSales,
@@ -87,14 +124,19 @@ export function validateSaleForm(
 ): SaleFormErrors {
   const errors: SaleFormErrors = {};
   if (!form.date.trim()) errors.date = t('franchiseFieldRequired');
-  else if (!/^\d{4}-\d{2}-\d{2}$/.test(form.date) || Number.isNaN(Date.parse(`${form.date}T00:00:00Z`))) {
+  else if (
+    !/^\d{4}-\d{2}-\d{2}$/.test(form.date) ||
+    Number.isNaN(Date.parse(`${form.date}T00:00:00Z`))
+  ) {
     errors.date = t('franchiseSaleDateInvalid');
   } else if (form.date > today) errors.date = t('franchiseSaleFutureDate');
-  else if (form.date !== editingDate && existingDates.includes(form.date)) errors.date = t('franchiseSaleDuplicateDate');
+  else if (form.date !== editingDate && existingDates.includes(form.date))
+    errors.date = t('franchiseSaleDuplicateDate');
 
   for (const field of saleAmountFields) {
     if (!form[field].trim()) errors[field] = t('franchiseFieldRequired');
-    else if (!isValidAmount(form[field])) errors[field] = t('franchiseInvalidNumber');
+    else if (!isValidAmount(form[field]))
+      errors[field] = t('franchiseInvalidNumber');
   }
   return errors;
 }
@@ -108,14 +150,22 @@ export function salePayload(storeId: string, form: SaleForm) {
     zomato: parseAmount(form.zomato),
     upi: parseAmount(form.upi),
     upiCharge: parseAmount(form.upiCharge),
-    expenses: form.expenses.map((expense) => ({ name: expense.name.trim(), amount: expense.amount })),
+    expenses: form.expenses.map(expense => ({
+      name: expense.name.trim(),
+      amount: expense.amount,
+    })),
   };
 }
 
 export function formatSaleDate(date: string): string {
   const value = new Date(`${date}T00:00:00`);
   if (Number.isNaN(value.getTime())) return date;
-  return value.toLocaleDateString(getLocale(), { day: '2-digit', month: 'short', year: 'numeric', weekday: 'short' });
+  return value.toLocaleDateString(getLocale(), {
+    day: '2-digit',
+    month: 'short',
+    year: 'numeric',
+    weekday: 'short',
+  });
 }
 
 export interface SaleRange {
@@ -125,7 +175,10 @@ export interface SaleRange {
 
 export type SalePreset = 'today' | 'week' | 'month';
 
-export function salePresetRange(preset: SalePreset, now = new Date()): SaleRange {
+export function salePresetRange(
+  preset: SalePreset,
+  now = new Date(),
+): SaleRange {
   const today = businessDate(now);
   if (preset === 'today') return { from: today, to: today };
   if (preset === 'week') return thisWeekRange(now);
@@ -137,8 +190,12 @@ export function defaultSaleRange(): SaleRange {
   return salePresetRange('month');
 }
 
-export function saleRangeError(range: SaleRange, today = businessDate()): string | null {
-  if (!validDateRange(range.from.trim(), range.to.trim())) return t('franchiseInvalidDates');
+export function saleRangeError(
+  range: SaleRange,
+  today = businessDate(),
+): string | null {
+  if (!validDateRange(range.from.trim(), range.to.trim()))
+    return t('franchiseInvalidDates');
   if (range.to.trim() > today) return t('franchiseSaleFutureDate');
   return null;
 }

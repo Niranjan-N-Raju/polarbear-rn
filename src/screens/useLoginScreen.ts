@@ -1,18 +1,20 @@
-import { useCallback, useEffect, useRef, useState, type ComponentRef } from 'react';
 import {
-  Platform,
-  TextInput,
-  useWindowDimensions
-} from 'react-native';
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+  type ComponentRef,
+} from 'react';
+import { Platform, TextInput, useWindowDimensions } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { setPasswordChangeRequiredHandler, setUnauthorizedHandler } from '../api/auth';
+import {
+  setPasswordChangeRequiredHandler,
+  setUnauthorizedHandler,
+} from '../api/auth';
 import { theme } from '../config/theme';
 import { useLogin } from '../hooks/useLogin';
 import { t } from '../i18n';
-import {
-  getLoginSafeAreaStyles
-} from '../styles/loginScreenStyles';
-
+import { getLoginSafeAreaStyles } from '../styles/loginScreenStyles';
 
 export function useLoginScreen() {
   const safeAreaInsets = useSafeAreaInsets();

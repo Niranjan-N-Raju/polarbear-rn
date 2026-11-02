@@ -19,7 +19,10 @@ interface InventoryFiltersDrawerProps {
   onApply: () => void;
 }
 
-export const inventoryFilterOptions: { key: InventoryFilter; label: Parameters<typeof t>[0]; }[] = [
+export const inventoryFilterOptions: {
+  key: InventoryFilter;
+  label: Parameters<typeof t>[0];
+}[] = [
   { key: 'all', label: 'franchiseInventoryFilterAll' },
   { key: 'expired', label: 'franchiseInventoryFilterExpired' },
   { key: 'oneDay', label: 'franchiseInventoryFilterOneDay' },
@@ -54,7 +57,7 @@ export function InventoryFiltersDrawer({
       onApply={onApply}
     >
       <View style={[salesStyles.presetRow, styles.filterDrawerField]}>
-        {inventoryFilterOptions.map((option) => {
+        {inventoryFilterOptions.map(option => {
           const selected = draft.status === option.key;
           return (
             <Pressable
@@ -62,7 +65,11 @@ export function InventoryFiltersDrawer({
               accessibilityRole="button"
               accessibilityState={{ selected }}
               onPress={() => onDraftChange({ ...draft, status: option.key })}
-              style={[styles.secondaryButton, salesStyles.presetButton, selected && styles.storeOptionSelected]}
+              style={[
+                styles.secondaryButton,
+                salesStyles.presetButton,
+                selected && styles.storeOptionSelected,
+              ]}
             >
               <Text style={styles.secondaryButtonText}>{t(option.label)}</Text>
             </Pressable>
@@ -73,7 +80,7 @@ export function InventoryFiltersDrawer({
         label={t('franchiseInventoryProduct')}
         placeholder={t('franchiseInventorySearchProduct')}
         value={draft.search}
-        onChangeText={(search) => onDraftChange({ ...draft, search })}
+        onChangeText={search => onDraftChange({ ...draft, search })}
         containerStyle={styles.filterDrawerField}
         autoCapitalize="none"
       />

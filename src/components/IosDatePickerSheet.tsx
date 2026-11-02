@@ -15,23 +15,60 @@ interface IosDatePickerSheetProps {
   onConfirm: () => void;
 }
 
-export function IosDatePickerSheet({ value, minimumDate, maximumDate, allowClear, onDraftChange, onCancel, onClear, onConfirm }: IosDatePickerSheetProps) {
+export function IosDatePickerSheet({
+  value,
+  minimumDate,
+  maximumDate,
+  allowClear,
+  onDraftChange,
+  onCancel,
+  onClear,
+  onConfirm,
+}: IosDatePickerSheetProps) {
   const insets = useSafeAreaInsets();
   return (
     <View style={styles.root}>
-      <Pressable testID="ios-date-sheet-scrim" accessibilityRole="button" accessibilityLabel={t('dateCancel')} onPress={onCancel} style={styles.scrim} />
-      <View style={[styles.sheet, { paddingBottom: insets.bottom + theme.spacing.lg }]}>
+      <Pressable
+        testID="ios-date-sheet-scrim"
+        accessibilityRole="button"
+        accessibilityLabel={t('dateCancel')}
+        onPress={onCancel}
+        style={styles.scrim}
+      />
+      <View
+        style={[
+          styles.sheet,
+          { paddingBottom: insets.bottom + theme.spacing.lg },
+        ]}
+      >
         <View style={styles.header}>
-          <Pressable accessibilityRole="button" accessibilityLabel={t('dateCancel')} onPress={onCancel} hitSlop={8}>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel={t('dateCancel')}
+            onPress={onCancel}
+            hitSlop={8}
+          >
             <Text style={styles.action}>{t('dateCancel')}</Text>
           </Pressable>
           {allowClear ? (
-            <Pressable accessibilityRole="button" accessibilityLabel={t('dateClear')} onPress={onClear} hitSlop={8}>
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel={t('dateClear')}
+              onPress={onClear}
+              hitSlop={8}
+            >
               <Text style={styles.action}>{t('dateClear')}</Text>
             </Pressable>
           ) : null}
-          <Pressable accessibilityRole="button" accessibilityLabel={t('dateConfirm')} onPress={onConfirm} hitSlop={8}>
-            <Text style={[styles.action, styles.confirm]}>{t('dateConfirm')}</Text>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel={t('dateConfirm')}
+            onPress={onConfirm}
+            hitSlop={8}
+          >
+            <Text style={[styles.action, styles.confirm]}>
+              {t('dateConfirm')}
+            </Text>
           </Pressable>
         </View>
         <DateTimePicker
@@ -52,8 +89,22 @@ export function IosDatePickerSheet({ value, minimumDate, maximumDate, allowClear
 }
 
 const styles = StyleSheet.create({
-  root: { position: 'absolute', top: 0, right: 0, bottom: 0, left: 0, justifyContent: 'flex-end' },
-  scrim: { position: 'absolute', top: 0, right: 0, bottom: 0, left: 0, backgroundColor: 'rgba(0,0,0,0.35)' },
+  root: {
+    position: 'absolute',
+    top: 0,
+    right: 0,
+    bottom: 0,
+    left: 0,
+    justifyContent: 'flex-end',
+  },
+  scrim: {
+    position: 'absolute',
+    top: 0,
+    right: 0,
+    bottom: 0,
+    left: 0,
+    backgroundColor: 'rgba(0,0,0,0.35)',
+  },
   sheet: {
     backgroundColor: theme.colors.white,
     borderTopLeftRadius: theme.radius.card,
@@ -69,7 +120,11 @@ const styles = StyleSheet.create({
     borderBottomWidth: StyleSheet.hairlineWidth,
     borderBottomColor: theme.colors.inputBorder,
   },
-  action: { color: theme.colors.orange, fontSize: theme.typography.sm, fontWeight: theme.fontWeight.medium },
+  action: {
+    color: theme.colors.orange,
+    fontSize: theme.typography.sm,
+    fontWeight: theme.fontWeight.medium,
+  },
   confirm: { fontWeight: theme.fontWeight.bold },
   picker: { alignSelf: 'center', width: '100%' },
 });

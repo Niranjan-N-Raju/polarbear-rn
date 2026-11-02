@@ -34,17 +34,29 @@ export function useFranchiseDashboard(storeId: string) {
     const controller = new AbortController();
     setLoading(true);
     setError('');
-    apiRequest(`/dashboard?storeId=${encodeURIComponent(storeId)}`, { signal: controller.signal })
-      .then(async (response) => {
+    apiRequest(`/dashboard?storeId=${encodeURIComponent(storeId)}`, {
+      signal: controller.signal,
+    })
+      .then(async response => {
         if (!response.ok) throw new Error(t('adminLoadFailed'));
-        const data = await response.json().catch(() => { throw new Error(t('adminLoadFailed')); }) as FranchiseDashboardStats;
+        const data = (await response.json().catch(() => {
+          throw new Error(t('adminLoadFailed'));
+        })) as FranchiseDashboardStats;
         if (active) setStats(data);
       })
       .catch((reason: unknown) => {
-        if (active) setError(reason instanceof Error ? reason.message : t('adminLoadFailed'));
+        if (active)
+          setError(
+            reason instanceof Error ? reason.message : t('adminLoadFailed'),
+          );
       })
-      .finally(() => { if (active) setLoading(false); });
-    return () => { active = false; controller.abort(); };
+      .finally(() => {
+        if (active) setLoading(false);
+      });
+    return () => {
+      active = false;
+      controller.abort();
+    };
   }, [storeId, version]);
 
   // Summary and trend load independently so one failed endpoint does not hide the other.
@@ -53,20 +65,37 @@ export function useFranchiseDashboard(storeId: string) {
     const controller = new AbortController();
     setSalesLoading(true);
     setSalesError('');
-    apiRequest(`/sales?storeId=${encodeURIComponent(storeId)}&from=${appliedRange.from}&to=${appliedRange.to}`, { signal: controller.signal })
-      .then(async (response) => {
+    apiRequest(
+      `/sales?storeId=${encodeURIComponent(storeId)}&from=${
+        appliedRange.from
+      }&to=${appliedRange.to}`,
+      { signal: controller.signal },
+    )
+      .then(async response => {
         if (!response.ok) throw new Error(t('franchiseSalesLoadFailed'));
-        const data = await response.json().catch(() => { throw new Error(t('franchiseSalesLoadFailed')); }) as { sales: DailySale[] };
+        const data = (await response.json().catch(() => {
+          throw new Error(t('franchiseSalesLoadFailed'));
+        })) as { sales: DailySale[] };
         if (active) {
           setSales(data.sales);
           setSalesLoaded(true);
         }
       })
       .catch((reason: unknown) => {
-        if (active) setSalesError(reason instanceof Error ? reason.message : t('franchiseSalesLoadFailed'));
+        if (active)
+          setSalesError(
+            reason instanceof Error
+              ? reason.message
+              : t('franchiseSalesLoadFailed'),
+          );
       })
-      .finally(() => { if (active) setSalesLoading(false); });
-    return () => { active = false; controller.abort(); };
+      .finally(() => {
+        if (active) setSalesLoading(false);
+      });
+    return () => {
+      active = false;
+      controller.abort();
+    };
   }, [storeId, appliedRange, version]);
 
   function applyRange(next = range) {
@@ -93,10 +122,22 @@ export function useFranchiseDashboard(storeId: string) {
   }
 
   return {
-    stats, sales, range, appliedRange, filtersOpen, filterError,
-    error, salesError, loading, salesLoading, salesLoaded, applyRange, openFilters, changeRange,
+    stats,
+    sales,
+    range,
+    appliedRange,
+    filtersOpen,
+    filterError,
+    error,
+    salesError,
+    loading,
+    salesLoading,
+    salesLoaded,
+    applyRange,
+    openFilters,
+    changeRange,
     closeFilters: () => setFiltersOpen(false),
     clearFilters: () => applyRange(currentMonthRange()),
-    refresh: () => setVersion((value) => value + 1),
+    refresh: () => setVersion(value => value + 1),
   };
 }

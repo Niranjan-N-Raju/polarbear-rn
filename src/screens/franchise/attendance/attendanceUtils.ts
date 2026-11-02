@@ -7,10 +7,24 @@ export interface AttendanceEmployee {
   dateOfJoining?: string | null;
   archivedAt?: string | null;
 }
-export type AttendanceRecord = { employeeId: string; date: string; status: AttendanceStatus; comment: string; };
-export type Cycle = { from: string; to: string; type?: 'calendar_month' | 'custom'; startDay?: number; };
+export type AttendanceRecord = {
+  employeeId: string;
+  date: string;
+  status: AttendanceStatus;
+  comment: string;
+};
+export type Cycle = {
+  from: string;
+  to: string;
+  type?: 'calendar_month' | 'custom';
+  startDay?: number;
+};
 export const statuses: AttendanceStatus[] = ['Present', 'Week Off', 'Absent'];
-export const statusLabelKey = { Present: 'franchiseAttendancePresent', 'Week Off': 'franchiseAttendanceWeekOff', Absent: 'franchiseAttendanceAbsent' } as const;
+export const statusLabelKey = {
+  Present: 'franchiseAttendancePresent',
+  'Week Off': 'franchiseAttendanceWeekOff',
+  Absent: 'franchiseAttendanceAbsent',
+} as const;
 export function datesBetween(from: string, to: string) {
   if (!from || !to || from > to) return [];
   const dates: string[] = [];
@@ -24,7 +38,9 @@ export function datesBetween(from: string, to: string) {
   return dates;
 }
 export function isActiveOn(employee: AttendanceEmployee, date: string) {
-  const joined = employee.dateOfJoining ? localDate(new Date(employee.dateOfJoining)) : '';
+  const joined = employee.dateOfJoining
+    ? localDate(new Date(employee.dateOfJoining))
+    : '';
   if (joined && joined > date) return false;
   if (employee.isActive === false) {
     if (!employee.archivedAt) return false;
@@ -33,11 +49,19 @@ export function isActiveOn(employee: AttendanceEmployee, date: string) {
   }
   return true;
 }
-export function dateLabel(value: string, options: Intl.DateTimeFormatOptions = { weekday: 'short', day: 'numeric', month: 'short' }) {
+export function dateLabel(
+  value: string,
+  options: Intl.DateTimeFormatOptions = {
+    weekday: 'short',
+    day: 'numeric',
+    month: 'short',
+  },
+) {
   if (!value) return '';
-  return new Intl.DateTimeFormat(getLocale(), options).format(new Date(`${value}T00:00:00`));
+  return new Intl.DateTimeFormat(getLocale(), options).format(
+    new Date(`${value}T00:00:00`),
+  );
 }
 import { localDateValue as localDate } from '../dashboardDates';
 export { localDateValue as localDate } from '../dashboardDates';
 export { currentMonthValue as currentMonth } from '../shared/months';
-

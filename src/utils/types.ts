@@ -12,4 +12,7 @@ export interface DashboardStats {
 
 export type DashboardCardColor = 'teal' | 'orange';
 
-export type StoreCardStyleKey = 'storeCardSingle' | 'storeCardDouble' | 'storeCardTriple';
+export type StoreCardStyleKey =
+  | 'storeCardSingle'
+  | 'storeCardDouble'
+  | 'storeCardTriple';

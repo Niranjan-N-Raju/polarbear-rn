@@ -21,7 +21,7 @@ export interface WithdrawalResponse {
   message?: string;
 }
 
-export function useFranchiseWithdrawals({ storeId }: { storeId: string; }) {
+export function useFranchiseWithdrawals({ storeId }: { storeId: string }) {
   const { width } = useWindowDimensions();
   const layout = getAdminLayout(width);
   const [month, setMonth] = useState(() => currentMonthValue());
@@ -33,21 +33,36 @@ export function useFranchiseWithdrawals({ storeId }: { storeId: string; }) {
   const [error, setError] = useState<string | null>(null);
   const [reloadKey, setReloadKey] = useState(0);
   const [formVisible, setFormVisible] = useState(false);
-  const [editingRecord, setEditingRecord] = useState<WithdrawalRecord | null>(null);
-  const [deleteRecord, setDeleteRecord] = useState<WithdrawalRecord | null>(null);
+  const [editingRecord, setEditingRecord] = useState<WithdrawalRecord | null>(
+    null,
+  );
+  const [deleteRecord, setDeleteRecord] = useState<WithdrawalRecord | null>(
+    null,
+  );
   const [deleteBusy, setDeleteBusy] = useState(false);
   const [deleteError, setDeleteError] = useState<string | null>(null);
   const [pendingToast, setPendingToast] = useState('');
-  const [toast, setToast] = useState<{ message: string; tone: 'success' | 'error'; } | null>(null);
+  const [toast, setToast] = useState<{
+    message: string;
+    tone: 'success' | 'error';
+  } | null>(null);
   useEffect(() => {
     const controller = new AbortController();
     let active = true;
     setLoading(true);
     setError(null);
-    const query = new URLSearchParams({ storeId, from: range.from, to: range.to });
-    apiRequest(`/withdrawals?${query.toString()}`, { signal: controller.signal })
-      .then(async (response) => {
-        const data = await response.json().catch(() => ({})) as WithdrawalResponse;
+    const query = new URLSearchParams({
+      storeId,
+      from: range.from,
+      to: range.to,
+    });
+    apiRequest(`/withdrawals?${query.toString()}`, {
+      signal: controller.signal,
+    })
+      .then(async response => {
+        const data = (await response
+          .json()
+          .catch(() => ({}))) as WithdrawalResponse;
         if (!active) return;
         if (!response.ok) {
           setError(data.message || t('adminLoadFailed'));
@@ -68,16 +83,45 @@ export function useFranchiseWithdrawals({ storeId }: { storeId: string; }) {
       controller.abort();
     };
   }, [storeId, range, reloadKey]);
-  const monthWithdrawals = records.filter((record) => record.type === 'withdrawal').reduce((sum, record) => sum + record.amount, 0);
-  const monthRepayments = records.filter((record) => record.type === 'repayment').reduce((sum, record) => sum + record.amount, 0);
+  const monthWithdrawals = records
+    .filter(record => record.type === 'withdrawal')
+    .reduce((sum, record) => sum + record.amount, 0);
+  const monthRepayments = records
+    .filter(record => record.type === 'repayment')
+    .reduce((sum, record) => sum + record.amount, 0);
   const netOutstanding = monthWithdrawals - monthRepayments;
   // Month totals come from the returned rows; all-time totals come from separate server aggregates.
   const summaryCards = [
-    { label: t('franchiseWithdrawalsMonthTotal'), value: formatMoney(monthWithdrawals), color: theme.colors.orange, Icon: ArrowUpRight },
-    { label: t('franchiseWithdrawalsRepayments'), value: formatMoney(monthRepayments), color: theme.colors.teal, Icon: ArrowDownLeft },
-    { label: t('franchiseWithdrawalsNet'), value: formatMoney(netOutstanding), color: netOutstanding > 0 ? theme.colors.orange : theme.colors.teal, Icon: Scale },
-    { label: t('franchiseWithdrawalsAllTime'), value: formatMoney(allTimeWithdrawals), color: theme.colors.orange, Icon: ArrowUpRight },
-    { label: t('franchiseWithdrawalsAllTimeRepayments'), value: formatMoney(allTimeRepayments), color: theme.colors.teal, Icon: ArrowDownLeft },
+    {
+      label: t('franchiseWithdrawalsMonthTotal'),
+      value: formatMoney(monthWithdrawals),
+      color: theme.colors.orange,
+      Icon: ArrowUpRight,
+    },
+    {
+      label: t('franchiseWithdrawalsRepayments'),
+      value: formatMoney(monthRepayments),
+      color: theme.colors.teal,
+      Icon: ArrowDownLeft,
+    },
+    {
+      label: t('franchiseWithdrawalsNet'),
+      value: formatMoney(netOutstanding),
+      color: netOutstanding > 0 ? theme.colors.orange : theme.colors.teal,
+      Icon: Scale,
+    },
+    {
+      label: t('franchiseWithdrawalsAllTime'),
+      value: formatMoney(allTimeWithdrawals),
+      color: theme.colors.orange,
+      Icon: ArrowUpRight,
+    },
+    {
+      label: t('franchiseWithdrawalsAllTimeRepayments'),
+      value: formatMoney(allTimeRepayments),
+      color: theme.colors.teal,
+      Icon: ArrowDownLeft,
+    },
   ];
   const openCreate = () => {
     setEditingRecord(null);
@@ -88,7 +132,7 @@ export function useFranchiseWithdrawals({ storeId }: { storeId: string; }) {
     setFormVisible(true);
   };
   const handleSaved = (message: string) => {
-    setReloadKey((key) => key + 1);
+    setReloadKey(key => key + 1);
     setPendingToast(message);
     setFormVisible(false);
   };
@@ -98,14 +142,26 @@ export function useFranchiseWithdrawals({ storeId }: { storeId: string; }) {
     setDeleteError(null);
     try {
       const query = new URLSearchParams({ storeId });
-      const response = await apiRequest(`/withdrawals/${encodeURIComponent(deleteRecord.id)}?${query.toString()}`, { method: 'DELETE' });
-      const data = await response.json().catch(() => ({})) as { message?: string; };
-      if (!response.ok) throw new Error(data.message || t('franchiseWithdrawalsDeleteFailed'));
+      const response = await apiRequest(
+        `/withdrawals/${encodeURIComponent(
+          deleteRecord.id,
+        )}?${query.toString()}`,
+        { method: 'DELETE' },
+      );
+      const data = (await response.json().catch(() => ({}))) as {
+        message?: string;
+      };
+      if (!response.ok)
+        throw new Error(data.message || t('franchiseWithdrawalsDeleteFailed'));
       setPendingToast(data.message || t('franchiseWithdrawalsRemoved'));
       setDeleteRecord(null);
-      setReloadKey((key) => key + 1);
+      setReloadKey(key => key + 1);
     } catch (deleteFailure) {
-      setDeleteError(deleteFailure instanceof Error ? deleteFailure.message : t('adminNetworkError'));
+      setDeleteError(
+        deleteFailure instanceof Error
+          ? deleteFailure.message
+          : t('adminNetworkError'),
+      );
     } finally {
       setDeleteBusy(false);
     }

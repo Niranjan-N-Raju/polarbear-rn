@@ -32,7 +32,8 @@ export const kn: Partial<Record<TranslationKey, string>> = {
   adminUsersColumnName: 'ಹೆಸರು',
   adminUsersColumnEmail: 'ಇಮೇಲ್',
   adminUsersColumnStores: 'ಮಳಿಗೆಗಳು',
-  adminLoadFailed: 'ಮಾಹಿತಿಯನ್ನು ಲೋಡ್ ಮಾಡಲು ಸಾಧ್ಯವಾಗಲಿಲ್ಲ. ದಯವಿಟ್ಟು ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.',
+  adminLoadFailed:
+    'ಮಾಹಿತಿಯನ್ನು ಲೋಡ್ ಮಾಡಲು ಸಾಧ್ಯವಾಗಲಿಲ್ಲ. ದಯವಿಟ್ಟು ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.',
   adminManageUsers: 'ಸಿಬ್ಬಂದಿ ಖಾತೆಗಳು ಮತ್ತು ಮಳಿಗೆ ಪ್ರವೇಶವನ್ನು ನಿರ್ವಹಿಸಿ.',
   adminNoUsers: 'ಯಾವುದೇ ಬಳಕೆದಾರರು ಕಂಡುಬಂದಿಲ್ಲ.',
   adminNoMatchingUsers: 'ಈ ಫಿಲ್ಟರ್‌ಗಳಿಗೆ ಹೊಂದುವ ಬಳಕೆದಾರರು ಇಲ್ಲ.',
@@ -78,7 +79,8 @@ export const kn: Partial<Record<TranslationKey, string>> = {
   adminDelete: 'ಅಳಿಸಿ',
   adminUserSaved: 'ಬಳಕೆದಾರರನ್ನು ಯಶಸ್ವಿಯಾಗಿ ಉಳಿಸಲಾಗಿದೆ.',
   adminUserDeleted: 'ಬಳಕೆದಾರರನ್ನು ಯಶಸ್ವಿಯಾಗಿ ಅಳಿಸಲಾಗಿದೆ.',
-  adminConfirmDeleteUser: '{{name}} ಅವರನ್ನು ಅಳಿಸಬೇಕೇ? ಈ ಕ್ರಿಯೆಯನ್ನು ಹಿಂತಿರುಗಿಸಲಾಗುವುದಿಲ್ಲ.',
+  adminConfirmDeleteUser:
+    '{{name}} ಅವರನ್ನು ಅಳಿಸಬೇಕೇ? ಈ ಕ್ರಿಯೆಯನ್ನು ಹಿಂತಿರುಗಿಸಲಾಗುವುದಿಲ್ಲ.',
   adminNetworkError: 'ನೆಟ್‌ವರ್ಕ್ ದೋಷ. ದಯವಿಟ್ಟು ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.',
   adminProfileEyebrow: 'ಖಾತೆ ಸೆಟ್ಟಿಂಗ್‌ಗಳು',
   adminProfileTitle: 'ನನ್ನ ಪ್ರೊಫೈಲ್',
@@ -90,7 +92,8 @@ export const kn: Partial<Record<TranslationKey, string>> = {
   adminNewPassword: 'ಹೊಸ ಪಾಸ್‌ವರ್ಡ್',
   adminConfirmPassword: 'ಹೊಸ ಪಾಸ್‌ವರ್ಡ್ ದೃಢೀಕರಿಸಿ',
   adminUpdatePassword: 'ಪಾಸ್‌ವರ್ಡ್ ನವೀಕರಿಸಿ',
-  adminSaveFailed: 'ಬದಲಾವಣೆಗಳನ್ನು ಉಳಿಸಲು ಸಾಧ್ಯವಾಗಲಿಲ್ಲ. ದಯವಿಟ್ಟು ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.',
+  adminSaveFailed:
+    'ಬದಲಾವಣೆಗಳನ್ನು ಉಳಿಸಲು ಸಾಧ್ಯವಾಗಲಿಲ್ಲ. ದಯವಿಟ್ಟು ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.',
   adminNameRequired: 'ಪೂರ್ಣ ಹೆಸರು ಅಗತ್ಯವಿದೆ.',
   adminPasswordRequired: 'ಪ್ರಸ್ತುತ ಪಾಸ್‌ವರ್ಡ್ ಅಗತ್ಯವಿದೆ.',
   adminNewPasswordRequired: 'ಹೊಸ ಪಾಸ್‌ವರ್ಡ್ ಅಗತ್ಯವಿದೆ.',
@@ -102,15 +105,19 @@ export const kn: Partial<Record<TranslationKey, string>> = {
   adminPasswordNumber: 'ಪಾಸ್‌ವರ್ಡ್‌ನಲ್ಲಿ ಕನಿಷ್ಠ ಒಂದು ಸಂಖ್ಯೆ ಇರಬೇಕು.',
   adminPasswordSame: 'ಹೊಸ ಪಾಸ್‌ವರ್ಡ್ ಪ್ರಸ್ತುತ ಪಾಸ್‌ವರ್ಡ್‌ನಂತೆಯೇ ಇರಬಾರದು.',
   adminPreferredLanguage: 'ಆದ್ಯತೆಯ ಭಾಷೆ',
-  adminPreferredLanguageDescription: 'ಈ ಅಪ್ಲಿಕೇಶನ್‌ನಲ್ಲಿ ಬಳಸುವ ಭಾಷೆಯನ್ನು ಆಯ್ಕೆಮಾಡಿ.',
-  adminLanguageSaveFailed: 'ಭಾಷೆಯ ಆದ್ಯತೆಯನ್ನು ಉಳಿಸಲು ಸಾಧ್ಯವಾಗಲಿಲ್ಲ. ದಯವಿಟ್ಟು ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.',
+  adminPreferredLanguageDescription:
+    'ಈ ಅಪ್ಲಿಕೇಶನ್‌ನಲ್ಲಿ ಬಳಸುವ ಭಾಷೆಯನ್ನು ಆಯ್ಕೆಮಾಡಿ.',
+  adminLanguageSaveFailed:
+    'ಭಾಷೆಯ ಆದ್ಯತೆಯನ್ನು ಉಳಿಸಲು ಸಾಧ್ಯವಾಗಲಿಲ್ಲ. ದಯವಿಟ್ಟು ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.',
   adminChangeLanguageTitle: 'ಭಾಷೆ ಬದಲಾಯಿಸಿ',
-  adminChangeLanguageConfirm: 'ಅಪ್ಲಿಕೇಶನ್ ಭಾಷೆಯನ್ನು {{language}} ಗೆ ಬದಲಾಯಿಸಬೇಕೇ?',
+  adminChangeLanguageConfirm:
+    'ಅಪ್ಲಿಕೇಶನ್ ಭಾಷೆಯನ್ನು {{language}} ಗೆ ಬದಲಾಯಿಸಬೇಕೇ?',
   adminChangeLanguageAction: 'ಬದಲಾಯಿಸಿ',
   adminLanguageUpdated: 'ಭಾಷೆಯನ್ನು ಯಶಸ್ವಿಯಾಗಿ ನವೀಕರಿಸಲಾಗಿದೆ.',
   adminNameUpdated: 'ಹೆಸರನ್ನು ಯಶಸ್ವಿಯಾಗಿ ನವೀಕರಿಸಲಾಗಿದೆ.',
   adminPasswordUpdated: 'ಪಾಸ್‌ವರ್ಡ್ ಯಶಸ್ವಿಯಾಗಿ ನವೀಕರಿಸಲಾಗಿದೆ.',
   franchiseAttendanceRemove: 'ಹಾಜರಾತಿ ತೆಗೆದುಹಾಕಿ',
-  franchiseAttendanceRemoveConfirm: '{{date}} ರಂದು {{name}} ಅವರ ಹಾಜರಾತಿ ದಾಖಲೆಯನ್ನು ತೆಗೆದುಹಾಕಬೇಕೆ?',
+  franchiseAttendanceRemoveConfirm:
+    '{{date}} ರಂದು {{name}} ಅವರ ಹಾಜರಾತಿ ದಾಖಲೆಯನ್ನು ತೆಗೆದುಹಾಕಬೇಕೆ?',
   franchiseEmployeesSalaryInvalid: 'ಮಾನ್ಯವಾದ ಋಣಾತ್ಮಕವಲ್ಲದ ಸಂಬಳವನ್ನು ನಮೂದಿಸಿ.',
 };

@@ -3,7 +3,9 @@ import { defineConfig, loadEnv, type Plugin } from 'vite';
 import { resolveApiBaseUrl } from './src/config/resolveApiBaseUrl';
 
 export function buildContentSecurityPolicy(apiBaseUrl: string): string {
-  const apiOrigin = apiBaseUrl.startsWith('/') ? '' : ` ${new URL(apiBaseUrl).origin}`;
+  const apiOrigin = apiBaseUrl.startsWith('/')
+    ? ''
+    : ` ${new URL(apiBaseUrl).origin}`;
   return [
     "default-src 'self'",
     "script-src 'self'",
@@ -25,7 +27,10 @@ function contentSecurityPolicy(apiBaseUrl: string): Plugin {
     transformIndexHtml: () => [
       {
         tag: 'meta',
-        attrs: { 'http-equiv': 'Content-Security-Policy', content: buildContentSecurityPolicy(apiBaseUrl) },
+        attrs: {
+          'http-equiv': 'Content-Security-Policy',
+          content: buildContentSecurityPolicy(apiBaseUrl),
+        },
         injectTo: 'head-prepend',
       },
     ],
@@ -36,14 +41,21 @@ export default defineConfig(({ command, mode }) => {
   const env = loadEnv(mode, process.cwd(), '');
   const isBuild = command === 'build';
   const apiBaseUrl = isBuild
-    ? resolveApiBaseUrl(env.VITE_API_BASE_URL, { isDev: false, devFallback: '' })
+    ? resolveApiBaseUrl(env.VITE_API_BASE_URL, {
+        isDev: false,
+        devFallback: '',
+      })
     : '';
   // Dev server only: let the existing TEST_LOGIN_* keys prefill the form. Production bundles never see them.
   const devCredentialDefines = isBuild
     ? {}
     : {
-        'import.meta.env.VITE_TEST_LOGIN_EMAIL': JSON.stringify(env.VITE_TEST_LOGIN_EMAIL || env.TEST_LOGIN_EMAIL || ''),
-        'import.meta.env.VITE_TEST_LOGIN_PASSWORD': JSON.stringify(env.VITE_TEST_LOGIN_PASSWORD || env.TEST_LOGIN_PASSWORD || ''),
+        'import.meta.env.VITE_TEST_LOGIN_EMAIL': JSON.stringify(
+          env.VITE_TEST_LOGIN_EMAIL || env.TEST_LOGIN_EMAIL || '',
+        ),
+        'import.meta.env.VITE_TEST_LOGIN_PASSWORD': JSON.stringify(
+          env.VITE_TEST_LOGIN_PASSWORD || env.TEST_LOGIN_PASSWORD || '',
+        ),
       };
 
   return {
@@ -57,7 +69,17 @@ export default defineConfig(({ command, mode }) => {
     envPrefix: ['VITE_'],
     optimizeDeps: {
       esbuildOptions: {
-        resolveExtensions: ['.web.tsx', '.web.ts', '.web.jsx', '.web.js', '.tsx', '.ts', '.jsx', '.js', '.json'],
+        resolveExtensions: [
+          '.web.tsx',
+          '.web.ts',
+          '.web.jsx',
+          '.web.js',
+          '.tsx',
+          '.ts',
+          '.jsx',
+          '.js',
+          '.json',
+        ],
       },
     },
     build: { sourcemap: false },

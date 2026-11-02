@@ -9,7 +9,13 @@ interface SourceCodeModule extends TurboModule {
 
 export const apiBaseUrl = resolveApiBaseUrl(Config.API_BASE_URL, {
   isDev: __DEV__,
-  devFallback: __DEV__ && !Config.API_BASE_URL?.trim()
-    ? developmentApiUrl(TurboModuleRegistry.get<SourceCodeModule>('SourceCode')?.getConstants().scriptURL, Platform.OS)
-    : '',
+  devFallback:
+    __DEV__ && !Config.API_BASE_URL?.trim()
+      ? developmentApiUrl(
+          TurboModuleRegistry.get<SourceCodeModule>(
+            'SourceCode',
+          )?.getConstants().scriptURL,
+          Platform.OS,
+        )
+      : '',
 });

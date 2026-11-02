@@ -11,16 +11,21 @@ export interface FranchiseHomeScreenProps {
   user: AuthenticatedUser;
   onLogout: () => void;
 }
-export function useFranchiseHome({ user: initialUser, onLogout }: FranchiseHomeScreenProps) {
+export function useFranchiseHome({
+  user: initialUser,
+  onLogout,
+}: FranchiseHomeScreenProps) {
   const { width, height } = useWindowDimensions();
   const { hasSidebar } = getAdminLayout(width);
-  const pickerPanelStyle = hasSidebar ? undefined : {
-    height: 'auto' as const,
-    maxHeight: height * 0.85,
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
-    overflow: 'hidden' as const,
-  };
+  const pickerPanelStyle = hasSidebar
+    ? undefined
+    : {
+        height: 'auto' as const,
+        maxHeight: height * 0.85,
+        borderTopLeftRadius: 20,
+        borderTopRightRadius: 20,
+        overflow: 'hidden' as const,
+      };
   const [user, setUser] = useState(initialUser);
   const [stores, setStores] = useState<FranchiseStore[]>([]);
   const [activeStore, setActiveStore] = useState<FranchiseStore | null>(null);
@@ -32,33 +37,51 @@ export function useFranchiseHome({ user: initialUser, onLogout }: FranchiseHomeS
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [collapsed, setCollapsed] = useState(false);
   const [tab, setTab] = useState('dashboard');
-  const [expandedGroup, setExpandedGroup] = useState<TranslationKey | null>(null);
+  const [expandedGroup, setExpandedGroup] = useState<TranslationKey | null>(
+    null,
+  );
   const allItems = [
-    ...menuGroups.flatMap((group) => group.items),
+    ...menuGroups.flatMap(group => group.items),
     { key: 'profile', label: 'adminProfile' as const },
     { key: 'store-config', label: 'franchiseStoreConfig' as const },
   ];
-  const currentLabel = allItems.find((item) => item.key === tab)?.label ?? 'adminDashboard';
+  const currentLabel =
+    allItems.find(item => item.key === tab)?.label ?? 'adminDashboard';
   useEffect(() => {
     let active = true;
     const controller = new AbortController();
     setLoading(true);
     setError('');
     apiRequest('/stores', { signal: controller.signal })
-      .then(async (response) => {
+      .then(async response => {
         if (!response.ok) throw new Error(t('franchiseStoresLoadFailed'));
-        const data = await response.json().catch(() => { throw new Error(t('franchiseStoresLoadFailed')); }) as { franchises: FranchiseStore[]; };
+        const data = (await response.json().catch(() => {
+          throw new Error(t('franchiseStoresLoadFailed'));
+        })) as { franchises: FranchiseStore[] };
         if (!active) return;
         setStores(data.franchises);
         // Refresh preserves an accessible selection; multiple stores require an explicit choice.
-        setActiveStore((current) => data.franchises.find((store) => store._id === current?._id)
-          ?? (data.franchises.length === 1 ? data.franchises[0] : null));
+        setActiveStore(
+          current =>
+            data.franchises.find(store => store._id === current?._id) ??
+            (data.franchises.length === 1 ? data.franchises[0] : null),
+        );
       })
       .catch((reason: unknown) => {
-        if (active) setError(reason instanceof Error ? reason.message : t('franchiseStoresLoadFailed'));
+        if (active)
+          setError(
+            reason instanceof Error
+              ? reason.message
+              : t('franchiseStoresLoadFailed'),
+          );
       })
-      .finally(() => { if (active) setLoading(false); });
-    return () => { active = false; controller.abort(); };
+      .finally(() => {
+        if (active) setLoading(false);
+      });
+    return () => {
+      active = false;
+      controller.abort();
+    };
   }, [version]);
   function selectStore(store: FranchiseStore) {
     setActiveStore(store);
@@ -76,10 +99,16 @@ export function useFranchiseHome({ user: initialUser, onLogout }: FranchiseHomeS
     try {
       const response = await apiRequest('/auth/logout', { method: 'POST' });
       if (!response.ok && response.status !== 401) {
-        if (__DEV__) console.warn('[auth.logout] Server revocation failed; only the local session will be cleared.');
+        if (__DEV__)
+          console.warn(
+            '[auth.logout] Server revocation failed; only the local session will be cleared.',
+          );
       }
     } catch {
-      if (__DEV__) console.warn('[auth.logout] Server unreachable; only the local session will be cleared.');
+      if (__DEV__)
+        console.warn(
+          '[auth.logout] Server unreachable; only the local session will be cleared.',
+        );
     } finally {
       onLogout();
       setIsLoggingOut(false);

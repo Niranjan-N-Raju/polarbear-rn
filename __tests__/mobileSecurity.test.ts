@@ -2,7 +2,12 @@ import { execFileSync } from 'child_process';
 import fs from 'fs';
 import os from 'os';
 import path from 'path';
-import { API_REQUEST_TIMEOUT_MS, apiRequest, setAccessToken, setUnauthorizedHandler } from '../src/api/auth';
+import {
+  API_REQUEST_TIMEOUT_MS,
+  apiRequest,
+  setAccessToken,
+  setUnauthorizedHandler,
+} from '../src/api/auth';
 import { resolveApiBaseUrl } from '../src/config/resolveApiBaseUrl';
 
 const root = path.resolve(__dirname, '..');
@@ -12,7 +17,9 @@ const dev = { isDev: true, devFallback: 'http://localhost:5000/api' };
 
 describe('API base URL transport policy', () => {
   it('accepts https and same-origin paths in production and strips trailing slashes', () => {
-    expect(resolveApiBaseUrl(' https://api.example.com/api/ ', prod)).toBe('https://api.example.com/api');
+    expect(resolveApiBaseUrl(' https://api.example.com/api/ ', prod)).toBe(
+      'https://api.example.com/api',
+    );
     expect(resolveApiBaseUrl('/api/', prod)).toBe('/api');
   });
 
@@ -25,7 +32,7 @@ describe('API base URL transport policy', () => {
     ['javascript:alert(1)'],
     ['not a url'],
     ['https://user:pass@api.example.com/api'],
-  ])('rejects %s in production', (value) => {
+  ])('rejects %s in production', value => {
     expect(() => resolveApiBaseUrl(value, prod)).toThrow();
   });
 
@@ -36,11 +43,28 @@ describe('API base URL transport policy', () => {
   });
 
   it('allows development http only for loopback, emulator, and private LAN hosts', () => {
-    for (const host of ['localhost', '127.0.0.1', '[::1]', '10.0.2.2', '192.168.1.20', '172.16.0.4', '10.1.2.3']) {
-      expect(resolveApiBaseUrl(`http://${host}:5000/api`, dev)).toBe(`http://${host}:5000/api`);
+    for (const host of [
+      'localhost',
+      '127.0.0.1',
+      '[::1]',
+      '10.0.2.2',
+      '192.168.1.20',
+      '172.16.0.4',
+      '10.1.2.3',
+    ]) {
+      expect(resolveApiBaseUrl(`http://${host}:5000/api`, dev)).toBe(
+        `http://${host}:5000/api`,
+      );
     }
-    for (const host of ['api.example.com', '8.8.8.8', '172.32.0.1', 'localhost.evil.com']) {
-      expect(() => resolveApiBaseUrl(`http://${host}/api`, dev)).toThrow('https');
+    for (const host of [
+      'api.example.com',
+      '8.8.8.8',
+      '172.32.0.1',
+      'localhost.evil.com',
+    ]) {
+      expect(() => resolveApiBaseUrl(`http://${host}/api`, dev)).toThrow(
+        'https',
+      );
     }
   });
 });
@@ -57,9 +81,14 @@ describe('apiRequest session and timeout handling', () => {
   });
 
   const hangingFetch = () =>
-    jest.fn((_url: string, init: RequestInit) => new Promise<Response>((_resolve, reject) => {
-      init.signal?.addEventListener('abort', () => reject(new Error('aborted')));
-    }));
+    jest.fn(
+      (_url: string, init: RequestInit) =>
+        new Promise<Response>((_resolve, reject) => {
+          init.signal?.addEventListener('abort', () =>
+            reject(new Error('aborted')),
+          );
+        }),
+    );
 
   it('aborts requests that exceed the timeout', async () => {
     jest.useFakeTimers();
@@ -79,15 +108,22 @@ describe('apiRequest session and timeout handling', () => {
     const aborted = new AbortController();
     aborted.abort();
     global.fetch = jest.fn((_url: string, init: RequestInit) =>
-      init.signal?.aborted ? Promise.reject(new Error('aborted')) : Promise.resolve(new Response())) as unknown as typeof fetch;
-    await expect(apiRequest('/x', { signal: aborted.signal })).rejects.toThrow('aborted');
+      init.signal?.aborted
+        ? Promise.reject(new Error('aborted'))
+        : Promise.resolve(new Response()),
+    ) as unknown as typeof fetch;
+    await expect(apiRequest('/x', { signal: aborted.signal })).rejects.toThrow(
+      'aborted',
+    );
   });
 
   it('drops the in-memory token after a 401 so later requests are unauthenticated', async () => {
     setAccessToken('secret-token');
     const handler = jest.fn();
     setUnauthorizedHandler(handler);
-    global.fetch = jest.fn().mockResolvedValue({ status: 401 }) as unknown as typeof fetch;
+    global.fetch = jest
+      .fn()
+      .mockResolvedValue({ status: 401 }) as unknown as typeof fetch;
     await apiRequest('/users');
     await apiRequest('/users');
     const calls = (global.fetch as unknown as jest.Mock).mock.calls;
@@ -98,10 +134,12 @@ describe('apiRequest session and timeout handling', () => {
 
   it('does not persist tokens to device or browser storage', () => {
     const sources = ['src/api/auth.ts', 'src/hooks/useLogin.ts', 'App.tsx']
-      .filter((file) => fs.existsSync(path.join(root, file)))
+      .filter(file => fs.existsSync(path.join(root, file)))
       .map(read)
       .join('\n');
-    expect(sources).not.toMatch(/AsyncStorage|localStorage|sessionStorage|document\.cookie|MMKV|SecureStore/);
+    expect(sources).not.toMatch(
+      /AsyncStorage|localStorage|sessionStorage|document\.cookie|MMKV|SecureStore/,
+    );
   });
 });
 
@@ -143,8 +181,12 @@ describe('Android platform hardening', () => {
   });
 
   it('applies FLAG_SECURE to release builds', () => {
-    const activity = read('android/app/src/main/java/com/reactnative/MainActivity.kt');
-    expect(activity).toMatch(/if \(!BuildConfig\.DEBUG\)\s*\{\s*window\.setFlags\(WindowManager\.LayoutParams\.FLAG_SECURE/);
+    const activity = read(
+      'android/app/src/main/java/com/reactnative/MainActivity.kt',
+    );
+    expect(activity).toMatch(
+      /if \(!BuildConfig\.DEBUG\)\s*\{\s*window\.setFlags\(WindowManager\.LayoutParams\.FLAG_SECURE/,
+    );
   });
 
   it('guards release builds against test credentials and non-https APIs', () => {
@@ -181,13 +223,21 @@ describe('iOS platform hardening', () => {
   describe('check-release-env.sh', () => {
     const script = path.join(root, 'scripts/check-release-env.sh');
     let dir: string;
-    beforeEach(() => { dir = fs.mkdtempSync(path.join(os.tmpdir(), 'envcheck-')); });
-    afterEach(() => { fs.rmSync(dir, { recursive: true, force: true }); });
+    beforeEach(() => {
+      dir = fs.mkdtempSync(path.join(os.tmpdir(), 'envcheck-'));
+    });
+    afterEach(() => {
+      fs.rmSync(dir, { recursive: true, force: true });
+    });
 
     const run = (contents: string | null) => {
-      if (contents !== null) fs.writeFileSync(path.join(dir, '.env.production'), contents);
+      if (contents !== null)
+        fs.writeFileSync(path.join(dir, '.env.production'), contents);
       try {
-        execFileSync('sh', [script, dir], { env: { ...process.env, ENVFILE: '.env.production' }, stdio: 'pipe' });
+        execFileSync('sh', [script, dir], {
+          env: { ...process.env, ENVFILE: '.env.production' },
+          stdio: 'pipe',
+        });
         return { code: 0, stderr: '' };
       } catch (error) {
         const failure = error as { status: number; stderr: Buffer };
@@ -196,11 +246,17 @@ describe('iOS platform hardening', () => {
     };
 
     it('passes a clean production env', () => {
-      expect(run('API_BASE_URL=https://api.example.com/api\nTEST_LOGIN_EMAIL=\nTEST_LOGIN_PASSWORD=""\n').code).toBe(0);
+      expect(
+        run(
+          'API_BASE_URL=https://api.example.com/api\nTEST_LOGIN_EMAIL=\nTEST_LOGIN_PASSWORD=""\n',
+        ).code,
+      ).toBe(0);
     });
 
     it('fails on populated test keys or non-https URLs without echoing values', () => {
-      const result = run('API_BASE_URL=http://api.example.com/api\nTEST_LOGIN_PASSWORD=hunter2\n');
+      const result = run(
+        'API_BASE_URL=http://api.example.com/api\nTEST_LOGIN_PASSWORD=hunter2\n',
+      );
       expect(result.code).toBe(1);
       expect(result.stderr).toContain('TEST_LOGIN_PASSWORD');
       expect(result.stderr).toContain('API_BASE_URL');
@@ -213,7 +269,10 @@ describe('iOS platform hardening', () => {
     });
 
     it('fails a Release build that falls back to the developer .env when ENVFILE is unset', () => {
-      fs.writeFileSync(path.join(dir, '.env'), 'API_BASE_URL=https://api.example.com/api\nTEST_LOGIN_EMAIL=dev@example.com\n');
+      fs.writeFileSync(
+        path.join(dir, '.env'),
+        'API_BASE_URL=https://api.example.com/api\nTEST_LOGIN_EMAIL=dev@example.com\n',
+      );
       const env = { ...process.env };
       delete env.ENVFILE;
       let code = 0;
@@ -237,8 +296,12 @@ describe('repository secret hygiene', () => {
     const ignore = read('.gitignore');
     expect(ignore).toMatch(/^\.env$/m);
     for (const example of ['.env.example', '.env.production.example']) {
-      const lines = read(example).split('\n').filter((line) => /^[A-Z_]+=/.test(line));
-      for (const line of lines.filter((l) => /TEST_|PASSWORD|SECRET|TOKEN/.test(l.split('=')[0]))) {
+      const lines = read(example)
+        .split('\n')
+        .filter(line => /^[A-Z_]+=/.test(line));
+      for (const line of lines.filter(l =>
+        /TEST_|PASSWORD|SECRET|TOKEN/.test(l.split('=')[0]),
+      )) {
         expect(line.split('=')[1]).toBe('');
       }
     }

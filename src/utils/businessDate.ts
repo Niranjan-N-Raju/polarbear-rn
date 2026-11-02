@@ -7,7 +7,12 @@ let formatter: Intl.DateTimeFormat | null | undefined;
 function getFormatter(): Intl.DateTimeFormat | null {
   if (formatter === undefined) {
     try {
-      formatter = new Intl.DateTimeFormat('en-CA', { timeZone: BUSINESS_TIME_ZONE, year: 'numeric', month: '2-digit', day: '2-digit' });
+      formatter = new Intl.DateTimeFormat('en-CA', {
+        timeZone: BUSINESS_TIME_ZONE,
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+      });
     } catch {
       formatter = null;
     }
@@ -20,7 +25,8 @@ export function businessDate(now: Date = new Date()): string {
   const intl = getFormatter();
   if (intl) {
     const parts = intl.formatToParts(now);
-    const part = (type: Intl.DateTimeFormatPartTypes) => parts.find((item) => item.type === type)?.value ?? '';
+    const part = (type: Intl.DateTimeFormatPartTypes) =>
+      parts.find(item => item.type === type)?.value ?? '';
     const value = `${part('year')}-${part('month')}-${part('day')}`;
     if (/^\d{4}-\d{2}-\d{2}$/.test(value)) return value;
   }

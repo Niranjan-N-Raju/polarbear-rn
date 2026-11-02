@@ -9,16 +9,24 @@ export const initialMetrics = {
 
 export function render(element: React.ReactElement) {
   let renderer!: TestRenderer.ReactTestRenderer;
-  act(() => { renderer = TestRenderer.create(element); });
+  act(() => {
+    renderer = TestRenderer.create(element);
+  });
   return renderer;
 }
 
 export function renderSafeArea(element: React.ReactElement) {
-  return render(<SafeAreaProvider initialMetrics={initialMetrics}>{element}</SafeAreaProvider>);
+  return render(
+    <SafeAreaProvider initialMetrics={initialMetrics}>
+      {element}
+    </SafeAreaProvider>,
+  );
 }
 
 export function buttons(renderer: TestRenderer.ReactTestRenderer) {
-  return renderer.root.findAll((node) => typeof node.props.onPress === 'function');
+  return renderer.root.findAll(
+    node => typeof node.props.onPress === 'function',
+  );
 }
 
 export function pressables(renderer: TestRenderer.ReactTestRenderer) {
@@ -27,19 +35,28 @@ export function pressables(renderer: TestRenderer.ReactTestRenderer) {
 
 export function containsText(value: unknown, expected: string): boolean {
   if (value === expected) return true;
-  if (Array.isArray(value)) return value.some((item) => containsText(item, expected));
+  if (Array.isArray(value))
+    return value.some(item => containsText(item, expected));
   if (value && typeof value === 'object' && 'props' in value) {
-    return containsText((value as { props?: { children?: unknown } }).props?.children, expected);
+    return containsText(
+      (value as { props?: { children?: unknown } }).props?.children,
+      expected,
+    );
   }
   return false;
 }
 
-export function buttonByLabel(renderer: TestRenderer.ReactTestRenderer, label: string) {
-  return renderer.root.find((node) => node.props.accessibilityLabel === label);
+export function buttonByLabel(
+  renderer: TestRenderer.ReactTestRenderer,
+  label: string,
+) {
+  return renderer.root.find(node => node.props.accessibilityLabel === label);
 }
 
 export async function flushEffects() {
-  await act(async () => { await new Promise((resolve) => setImmediate(resolve)); });
+  await act(async () => {
+    await new Promise(resolve => setImmediate(resolve));
+  });
 }
 
 export function response(status: number, data: unknown) {

@@ -17,7 +17,6 @@ import type {
   UserStatusFilter,
 } from './types';
 
-
 export function useAdminUsers({ onToast }: AdminUsersScreenProps) {
   const { width, height } = useWindowDimensions();
   const layout = getAdminLayout(width);
@@ -31,7 +30,11 @@ export function useAdminUsers({ onToast }: AdminUsersScreenProps) {
   const [searchText, setSearchText] = useState('');
   const [appliedFilters, setAppliedFilters] = useState(defaultUserFilters);
   const [isFilterDrawerOpen, setIsFilterDrawerOpen] = useState(false);
-  const [pageInfo, setPageInfo] = useState<PageInfo>({ page: 1, totalPages: 1, total: 0 });
+  const [pageInfo, setPageInfo] = useState<PageInfo>({
+    page: 1,
+    totalPages: 1,
+    total: 0,
+  });
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
@@ -51,7 +54,10 @@ export function useAdminUsers({ onToast }: AdminUsersScreenProps) {
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const initialLoadComplete = useRef(false);
   const dismissToast = useCallback(() => setToastMessage(''), []);
-  const showErrorToast = useCallback((message: string) => setToastMessage(message), []);
+  const showErrorToast = useCallback(
+    (message: string) => setToastMessage(message),
+    [],
+  );
   // Only the latest list request may publish results; unmount aborts everything in flight.
   const listControllerRef = useRef<AbortController | null>(null);
   const storesControllerRef = useRef<AbortController | null>(null);
@@ -64,82 +70,108 @@ export function useAdminUsers({ onToast }: AdminUsersScreenProps) {
       storesControllerRef.current?.abort();
     };
   }, []);
-  const load = useCallback(async (page: number, filters: UserListFilters, append = false): Promise<boolean> => {
-    listControllerRef.current?.abort();
-    const controller = new AbortController();
-    listControllerRef.current = controller;
-    const isCurrent = () => listControllerRef.current === controller && !controller.signal.aborted;
-    if (append) setIsLoadingMore(true);
-    else setIsRefreshing(true);
-    setLoadError('');
-    try {
-      const query = new URLSearchParams({
-        excludeEmployees: 'true',
-        includeArchived: 'true',
-        page: String(page),
-        limit: String(pageSize),
-        status: filters.status,
-      });
-      if (filters.search.trim()) query.set('search', filters.search.trim());
-      if (filters.franchiseId) query.set('franchiseId', filters.franchiseId);
-      if (filters.role !== 'all') query.set('role', filters.role);
-      const usersResponse = await apiRequest(`/users?${query.toString()}`, { signal: controller.signal });
-      const usersData = await usersResponse.json().catch(() => ({})) as {
-        users?: AdminUser[];
-        pagination?: PageInfo;
-        message?: string;
-      };
-      if (!isCurrent()) return false;
-      if (!usersResponse.ok) throw new Error(usersData.message ?? t('adminLoadFailed'));
-      const loadedUsers = usersData.users ?? [];
-      setUsers((current) => append ? [...current, ...loadedUsers] : loadedUsers);
-      setPageInfo(usersData.pagination ?? { page, totalPages: page, total: loadedUsers.length });
-      initialLoadComplete.current = true;
-      // Retain store labels from earlier pages so existing selections remain identifiable.
-      setStores((current) => {
-        const options = new Map(current.map((store) => [store._id, store]));
-        loadedUsers.forEach((user) => user.franchises.forEach((store) => options.set(store._id, store)));
-        return [...options.values()];
-      });
-      return true;
-    } catch (error) {
-      if (!isCurrent()) return false;
-      const message = error instanceof Error ? error.message : t('adminLoadFailed');
-      if (append || initialLoadComplete.current) onToast(message, 'error');
-      else setLoadError(message);
-      return false;
-    } finally {
-      if (isMountedRef.current) {
-        if (append) setIsLoadingMore(false);
-        else if (listControllerRef.current === controller) {
-          setIsLoading(false);
-          setIsRefreshing(false);
+  const load = useCallback(
+    async (
+      page: number,
+      filters: UserListFilters,
+      append = false,
+    ): Promise<boolean> => {
+      listControllerRef.current?.abort();
+      const controller = new AbortController();
+      listControllerRef.current = controller;
+      const isCurrent = () =>
+        listControllerRef.current === controller && !controller.signal.aborted;
+      if (append) setIsLoadingMore(true);
+      else setIsRefreshing(true);
+      setLoadError('');
+      try {
+        const query = new URLSearchParams({
+          excludeEmployees: 'true',
+          includeArchived: 'true',
+          page: String(page),
+          limit: String(pageSize),
+          status: filters.status,
+        });
+        if (filters.search.trim()) query.set('search', filters.search.trim());
+        if (filters.franchiseId) query.set('franchiseId', filters.franchiseId);
+        if (filters.role !== 'all') query.set('role', filters.role);
+        const usersResponse = await apiRequest(`/users?${query.toString()}`, {
+          signal: controller.signal,
+        });
+        const usersData = (await usersResponse.json().catch(() => ({}))) as {
+          users?: AdminUser[];
+          pagination?: PageInfo;
+          message?: string;
+        };
+        if (!isCurrent()) return false;
+        if (!usersResponse.ok)
+          throw new Error(usersData.message ?? t('adminLoadFailed'));
+        const loadedUsers = usersData.users ?? [];
+        setUsers(current =>
+          append ? [...current, ...loadedUsers] : loadedUsers,
+        );
+        setPageInfo(
+          usersData.pagination ?? {
+            page,
+            totalPages: page,
+            total: loadedUsers.length,
+          },
+        );
+        initialLoadComplete.current = true;
+        // Retain store labels from earlier pages so existing selections remain identifiable.
+        setStores(current => {
+          const options = new Map(current.map(store => [store._id, store]));
+          loadedUsers.forEach(user =>
+            user.franchises.forEach(store => options.set(store._id, store)),
+          );
+          return [...options.values()];
+        });
+        return true;
+      } catch (error) {
+        if (!isCurrent()) return false;
+        const message =
+          error instanceof Error ? error.message : t('adminLoadFailed');
+        if (append || initialLoadComplete.current) onToast(message, 'error');
+        else setLoadError(message);
+        return false;
+      } finally {
+        if (isMountedRef.current) {
+          if (append) setIsLoadingMore(false);
+          else if (listControllerRef.current === controller) {
+            setIsLoading(false);
+            setIsRefreshing(false);
+          }
         }
       }
-    }
-  }, [onToast]);
+    },
+    [onToast],
+  );
   useEffect(() => {
     void load(1, defaultUserFilters);
   }, [load]);
   const visibleUsers = users;
-  const userRoleOptions = ['admin', 'sub_admin', 'franchise_admin']
-    .map((role) => ({ value: role, label: translateRole(role) }));
+  const userRoleOptions = ['admin', 'sub_admin', 'franchise_admin'].map(
+    role => ({ value: role, label: translateRole(role) }),
+  );
   const hasActiveFilters = Boolean(
-    appliedFilters.search
-    || appliedFilters.franchiseId
-    || appliedFilters.status !== 'all'
-    || appliedFilters.role !== 'all',
+    appliedFilters.search ||
+      appliedFilters.franchiseId ||
+      appliedFilters.status !== 'all' ||
+      appliedFilters.role !== 'all',
   );
   const hasDraftFilters = Boolean(
-    searchText.trim()
-    || filterStore
-    || filterStatus !== 'all'
-    || filterRole !== 'all',
+    searchText.trim() ||
+      filterStore ||
+      filterStatus !== 'all' ||
+      filterRole !== 'all',
   );
   function openFilters(): void {
     setSearchText(appliedFilters.search);
     setFilterStore(appliedFilters.franchiseId);
-    setStoreSearchText(stores.find((store) => store._id === appliedFilters.franchiseId)?.name ?? '');
+    setStoreSearchText(
+      stores.find(store => store._id === appliedFilters.franchiseId)?.name ??
+        '',
+    );
     setFilterStatus(appliedFilters.status);
     setFilterRole(appliedFilters.role);
     setOpenFilter(null);
@@ -156,13 +188,13 @@ export function useAdminUsers({ onToast }: AdminUsersScreenProps) {
     setOpenFilter(null);
     setIsFilterDrawerOpen(false);
     // A failed filter request must not relabel the still-visible results as a new query.
-    if (!await load(1, filters)) return;
+    if (!(await load(1, filters))) return;
     setAppliedFilters(filters);
   }
   async function clearFilters(): Promise<void> {
     setOpenFilter(null);
     setIsFilterDrawerOpen(false);
-    if (!await load(1, defaultUserFilters)) return;
+    if (!(await load(1, defaultUserFilters))) return;
     setSearchText('');
     setStoreSearchText('');
     setFilterStore('');
@@ -179,14 +211,22 @@ export function useAdminUsers({ onToast }: AdminUsersScreenProps) {
     const controller = new AbortController();
     storesControllerRef.current = controller;
     try {
-      const response = await apiRequest('/stores?limit=100', { signal: controller.signal });
-      const data = await response.json().catch(() => ({})) as { franchises?: StoreOption[]; message?: string; };
+      const response = await apiRequest('/stores?limit=100', {
+        signal: controller.signal,
+      });
+      const data = (await response.json().catch(() => ({}))) as {
+        franchises?: StoreOption[];
+        message?: string;
+      };
       if (controller.signal.aborted) return;
       if (!response.ok) throw new Error(data.message ?? t('adminLoadFailed'));
       setStores(data.franchises ?? []);
       setHasLoadedStores(true);
     } catch (error) {
-      if (!controller.signal.aborted) showErrorToast(error instanceof Error ? error.message : t('adminLoadFailed'));
+      if (!controller.signal.aborted)
+        showErrorToast(
+          error instanceof Error ? error.message : t('adminLoadFailed'),
+        );
     } finally {
       if (!controller.signal.aborted) setIsLoadingStores(false);
     }
@@ -209,16 +249,19 @@ export function useAdminUsers({ onToast }: AdminUsersScreenProps) {
       email: user.email,
       password: '',
       role: user.role === 'franchise_admin' ? 'franchise_admin' : 'sub_admin',
-      franchiseIds: user.franchises.map((store) => store._id),
+      franchiseIds: user.franchises.map(store => store._id),
     });
     setFieldErrors({});
     setToastMessage('');
     setIsFormOpen(true);
     void loadStores();
   }
-  function updateField<Key extends keyof UserForm>(key: Key, value: UserForm[Key]): void {
-    setForm((current) => ({ ...current, [key]: value }));
-    setFieldErrors((current) => {
+  function updateField<Key extends keyof UserForm>(
+    key: Key,
+    value: UserForm[Key],
+  ): void {
+    setForm(current => ({ ...current, [key]: value }));
+    setFieldErrors(current => {
       const next = { ...current };
       if (key === 'name') delete next.name;
       else if (key === 'email') delete next.email;
@@ -228,29 +271,44 @@ export function useAdminUsers({ onToast }: AdminUsersScreenProps) {
     });
   }
   function toggleStore(id: string): void {
-    updateField('franchiseIds', form.franchiseIds.includes(id)
-      ? form.franchiseIds.filter((storeId) => storeId !== id)
-      : [...form.franchiseIds, id]);
+    updateField(
+      'franchiseIds',
+      form.franchiseIds.includes(id)
+        ? form.franchiseIds.filter(storeId => storeId !== id)
+        : [...form.franchiseIds, id],
+    );
   }
   function updateRole(role: UserForm['role']): void {
     // Sub-admins are not store-scoped; never carry old assignments into this role.
-    setForm((current) => ({ ...current, role, franchiseIds: role === 'sub_admin' ? [] : current.franchiseIds }));
-    if (role === 'sub_admin') setFieldErrors((current) => ({ ...current, franchiseIds: undefined }));
+    setForm(current => ({
+      ...current,
+      role,
+      franchiseIds: role === 'sub_admin' ? [] : current.franchiseIds,
+    }));
+    if (role === 'sub_admin')
+      setFieldErrors(current => ({ ...current, franchiseIds: undefined }));
   }
   function validate(): UserFieldErrors {
     const errors: UserFieldErrors = {};
     if (!form.name.trim()) errors.name = t('adminUserNameRequired');
     if (!form.email.trim()) errors.email = t('adminUserEmailRequired');
-    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) errors.email = t('adminUserEmailInvalid');
+    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email))
+      errors.email = t('adminUserEmailInvalid');
     if (!editing) {
       if (!form.password) errors.password = t('adminUserPasswordRequired');
-      else if (form.password.length < 12) errors.password = t('adminPasswordLength');
-      else if (!/[A-Z]/.test(form.password)) errors.password = t('adminPasswordUppercase');
-      else if (!/[a-z]/.test(form.password)) errors.password = t('adminPasswordLowercase');
-      else if (!/\d/.test(form.password)) errors.password = t('adminPasswordNumber');
-      else if (!/[^A-Za-z0-9]/.test(form.password)) errors.password = t('adminPasswordSpecial');
+      else if (form.password.length < 12)
+        errors.password = t('adminPasswordLength');
+      else if (!/[A-Z]/.test(form.password))
+        errors.password = t('adminPasswordUppercase');
+      else if (!/[a-z]/.test(form.password))
+        errors.password = t('adminPasswordLowercase');
+      else if (!/\d/.test(form.password))
+        errors.password = t('adminPasswordNumber');
+      else if (!/[^A-Za-z0-9]/.test(form.password))
+        errors.password = t('adminPasswordSpecial');
     }
-    if (form.role === 'franchise_admin' && form.franchiseIds.length === 0) errors.franchiseIds = t('adminUserStoreRequired');
+    if (form.role === 'franchise_admin' && form.franchiseIds.length === 0)
+      errors.franchiseIds = t('adminUserStoreRequired');
     return errors;
   }
   async function save(): Promise<void> {
@@ -268,12 +326,28 @@ export function useAdminUsers({ onToast }: AdminUsersScreenProps) {
         {
           method: editing ? 'PATCH' : 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(editing
-            ? { name: form.name.trim(), role: form.role, franchiseIds: form.role === 'sub_admin' ? [] : form.franchiseIds }
-            : { name: form.name.trim(), email: form.email.trim(), password: form.password, role: form.role, franchiseIds: form.role === 'sub_admin' ? [] : form.franchiseIds }),
+          body: JSON.stringify(
+            editing
+              ? {
+                  name: form.name.trim(),
+                  role: form.role,
+                  franchiseIds:
+                    form.role === 'sub_admin' ? [] : form.franchiseIds,
+                }
+              : {
+                  name: form.name.trim(),
+                  email: form.email.trim(),
+                  password: form.password,
+                  role: form.role,
+                  franchiseIds:
+                    form.role === 'sub_admin' ? [] : form.franchiseIds,
+                },
+          ),
         },
       );
-      const data = await response.json().catch(() => ({})) as { message?: string; };
+      const data = (await response.json().catch(() => ({}))) as {
+        message?: string;
+      };
       if (!response.ok) {
         showErrorToast(data.message ?? t('adminSaveFailed'));
         return;
@@ -282,7 +356,9 @@ export function useAdminUsers({ onToast }: AdminUsersScreenProps) {
       setIsFormOpen(false);
       setEditing(null);
     } catch (error) {
-      showErrorToast(error instanceof Error ? error.message : t('adminSaveFailed'));
+      showErrorToast(
+        error instanceof Error ? error.message : t('adminSaveFailed'),
+      );
     } finally {
       setIsSaving(false);
     }
@@ -291,8 +367,13 @@ export function useAdminUsers({ onToast }: AdminUsersScreenProps) {
     if (!pendingDelete) return;
     setIsDeleting(true);
     try {
-      const response = await apiRequest(`/users/${encodeURIComponent(pendingDelete._id)}`, { method: 'DELETE' });
-      const data = await response.json().catch(() => ({})) as { message?: string; };
+      const response = await apiRequest(
+        `/users/${encodeURIComponent(pendingDelete._id)}`,
+        { method: 'DELETE' },
+      );
+      const data = (await response.json().catch(() => ({}))) as {
+        message?: string;
+      };
       if (!response.ok) {
         showErrorToast(data.message ?? t('adminSaveFailed'));
         return;
@@ -300,7 +381,9 @@ export function useAdminUsers({ onToast }: AdminUsersScreenProps) {
       setPendingDeleteSuccess(t('adminUserDeleted'));
       setIsDeleteDialogOpen(false);
     } catch (error) {
-      showErrorToast(error instanceof Error ? error.message : t('adminNetworkError'));
+      showErrorToast(
+        error instanceof Error ? error.message : t('adminNetworkError'),
+      );
     } finally {
       setIsDeleting(false);
     }

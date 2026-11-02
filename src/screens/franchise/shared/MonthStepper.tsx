@@ -25,11 +25,13 @@ export function MonthStepper({ month, onChange, maxMonth }: MonthStepperProps) {
         <ChevronLeft color={theme.colors.teal} size={18} />
       </Pressable>
       <View style={monthStyles.selection}>
-        <Text accessibilityRole="header" style={monthStyles.label}>{formatMonthLabel(month)}</Text>
+        <Text accessibilityRole="header" style={monthStyles.label}>
+          {formatMonthLabel(month)}
+        </Text>
         <DateInput
           accessibilityLabel={t('dateSelectMonth')}
           value={`${month}-01`}
-          onChangeText={(value) => onChange(value.slice(0, 7))}
+          onChangeText={value => onChange(value.slice(0, 7))}
           allowClear={false}
           maximumDate={maxMonth ? monthRange(maxMonth).to : undefined}
         />

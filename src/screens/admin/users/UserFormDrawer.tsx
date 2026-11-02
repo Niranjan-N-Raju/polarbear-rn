@@ -33,7 +33,11 @@ export function UserFormDrawer({
       closeLabel={t('adminCloseMenu')}
       onClose={onClose}
       onAfterClose={onAfterClose}
-      overlay={toastMessage ? <AppToast message={toastMessage} onDismiss={onDismissToast} /> : null}
+      overlay={
+        toastMessage ? (
+          <AppToast message={toastMessage} onDismiss={onDismissToast} />
+        ) : null
+      }
     >
       <View style={styles.drawerContent}>
         <View style={styles.drawerHeading}>
@@ -41,7 +45,10 @@ export function UserFormDrawer({
             {t(editing ? 'adminEditUser' : 'adminAddUser')}
           </Text>
         </View>
-        <ScrollView style={styles.drawerFormScroll} keyboardShouldPersistTaps="handled">
+        <ScrollView
+          style={styles.drawerFormScroll}
+          keyboardShouldPersistTaps="handled"
+        >
           <AdminFormField
             label={t('adminFullName')}
             placeholder={t('adminFullNamePlaceholder')}
@@ -74,24 +81,37 @@ export function UserFormDrawer({
           ) : null}
           <Text style={styles.fieldLabel}>{t('adminRole')}</Text>
           <View style={styles.typeOptions}>
-            {(['sub_admin', 'franchise_admin'] as const).map((role) => (
+            {(['sub_admin', 'franchise_admin'] as const).map(role => (
               <Pressable
                 key={role}
                 accessibilityRole="button"
                 accessibilityState={{ selected: form.role === role }}
                 onPress={() => onRoleChange(role)}
-                style={[styles.secondaryButton, styles.typeOption, form.role === role && styles.typeOptionSelected]}
+                style={[
+                  styles.secondaryButton,
+                  styles.typeOption,
+                  form.role === role && styles.typeOptionSelected,
+                ]}
               >
                 <Text style={styles.secondaryButtonText}>
-                  {t(role === 'sub_admin' ? 'adminSubAdmin' : 'adminFranchiseAdmin')}
+                  {t(
+                    role === 'sub_admin'
+                      ? 'adminSubAdmin'
+                      : 'adminFranchiseAdmin',
+                  )}
                 </Text>
               </Pressable>
             ))}
           </View>
           {form.role === 'franchise_admin' ? (
-            <View style={[styles.field, fieldErrors.franchiseIds && styles.userAssignmentError]}>
+            <View
+              style={[
+                styles.field,
+                fieldErrors.franchiseIds && styles.userAssignmentError,
+              ]}
+            >
               <Text style={styles.fieldLabel}>{t('adminAssignStores')}</Text>
-              {stores.map((store) => {
+              {stores.map(store => {
                 const selected = form.franchiseIds.includes(store._id);
                 return (
                   <Pressable
@@ -99,24 +119,44 @@ export function UserFormDrawer({
                     accessibilityRole="checkbox"
                     accessibilityState={{ checked: selected }}
                     onPress={() => onToggleStore(store._id)}
-                    style={[styles.checkboxRow, selected && styles.checkboxRowSelected]}
+                    style={[
+                      styles.checkboxRow,
+                      selected && styles.checkboxRowSelected,
+                    ]}
                   >
-                    <View style={[styles.checkbox, selected && styles.checkboxSelected]}>
-                      {selected ? <Check color={theme.colors.white} size={14} strokeWidth={3} style={{ transform: [{ translateY: 2 }] }} /> : null}
+                    <View
+                      style={[
+                        styles.checkbox,
+                        selected && styles.checkboxSelected,
+                      ]}
+                    >
+                      {selected ? (
+                        <Check
+                          color={theme.colors.white}
+                          size={14}
+                          strokeWidth={3}
+                          style={{ transform: [{ translateY: 2 }] }}
+                        />
+                      ) : null}
                     </View>
                     <Text style={styles.checkboxText}>{store.name}</Text>
                   </Pressable>
                 );
               })}
               {fieldErrors.franchiseIds ? (
-                <Text accessibilityRole="alert" style={styles.fieldError}>{fieldErrors.franchiseIds}</Text>
+                <Text accessibilityRole="alert" style={styles.fieldError}>
+                  {fieldErrors.franchiseIds}
+                </Text>
               ) : null}
             </View>
           ) : null}
         </ScrollView>
         <View style={styles.modalActions}>
           <View style={styles.drawerActionSlot}>
-            <Pressable onPress={onClose} style={[styles.secondaryButton, styles.drawerActionButton]}>
+            <Pressable
+              onPress={onClose}
+              style={[styles.secondaryButton, styles.drawerActionButton]}
+            >
               <Text style={styles.secondaryButtonText}>{t('adminCancel')}</Text>
             </Pressable>
           </View>
@@ -126,9 +166,11 @@ export function UserFormDrawer({
               onPress={onSave}
               style={[styles.primaryButton, styles.drawerActionButton]}
             >
-              {isSaving
-                ? <AppLoader variant="inline" color={theme.colors.white} />
-                : <Text style={styles.primaryButtonText}>{t('adminSave')}</Text>}
+              {isSaving ? (
+                <AppLoader variant="inline" color={theme.colors.white} />
+              ) : (
+                <Text style={styles.primaryButtonText}>{t('adminSave')}</Text>
+              )}
             </Pressable>
           </View>
         </View>

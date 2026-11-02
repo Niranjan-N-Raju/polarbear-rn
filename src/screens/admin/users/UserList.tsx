@@ -5,41 +5,102 @@ import { t, translateRole } from '../../../i18n';
 import { adminStyles as styles } from '../../../styles/adminStyles';
 import type { UserListProps } from './types';
 
-export function UserList({ users, isTable, isDesktopWeb, footer, onEdit, onDelete }: UserListProps) {
+export function UserList({
+  users,
+  isTable,
+  isDesktopWeb,
+  footer,
+  onEdit,
+  onDelete,
+}: UserListProps) {
   if (isTable) {
     return (
       <View style={styles.usersTable}>
         <View style={[styles.usersTableRow, styles.usersTableHeader]}>
-          <Text style={[styles.usersTableCell, styles.usersTableHeaderText, styles.usersTableName]}>{t('adminUsersColumnName')}</Text>
-          <Text style={[styles.usersTableCell, styles.usersTableHeaderText, styles.usersTableEmail]}>{t('adminUsersColumnEmail')}</Text>
-          <Text style={[styles.usersTableCell, styles.usersTableHeaderText, styles.usersTableStores]}>{t('adminUsersColumnStores')}</Text>
+          <Text
+            style={[
+              styles.usersTableCell,
+              styles.usersTableHeaderText,
+              styles.usersTableName,
+            ]}
+          >
+            {t('adminUsersColumnName')}
+          </Text>
+          <Text
+            style={[
+              styles.usersTableCell,
+              styles.usersTableHeaderText,
+              styles.usersTableEmail,
+            ]}
+          >
+            {t('adminUsersColumnEmail')}
+          </Text>
+          <Text
+            style={[
+              styles.usersTableCell,
+              styles.usersTableHeaderText,
+              styles.usersTableStores,
+            ]}
+          >
+            {t('adminUsersColumnStores')}
+          </Text>
           <View style={styles.usersTableActions} />
         </View>
-        <ScrollView style={styles.list} contentContainerStyle={styles.listContent}>
-          {users.map((user) => (
+        <ScrollView
+          style={styles.list}
+          contentContainerStyle={styles.listContent}
+        >
+          {users.map(user => (
             <View key={user._id} style={styles.usersTableRow}>
               <View style={[styles.usersTableCell, styles.usersTableName]}>
                 <View style={styles.userAvatar}>
-                  <Text style={styles.userAvatarText}>{user.name.charAt(0).toUpperCase()}</Text>
+                  <Text style={styles.userAvatarText}>
+                    {user.name.charAt(0).toUpperCase()}
+                  </Text>
                 </View>
                 <View style={styles.userNameRoleGroup}>
-                  <Text numberOfLines={1} style={styles.userTableNameText}>{user.name}</Text>
+                  <Text numberOfLines={1} style={styles.userTableNameText}>
+                    {user.name}
+                  </Text>
                   <View style={styles.userRoleTag}>
-                    <Text style={styles.userRoleTagText}>{translateRole(user.role)}</Text>
+                    <Text style={styles.userRoleTagText}>
+                      {translateRole(user.role)}
+                    </Text>
                   </View>
                 </View>
               </View>
-              <Text numberOfLines={1} style={[styles.usersTableCell, styles.usersTableEmail]}>{user.email}</Text>
+              <Text
+                numberOfLines={1}
+                style={[styles.usersTableCell, styles.usersTableEmail]}
+              >
+                {user.email}
+              </Text>
               <View style={[styles.usersTableCell, styles.usersTableStores]}>
-                {user.franchises.length === 0
-                  ? <Text style={styles.rowSubtext}>{t('adminNoStore')}</Text>
-                  : user.franchises.map((store) => <Text key={store._id} style={styles.userTableStore}>{store.name}</Text>)}
+                {user.franchises.length === 0 ? (
+                  <Text style={styles.rowSubtext}>{t('adminNoStore')}</Text>
+                ) : (
+                  user.franchises.map(store => (
+                    <Text key={store._id} style={styles.userTableStore}>
+                      {store.name}
+                    </Text>
+                  ))
+                )}
               </View>
               <View style={styles.usersTableActions}>
-                <Pressable accessibilityRole="button" accessibilityLabel={`${t('adminEditUser')} ${user.name}`} onPress={() => onEdit(user)} style={styles.userIconAction}>
+                <Pressable
+                  accessibilityRole="button"
+                  accessibilityLabel={`${t('adminEditUser')} ${user.name}`}
+                  onPress={() => onEdit(user)}
+                  style={styles.userIconAction}
+                >
                   <Pencil color={theme.colors.teal} size={16} />
                 </Pressable>
-                <Pressable accessibilityRole="button" accessibilityLabel={`${t('adminDelete')} ${user.name}`} onPress={() => onDelete(user)} style={styles.userIconAction}>
+                <Pressable
+                  accessibilityRole="button"
+                  accessibilityLabel={`${t('adminDelete')} ${user.name}`}
+                  onPress={() => onDelete(user)}
+                  style={styles.userIconAction}
+                >
                   <Trash2 color={theme.colors.error} size={16} />
                 </Pressable>
               </View>
@@ -54,36 +115,59 @@ export function UserList({ users, isTable, isDesktopWeb, footer, onEdit, onDelet
   return (
     <ScrollView
       style={[styles.list, !isDesktopWeb && styles.userListWithFab]}
-      contentContainerStyle={[styles.listContent, !isDesktopWeb && styles.userListContentWithFab]}
+      contentContainerStyle={[
+        styles.listContent,
+        !isDesktopWeb && styles.userListContentWithFab,
+      ]}
     >
-      {users.map((user) => (
+      {users.map(user => (
         <View key={user._id} style={styles.userCard}>
           <View style={styles.userCardHeader}>
             <View style={styles.userCardAvatar}>
-              <Text style={styles.userAvatarText}>{user.name.charAt(0).toUpperCase()}</Text>
+              <Text style={styles.userAvatarText}>
+                {user.name.charAt(0).toUpperCase()}
+              </Text>
             </View>
             <View style={styles.userCardIdentity}>
-              <Text numberOfLines={1} style={styles.userCardName}>{user.name}</Text>
+              <Text numberOfLines={1} style={styles.userCardName}>
+                {user.name}
+              </Text>
               <View style={styles.userRoleTag}>
-                <Text style={styles.userRoleTagText}>{translateRole(user.role)}</Text>
+                <Text style={styles.userRoleTagText}>
+                  {translateRole(user.role)}
+                </Text>
               </View>
             </View>
             <View style={styles.userCardActions}>
-              <Pressable accessibilityRole="button" accessibilityLabel={`${t('adminEditUser')} ${user.name}`} onPress={() => onEdit(user)} style={styles.userIconAction}>
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel={`${t('adminEditUser')} ${user.name}`}
+                onPress={() => onEdit(user)}
+                style={styles.userIconAction}
+              >
                 <Pencil color={theme.colors.teal} size={16} />
               </Pressable>
-              <Pressable accessibilityRole="button" accessibilityLabel={`${t('adminDelete')} ${user.name}`} onPress={() => onDelete(user)} style={styles.userIconAction}>
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel={`${t('adminDelete')} ${user.name}`}
+                onPress={() => onDelete(user)}
+                style={styles.userIconAction}
+              >
                 <Trash2 color={theme.colors.error} size={16} />
               </Pressable>
             </View>
           </View>
-          <Text numberOfLines={1} style={styles.userCardEmail}>{user.email}</Text>
-          {user.phone ? <Text style={styles.userCardPhone}>{user.phone}</Text> : null}
+          <Text numberOfLines={1} style={styles.userCardEmail}>
+            {user.email}
+          </Text>
+          {user.phone ? (
+            <Text style={styles.userCardPhone}>{user.phone}</Text>
+          ) : null}
           {user.franchises.length === 0 ? (
             <Text style={styles.userCardNoStores}>{t('adminNoStore')}</Text>
           ) : (
             <View style={styles.userCardStores}>
-              {user.franchises.map((store) => (
+              {user.franchises.map(store => (
                 <View key={store._id} style={styles.storePill}>
                   <Text style={styles.storePillText}>{store.name}</Text>
                 </View>

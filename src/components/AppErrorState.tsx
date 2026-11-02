@@ -40,8 +40,14 @@ const styles = StyleSheet.create({
 export function AppErrorState({ message, onRetry }: AppErrorStateProps) {
   return (
     <View style={styles.container}>
-      <Text accessibilityRole="alert" style={styles.message}>{message}</Text>
-      <Pressable accessibilityRole="button" onPress={onRetry} style={styles.button}>
+      <Text accessibilityRole="alert" style={styles.message}>
+        {message}
+      </Text>
+      <Pressable
+        accessibilityRole="button"
+        onPress={onRetry}
+        style={styles.button}
+      >
         <RefreshCw color={theme.colors.teal} size={16} />
         <Text style={styles.buttonText}>{t('adminRefresh')}</Text>
       </Pressable>

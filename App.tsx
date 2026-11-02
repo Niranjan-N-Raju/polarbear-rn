@@ -20,7 +20,9 @@ function App() {
           </OverlayHostProvider>
         </AppLoaderProvider>
       </SafeAreaProvider>
-      {splashVisible && <AnimatedSplash onFinish={() => setSplashVisible(false)} />}
+      {splashVisible && (
+        <AnimatedSplash onFinish={() => setSplashVisible(false)} />
+      )}
     </>
   );
 }

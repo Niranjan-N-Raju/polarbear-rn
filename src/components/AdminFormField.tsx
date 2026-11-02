@@ -44,7 +44,11 @@ export function AdminFormField({
       calendarLoading={calendarLoading}
       calendarError={calendarError}
       onMonthChange={onMonthChange}
-      style={[styles.fieldInput, error && styles.inputError, !editable && styles.fieldInputDisabled]}
+      style={[
+        styles.fieldInput,
+        error && styles.inputError,
+        !editable && styles.fieldInputDisabled,
+      ]}
     />
   ) : (
     <TextInput
@@ -76,26 +80,37 @@ export function AdminFormField({
         onPress={onToggleVisibility}
         style={styles.visibilityButton}
       >
-        {visible
-          ? <EyeOff color={theme.colors.iconMuted} size={theme.layout.iconSize} />
-          : <Eye color={theme.colors.iconMuted} size={theme.layout.iconSize} />}
+        {visible ? (
+          <EyeOff color={theme.colors.iconMuted} size={theme.layout.iconSize} />
+        ) : (
+          <Eye color={theme.colors.iconMuted} size={theme.layout.iconSize} />
+        )}
       </Pressable>
     </View>
-  ) : input;
+  ) : (
+    input
+  );
 
   return (
     <View style={[styles.field, containerStyle]}>
       <Text style={styles.fieldLabel}>{label}</Text>
       {phonePrefix ? (
-        <View style={[styles.phoneInputWrap, error && styles.phoneInputWrapError]}>
+        <View
+          style={[styles.phoneInputWrap, error && styles.phoneInputWrapError]}
+        >
           <View style={styles.phoneInputCode}>
             <Text style={styles.phoneInputPrefix}>{phonePrefix}</Text>
           </View>
           {inputWithVisibility}
         </View>
-      ) : inputWithVisibility}
+      ) : (
+        inputWithVisibility
+      )}
       {error ? (
-        <Text accessibilityRole="alert" style={errorTextStyle ?? styles.fieldError}>
+        <Text
+          accessibilityRole="alert"
+          style={errorTextStyle ?? styles.fieldError}
+        >
           {error}
         </Text>
       ) : null}

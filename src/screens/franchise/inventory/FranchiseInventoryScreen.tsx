@@ -13,13 +13,16 @@ import { InventoryFiltersDrawer } from './InventoryFiltersDrawer';
 import { inventoryStyles } from './inventoryStyles';
 import { ProductsDrawer } from './ProductsDrawer';
 import { StockFormDrawer } from './StockFormDrawer';
-import { type FranchiseInventoryScreenProps, pageSize, useFranchiseInventory } from './useFranchiseInventory';
 import {
-  defaultInventoryFilters
-} from './utils';
+  type FranchiseInventoryScreenProps,
+  pageSize,
+  useFranchiseInventory,
+} from './useFranchiseInventory';
+import { defaultInventoryFilters } from './utils';
 
-
-export function FranchiseInventoryScreen({ storeId }: FranchiseInventoryScreenProps) {
+export function FranchiseInventoryScreen({
+  storeId,
+}: FranchiseInventoryScreenProps) {
   const {
     height,
     layout,
@@ -52,10 +55,24 @@ export function FranchiseInventoryScreen({ storeId }: FranchiseInventoryScreenPr
   } = useFranchiseInventory({ storeId });
   return (
     <View style={styles.screen}>
-      <View style={[styles.screenHeader, layout.desktopWeb && styles.screenHeaderInline, layout.compactWeb && styles.screenHeaderStack]}>
-        <View style={layout.isWeb ? styles.screenHeaderCopy : styles.screenHeaderCopyNative}>
+      <View
+        style={[
+          styles.screenHeader,
+          layout.desktopWeb && styles.screenHeaderInline,
+          layout.compactWeb && styles.screenHeaderStack,
+        ]}
+      >
+        <View
+          style={
+            layout.isWeb
+              ? styles.screenHeaderCopy
+              : styles.screenHeaderCopyNative
+          }
+        >
           <View style={styles.screenTitleRow}>
-            <Text style={[styles.screenTitle, styles.screenTitleInline]}>{t('franchiseInventory')}</Text>
+            <Text style={[styles.screenTitle, styles.screenTitleInline]}>
+              {t('franchiseInventory')}
+            </Text>
             <Pressable
               accessibilityRole="button"
               accessibilityLabel={t('franchiseInventoryFilter')}
@@ -63,7 +80,9 @@ export function FranchiseInventoryScreen({ storeId }: FranchiseInventoryScreenPr
               style={styles.filterIconButton}
             >
               <Filter color={theme.colors.teal} size={18} />
-              {hasActiveFilters ? <View style={styles.filterActiveDot} /> : null}
+              {hasActiveFilters ? (
+                <View style={styles.filterActiveDot} />
+              ) : null}
             </Pressable>
             {!layout.desktopWeb ? (
               <Pressable
@@ -77,7 +96,10 @@ export function FranchiseInventoryScreen({ storeId }: FranchiseInventoryScreenPr
             ) : null}
           </View>
           <Text style={styles.screenDescription}>
-            {t('franchiseInventoryDescription', { count: items.length, units: totalUnits })}
+            {t('franchiseInventoryDescription', {
+              count: items.length,
+              units: totalUnits,
+            })}
           </Text>
         </View>
         <View style={styles.screenHeaderActions}>
@@ -88,14 +110,18 @@ export function FranchiseInventoryScreen({ storeId }: FranchiseInventoryScreenPr
                 onPress={() => setDrawer({ type: 'products' })}
                 style={[styles.secondaryButton, styles.screenHeaderAction]}
               >
-                <Text style={styles.secondaryButtonText}>{t('franchiseInventoryProducts')}</Text>
+                <Text style={styles.secondaryButtonText}>
+                  {t('franchiseInventoryProducts')}
+                </Text>
               </Pressable>
               <Pressable
                 accessibilityRole="button"
                 onPress={() => setDrawer({ type: 'stock' })}
                 style={[styles.primaryButton, styles.screenHeaderAction]}
               >
-                <Text style={styles.primaryButtonText}>{t('franchiseInventoryAddStock')}</Text>
+                <Text style={styles.primaryButtonText}>
+                  {t('franchiseInventoryAddStock')}
+                </Text>
               </Pressable>
             </View>
           ) : null}
@@ -105,22 +131,37 @@ export function FranchiseInventoryScreen({ storeId }: FranchiseInventoryScreenPr
       {isLoading && items.length === 0 ? (
         <AppLoader />
       ) : error ? (
-        <AppErrorState message={error} onRetry={() => setReloadKey((key) => key + 1)} />
+        <AppErrorState
+          message={error}
+          onRetry={() => setReloadKey(key => key + 1)}
+        />
       ) : (
         <ScrollView
-          style={[styles.list, !layout.desktopWeb && styles.storeListFabViewport]}
-          contentContainerStyle={[styles.listContent, !layout.desktopWeb && styles.storeListWithFab]}
+          style={[
+            styles.list,
+            !layout.desktopWeb && styles.storeListFabViewport,
+          ]}
+          contentContainerStyle={[
+            styles.listContent,
+            !layout.desktopWeb && styles.storeListWithFab,
+          ]}
         >
           {isLoading ? <AppLoader variant="inline" /> : null}
           <SummaryCards
-            cards={summaryCards.map((card) => ({ ...card, selected: filters.status === card.key, onPress: () => toggleStatus(card.key) }))}
+            cards={summaryCards.map(card => ({
+              ...card,
+              selected: filters.status === card.key,
+              onPress: () => toggleStatus(card.key),
+            }))}
             isWeb={layout.isWeb}
             perRow={layout.desktopWeb ? 4 : 2}
           />
 
           {filteredItems.length === 0 ? (
             <Text style={styles.stateMessage}>
-              {items.length === 0 ? t('franchiseInventoryEmpty') : t('franchiseInventoryNoMatch')}
+              {items.length === 0
+                ? t('franchiseInventoryEmpty')
+                : t('franchiseInventoryNoMatch')}
             </Text>
           ) : null}
 
@@ -139,10 +180,12 @@ export function FranchiseInventoryScreen({ storeId }: FranchiseInventoryScreenPr
             <View style={styles.loadMoreFooter}>
               <Pressable
                 accessibilityRole="button"
-                onPress={() => setVisibleCount((count) => count + pageSize)}
+                onPress={() => setVisibleCount(count => count + pageSize)}
                 style={styles.loadMoreButton}
               >
-                <Text style={styles.loadMoreButtonText}>{t('adminLoadMore')}</Text>
+                <Text style={styles.loadMoreButtonText}>
+                  {t('adminLoadMore')}
+                </Text>
               </Pressable>
             </View>
           ) : null}
@@ -165,7 +208,11 @@ export function FranchiseInventoryScreen({ storeId }: FranchiseInventoryScreenPr
         height={height}
         isWeb={layout.isWeb}
         draft={draftFilters}
-        canClear={hasActiveFilters || draftFilters.status !== 'all' || draftFilters.search.trim() !== ''}
+        canClear={
+          hasActiveFilters ||
+          draftFilters.status !== 'all' ||
+          draftFilters.search.trim() !== ''
+        }
         onClose={() => setDrawer(null)}
         onDraftChange={setDraftFilters}
         onClear={() => {
@@ -174,7 +221,10 @@ export function FranchiseInventoryScreen({ storeId }: FranchiseInventoryScreenPr
           setDrawer(null);
         }}
         onApply={() => {
-          applyFilterState({ ...draftFilters, search: draftFilters.search.trim() });
+          applyFilterState({
+            ...draftFilters,
+            search: draftFilters.search.trim(),
+          });
           setDrawer(null);
         }}
       />
@@ -197,8 +247,12 @@ export function FranchiseInventoryScreen({ storeId }: FranchiseInventoryScreenPr
       <InventoryActionDrawer
         visible={drawer?.type === 'action'}
         storeId={storeId}
-        item={drawer?.type === 'action' ? drawer.item : lastAction?.item ?? null}
-        action={drawer?.type === 'action' ? drawer.action : lastAction?.action ?? null}
+        item={
+          drawer?.type === 'action' ? drawer.item : lastAction?.item ?? null
+        }
+        action={
+          drawer?.type === 'action' ? drawer.action : lastAction?.action ?? null
+        }
         onClose={() => setDrawer(null)}
         onAfterClose={() => {
           setLastAction(null);
@@ -207,7 +261,13 @@ export function FranchiseInventoryScreen({ storeId }: FranchiseInventoryScreenPr
         onDone={completeWithToast}
       />
 
-      {!drawer && toast ? <AppToast message={toast} tone="success" onDismiss={() => setToast(null)} /> : null}
+      {!drawer && toast ? (
+        <AppToast
+          message={toast}
+          tone="success"
+          onDismiss={() => setToast(null)}
+        />
+      ) : null}
     </View>
   );
 }

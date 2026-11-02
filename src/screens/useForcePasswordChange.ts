@@ -6,7 +6,11 @@ export type ForcePasswordChangeScreenProps = {
   onCompleted: () => void;
   onSignOut: () => void;
 };
-export function validateNewPassword(currentPassword: string, newPassword: string, confirmPassword: string): TranslationKey | null {
+export function validateNewPassword(
+  currentPassword: string,
+  newPassword: string,
+  confirmPassword: string,
+): TranslationKey | null {
   if (!currentPassword.trim()) return 'adminPasswordRequired';
   if (!newPassword.trim()) return 'adminNewPasswordRequired';
   if (!confirmPassword.trim()) return 'adminConfirmPasswordRequired';
@@ -20,7 +24,9 @@ export function validateNewPassword(currentPassword: string, newPassword: string
   return null;
 }
 
-export function useForcePasswordChange({ onCompleted }: ForcePasswordChangeScreenProps) {
+export function useForcePasswordChange({
+  onCompleted,
+}: ForcePasswordChangeScreenProps) {
   const insets = useSafeAreaInsets();
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
@@ -32,7 +38,11 @@ export function useForcePasswordChange({ onCompleted }: ForcePasswordChangeScree
   const [isSaving, setIsSaving] = useState(false);
   async function submit(): Promise<void> {
     setError('');
-    const validationError = validateNewPassword(currentPassword, newPassword, confirmPassword);
+    const validationError = validateNewPassword(
+      currentPassword,
+      newPassword,
+      confirmPassword,
+    );
     if (validationError) {
       setError(t(validationError));
       return;
@@ -44,7 +54,11 @@ export function useForcePasswordChange({ onCompleted }: ForcePasswordChangeScree
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ currentPassword, newPassword }),
       });
-      const data = await response.json().catch(() => ({})) as { message?: string; token?: string; mustChangePassword?: boolean; };
+      const data = (await response.json().catch(() => ({}))) as {
+        message?: string;
+        token?: string;
+        mustChangePassword?: boolean;
+      };
       if (!response.ok || !data.token) {
         setError(data.message ?? t('adminSaveFailed'));
         return;

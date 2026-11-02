@@ -21,7 +21,16 @@ interface SalesTrendCardProps {
   onOpenFilters: () => void;
 }
 
-export function SalesTrendCard({ compact, sales, range, loading, loaded = false, error, onApplyRange, onOpenFilters }: SalesTrendCardProps) {
+export function SalesTrendCard({
+  compact,
+  sales,
+  range,
+  loading,
+  loaded = false,
+  error,
+  onApplyRange,
+  onOpenFilters,
+}: SalesTrendCardProps) {
   const shortcuts = [
     { label: 'franchiseThisWeek', getRange: thisWeekRange },
     { label: 'franchiseThisMonth', getRange: currentMonthRange },
@@ -30,23 +39,62 @@ export function SalesTrendCard({ compact, sales, range, loading, loaded = false,
   return (
     <View style={styles.card}>
       <View style={[styles.dashboardHeading, styles.salesHeading]}>
-        <Text style={[styles.sectionTitle, styles.dashboardTitle]}>{t('franchiseSalesTrend')}</Text>
-        <View style={[styles.filters, styles.salesShortcuts, compact && styles.salesShortcutsCompact]}>
+        <Text style={[styles.sectionTitle, styles.dashboardTitle]}>
+          {t('franchiseSalesTrend')}
+        </Text>
+        <View
+          style={[
+            styles.filters,
+            styles.salesShortcuts,
+            compact && styles.salesShortcutsCompact,
+          ]}
+        >
           {shortcuts.map(({ label, getRange }) => (
-            <Pressable key={label} accessibilityRole="button" hitSlop={compact ? 6 : undefined} onPress={() => onApplyRange(getRange())} style={[styles.button, compact && styles.salesShortcutButtonCompact]}>
-              <Text style={[styles.buttonText, compact && styles.salesShortcutTextCompact]}>{t(label)}</Text>
+            <Pressable
+              key={label}
+              accessibilityRole="button"
+              hitSlop={compact ? 6 : undefined}
+              onPress={() => onApplyRange(getRange())}
+              style={[
+                styles.button,
+                compact && styles.salesShortcutButtonCompact,
+              ]}
+            >
+              <Text
+                style={[
+                  styles.buttonText,
+                  compact && styles.salesShortcutTextCompact,
+                ]}
+              >
+                {t(label)}
+              </Text>
             </Pressable>
           ))}
-          <Pressable accessibilityRole="button" accessibilityLabel={t('adminOpenFilters')} onPress={onOpenFilters} style={adminStyles.filterIconButton}>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel={t('adminOpenFilters')}
+            onPress={onOpenFilters}
+            style={adminStyles.filterIconButton}
+          >
             <Filter color={theme.colors.teal} size={18} />
           </Pressable>
         </View>
       </View>
-      <Text style={styles.subtitle}>{range.from} - {range.to}</Text>
-      {loading && !loaded ? <AppLoader variant="inline" /> : error ? (
-        <Text accessibilityRole="alert" style={styles.error}>{error}</Text>
+      <Text style={styles.subtitle}>
+        {range.from} - {range.to}
+      </Text>
+      {loading && !loaded ? (
+        <AppLoader variant="inline" />
+      ) : error ? (
+        <Text accessibilityRole="alert" style={styles.error}>
+          {error}
+        </Text>
       ) : (
-        <SalesTrendChart sales={sales} dateFrom={range.from} dateTo={range.to} />
+        <SalesTrendChart
+          sales={sales}
+          dateFrom={range.from}
+          dateTo={range.to}
+        />
       )}
     </View>
   );

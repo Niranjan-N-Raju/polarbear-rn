@@ -10,7 +10,7 @@ jest.mock('react-native-bootsplash', () => ({
 jest.mock('react-native-webview', () => {
   const React = require('react');
   const { View } = require('react-native');
-  const WebView = (props) => {
+  const WebView = props => {
     React.useEffect(() => {
       props.onLoadEnd?.();
     }, []); // eslint-disable-line react-hooks/exhaustive-deps
@@ -24,7 +24,9 @@ jest.mock('react-native-webview', () => {
   const originalGet = TurboModuleRegistry.get;
   jest
     .spyOn(TurboModuleRegistry, 'get')
-    .mockImplementation((name) => (name === 'RNCWebViewModule' ? {} : originalGet(name)));
+    .mockImplementation(name =>
+      name === 'RNCWebViewModule' ? {} : originalGet(name),
+    );
 }
 
 jest.mock('react-native-config', () => ({
@@ -36,7 +38,7 @@ jest.mock('@react-native-community/datetimepicker', () => {
   const React = require('react');
   return {
     __esModule: true,
-    default: (props) => React.createElement('MockDateTimePicker', props),
+    default: props => React.createElement('MockDateTimePicker', props),
     DateTimePickerAndroid: { open: jest.fn(), dismiss: jest.fn() },
   };
 });

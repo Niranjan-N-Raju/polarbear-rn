@@ -24,7 +24,16 @@ interface DateRangeFilterDrawerProps {
 }
 
 export function DateRangeFilterDrawer({
-  visible, title, height, isWeb, range, error, onChange, onClose, onClear, onApply,
+  visible,
+  title,
+  height,
+  isWeb,
+  range,
+  error,
+  onChange,
+  onClose,
+  onClear,
+  onApply,
 }: DateRangeFilterDrawerProps) {
   return (
     <FilterDrawer
@@ -37,18 +46,25 @@ export function DateRangeFilterDrawer({
       onApply={onApply}
       automaticallyAdjustKeyboardInsets
     >
-      {(['from', 'to'] as const).map((field) => (
+      {(['from', 'to'] as const).map(field => (
         <AdminFormField
           key={field}
           date
           label={t(field === 'from' ? 'franchiseFrom' : 'franchiseTo')}
           placeholder={t('franchiseDatePlaceholder')}
           value={range[field]}
-          onChangeText={(value) => onChange({ ...range, [field]: value })}
+          onChangeText={value => onChange({ ...range, [field]: value })}
           containerStyle={styles.filterDrawerField}
         />
       ))}
-      {error ? <Text accessibilityRole="alert" style={{ color: theme.colors.error, fontSize: theme.typography.sm }}>{error}</Text> : null}
+      {error ? (
+        <Text
+          accessibilityRole="alert"
+          style={{ color: theme.colors.error, fontSize: theme.typography.sm }}
+        >
+          {error}
+        </Text>
+      ) : null}
     </FilterDrawer>
   );
 }

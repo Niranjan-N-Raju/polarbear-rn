@@ -1,6 +1,7 @@
 export const pnlEn = {
   franchisePnlTitle: 'Profit & Loss',
-  franchisePnlDescription: 'Revenue, expenses and payroll cost, broken down month by month.',
+  franchisePnlDescription:
+    'Revenue, expenses and payroll cost, broken down month by month.',
   franchisePnlRevenue: 'Revenue',
   franchisePnlStoreExpenses: 'Store Expenses',
   franchisePnlPayroll: 'Payroll',
@@ -98,7 +99,8 @@ export const pnlEn = {
   franchisePnlHijida: 'Hijida',
   franchisePnlPolice: 'Police',
   franchisePnlRatesTaxes: 'Rates & Taxes',
-  franchisePnlLicenses: 'Trade, FSSAI, labour, General, Weighing scale licenses',
+  franchisePnlLicenses:
+    'Trade, FSSAI, labour, General, Weighing scale licenses',
   franchisePnlParlourInsurance: 'Parlour Insurance',
   franchisePnlRoyalty: 'Royalty',
   franchisePnlMiscellaneous: 'Miscellaneous',

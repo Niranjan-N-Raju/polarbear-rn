@@ -16,11 +16,13 @@ export const attendanceEn = {
   franchiseAttendanceNoEmployees: 'No employees found for this store.',
   franchiseAttendanceMarked: 'Attendance updated.',
   franchiseAttendanceRemoved: 'Attendance record removed.',
-  franchiseAttendanceRosterHelp: 'Choose a shift, day off, or leave for each employee.',
+  franchiseAttendanceRosterHelp:
+    'Choose a shift, day off, or leave for each employee.',
   franchiseAttendancePreviousWeek: 'Previous week',
   franchiseAttendanceNextWeek: 'Next week',
   franchiseAttendanceSaveRoster: 'Save roster',
-  franchiseAttendanceNoShifts: 'Configure at least one shift in Store Config before saving the roster.',
+  franchiseAttendanceNoShifts:
+    'Configure at least one shift in Store Config before saving the roster.',
   franchiseAttendanceRosterSaved: 'Weekly roster saved.',
   franchiseAttendanceFilterEmployees: 'Filter employees',
   franchiseAttendanceClose: 'Close',
@@ -32,5 +34,6 @@ export const attendanceEn = {
   franchiseAttendanceAll: 'All',
   franchiseAttendanceComment: 'Comment',
   franchiseAttendanceRemove: 'Remove attendance',
-  franchiseAttendanceRemoveConfirm: 'Remove the attendance record for {{name}} on {{date}}?',
+  franchiseAttendanceRemoveConfirm:
+    'Remove the attendance record for {{name}} on {{date}}?',
 } as const;

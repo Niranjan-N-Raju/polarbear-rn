@@ -13,7 +13,13 @@ interface FranchiseMenuGroupProps extends PropsWithChildren {
   onPress: () => void;
 }
 
-export function FranchiseMenuGroup({ label, Icon, expanded, onPress, children }: FranchiseMenuGroupProps) {
+export function FranchiseMenuGroup({
+  label,
+  Icon,
+  expanded,
+  onPress,
+  children,
+}: FranchiseMenuGroupProps) {
   const progress = useRef(new Animated.Value(expanded ? 1 : 0)).current;
   const [contentHeight, setContentHeight] = useState(0);
 
@@ -38,22 +44,39 @@ export function FranchiseMenuGroup({ label, Icon, expanded, onPress, children }:
       >
         <Icon size={20} color={theme.colors.muted} />
         <Text style={styles.group}>{label}</Text>
-        <Animated.View style={{ transform: [{ rotate: progress.interpolate({ inputRange: [0, 1], outputRange: ['0deg', '90deg'] }) }] }}>
+        <Animated.View
+          style={{
+            transform: [
+              {
+                rotate: progress.interpolate({
+                  inputRange: [0, 1],
+                  outputRange: ['0deg', '90deg'],
+                }),
+              },
+            ],
+          }}
+        >
           <ChevronRight size={18} color={theme.colors.muted} />
         </Animated.View>
       </Pressable>
       <Animated.View
-        style={[styles.submenu, {
-          height: progress.interpolate({ inputRange: [0, 1], outputRange: [0, contentHeight] }),
-          opacity: progress,
-        }]}
+        style={[
+          styles.submenu,
+          {
+            height: progress.interpolate({
+              inputRange: [0, 1],
+              outputRange: [0, contentHeight],
+            }),
+            opacity: progress,
+          },
+        ]}
         pointerEvents={expanded ? 'auto' : 'none'}
         accessibilityElementsHidden={!expanded}
         importantForAccessibility={expanded ? 'auto' : 'no-hide-descendants'}
       >
         <View
           style={styles.submenuContent}
-          onLayout={(event) => setContentHeight(event.nativeEvent.layout.height)}
+          onLayout={event => setContentHeight(event.nativeEvent.layout.height)}
         >
           {children}
         </View>

@@ -1,8 +1,16 @@
-import { datesBetween, thisWeekRange, validDateRange } from '../src/screens/franchise/dashboardDates';
+import {
+  datesBetween,
+  thisWeekRange,
+  validDateRange,
+} from '../src/screens/franchise/dashboardDates';
 
 describe('dashboard calendar date handling', () => {
   it('includes both endpoints and leap days without timezone shifts', () => {
-    expect(datesBetween('2024-02-28', '2024-03-01')).toEqual(['2024-02-28', '2024-02-29', '2024-03-01']);
+    expect(datesBetween('2024-02-28', '2024-03-01')).toEqual([
+      '2024-02-28',
+      '2024-02-29',
+      '2024-03-01',
+    ]);
     expect(validDateRange('2026-02-30', '2026-03-01')).toBe(false);
     expect(validDateRange('2026-10-31', '2026-10-01')).toBe(false);
     expect(validDateRange('2020-01-01', '2026-10-01')).toBe(false);
@@ -13,6 +21,9 @@ describe('dashboard calendar date handling', () => {
   });
 
   it('uses Sunday as the start of this week like the Next.js dashboard', () => {
-    expect(thisWeekRange(new Date('2026-10-24T06:30:00Z'))).toEqual({ from: '2026-10-18', to: '2026-10-24' });
+    expect(thisWeekRange(new Date('2026-10-24T06:30:00Z'))).toEqual({
+      from: '2026-10-18',
+      to: '2026-10-24',
+    });
   });
 });

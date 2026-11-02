@@ -1,4 +1,11 @@
-import { Archive, MapPin, Pencil, Phone, RotateCcw, Store as StoreIcon } from '../../../icons';
+import {
+  Archive,
+  MapPin,
+  Pencil,
+  Phone,
+  RotateCcw,
+  Store as StoreIcon,
+} from '../../../icons';
 import { Pressable, Text, View } from 'react-native';
 import { theme } from '../../../config/theme';
 import { t } from '../../../i18n';
@@ -25,7 +32,9 @@ export function StoreCard({
         </View>
         <View style={styles.storeCardBody}>
           <View style={styles.storeTitleRow}>
-            <Text numberOfLines={1} style={styles.storeTitle}>{store.name}</Text>
+            <Text numberOfLines={1} style={styles.storeTitle}>
+              {store.name}
+            </Text>
             {store.storeCode ? (
               <View style={styles.storeCodeBadge}>
                 <Text style={styles.storeCodeText}>{store.storeCode}</Text>
@@ -33,31 +42,73 @@ export function StoreCard({
             ) : null}
           </View>
           <View style={styles.storeBadgeRow}>
-            <View style={[styles.storeTypeBadge, store.storeType === 'company' ? styles.storeCompanyBadge : styles.storeFranchiseBadge]}>
-              <Text style={[styles.storeTypeBadgeText, store.storeType === 'company' ? styles.storeCompanyBadgeText : styles.storeFranchiseBadgeText]}>
-                {store.storeType === 'company' ? t('adminCompanyStore') : t('adminFranchiseStore')}
+            <View
+              style={[
+                styles.storeTypeBadge,
+                store.storeType === 'company'
+                  ? styles.storeCompanyBadge
+                  : styles.storeFranchiseBadge,
+              ]}
+            >
+              <Text
+                style={[
+                  styles.storeTypeBadgeText,
+                  store.storeType === 'company'
+                    ? styles.storeCompanyBadgeText
+                    : styles.storeFranchiseBadgeText,
+                ]}
+              >
+                {store.storeType === 'company'
+                  ? t('adminCompanyStore')
+                  : t('adminFranchiseStore')}
               </Text>
             </View>
-            <View style={[styles.storeStatusBadge, isActive ? styles.storeActiveBadge : styles.storeInactiveBadge]}>
-              <Text style={isActive ? styles.storeActiveBadgeText : styles.storeInactiveBadgeText}>{store.archivedAt ? t('adminArchived') : isActive ? t('adminActive') : t('adminInactive')}</Text>
+            <View
+              style={[
+                styles.storeStatusBadge,
+                isActive ? styles.storeActiveBadge : styles.storeInactiveBadge,
+              ]}
+            >
+              <Text
+                style={
+                  isActive
+                    ? styles.storeActiveBadgeText
+                    : styles.storeInactiveBadgeText
+                }
+              >
+                {store.archivedAt
+                  ? t('adminArchived')
+                  : isActive
+                  ? t('adminActive')
+                  : t('adminInactive')}
+              </Text>
             </View>
           </View>
         </View>
         {canManage && !actionsAtBottom ? (
           <View style={styles.storeCardHeaderActions}>
-            <Pressable accessibilityRole="button" accessibilityLabel={`${t('adminEditStore')} ${store.name}`} onPress={() => onEdit(store)} style={styles.storeCardHeaderAction}>
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel={`${t('adminEditStore')} ${store.name}`}
+              onPress={() => onEdit(store)}
+              style={styles.storeCardHeaderAction}
+            >
               <Pencil color={theme.colors.teal} size={16} />
             </Pressable>
             <Pressable
               accessibilityRole="button"
-              accessibilityLabel={`${store.archivedAt ? t('adminRestore') : t('adminArchive')} ${store.name}`}
+              accessibilityLabel={`${
+                store.archivedAt ? t('adminRestore') : t('adminArchive')
+              } ${store.name}`}
               disabled={isUpdatingArchive}
               onPress={() => onArchive(store)}
               style={styles.storeCardHeaderAction}
             >
-              {store.archivedAt
-                ? <RotateCcw color={theme.colors.orange} size={16} />
-                : <Archive color={theme.colors.orange} size={16} />}
+              {store.archivedAt ? (
+                <RotateCcw color={theme.colors.orange} size={16} />
+              ) : (
+                <Archive color={theme.colors.orange} size={16} />
+              )}
             </Pressable>
           </View>
         ) : null}
@@ -67,7 +118,9 @@ export function StoreCard({
           {store.address ? (
             <View style={styles.storeContactRow}>
               <MapPin color={theme.colors.muted} size={14} />
-              <Text numberOfLines={2} style={styles.storeContactText}>{store.address}</Text>
+              <Text numberOfLines={2} style={styles.storeContactText}>
+                {store.address}
+              </Text>
             </View>
           ) : null}
           {store.phone ? (
@@ -80,13 +133,34 @@ export function StoreCard({
       ) : null}
       {canManage && actionsAtBottom ? (
         <View style={styles.storeCardActions}>
-          <Pressable accessibilityRole="button" accessibilityLabel={`${t('adminEditStore')} ${store.name}`} onPress={() => onEdit(store)} style={styles.storeCardAction}>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel={`${t('adminEditStore')} ${store.name}`}
+            onPress={() => onEdit(store)}
+            style={styles.storeCardAction}
+          >
             <Pencil color={theme.colors.teal} size={14} />
-            <Text style={styles.storeEditActionText}>{t('adminEditStore')}</Text>
+            <Text style={styles.storeEditActionText}>
+              {t('adminEditStore')}
+            </Text>
           </Pressable>
-          <Pressable accessibilityRole="button" accessibilityLabel={`${store.archivedAt ? t('adminRestore') : t('adminArchive')} ${store.name}`} disabled={isUpdatingArchive} onPress={() => onArchive(store)} style={styles.storeCardAction}>
-            {store.archivedAt ? <RotateCcw color={theme.colors.orange} size={14} /> : <Archive color={theme.colors.orange} size={14} />}
-            <Text style={styles.storeArchiveActionText}>{store.archivedAt ? t('adminRestore') : t('adminArchive')}</Text>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel={`${
+              store.archivedAt ? t('adminRestore') : t('adminArchive')
+            } ${store.name}`}
+            disabled={isUpdatingArchive}
+            onPress={() => onArchive(store)}
+            style={styles.storeCardAction}
+          >
+            {store.archivedAt ? (
+              <RotateCcw color={theme.colors.orange} size={14} />
+            ) : (
+              <Archive color={theme.colors.orange} size={14} />
+            )}
+            <Text style={styles.storeArchiveActionText}>
+              {store.archivedAt ? t('adminRestore') : t('adminArchive')}
+            </Text>
           </Pressable>
         </View>
       ) : null}

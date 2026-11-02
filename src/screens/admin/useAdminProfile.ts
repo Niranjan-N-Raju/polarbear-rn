@@ -2,7 +2,13 @@ import { useCallback, useEffect, useState } from 'react';
 import { useWindowDimensions } from 'react-native';
 import { apiRequest, setAccessToken } from '../../api/auth';
 import type { AuthenticatedUser } from '../../api/types';
-import { getLanguage, setLanguage, t, type AppLanguage, type TranslationKey } from '../../i18n';
+import {
+  getLanguage,
+  setLanguage,
+  t,
+  type AppLanguage,
+  type TranslationKey,
+} from '../../i18n';
 import { getAdminLayout } from '../../utils/adminLayout';
 import type { AdminProfileScreenProps } from './types';
 export const languageOptions = [
@@ -10,7 +16,11 @@ export const languageOptions = [
   { value: 'kn', label: 'ಕನ್ನಡ' },
 ] as const;
 
-export function useAdminProfile({ user: initialUser, onUserUpdated, onToast }: AdminProfileScreenProps) {
+export function useAdminProfile({
+  user: initialUser,
+  onUserUpdated,
+  onToast,
+}: AdminProfileScreenProps) {
   const { width } = useWindowDimensions();
   const layout = getAdminLayout(width);
   const [user, setUser] = useState(initialUser);
@@ -32,14 +42,22 @@ export function useAdminProfile({ user: initialUser, onUserUpdated, onToast }: A
   const [showCurrentError, setShowCurrentError] = useState('');
   const [isSavingLanguage, setIsSavingLanguage] = useState(false);
   const [languageError, setLanguageError] = useState('');
-  const [pendingLanguage, setPendingLanguage] = useState<AppLanguage | null>(null);
+  const [pendingLanguage, setPendingLanguage] = useState<AppLanguage | null>(
+    null,
+  );
   const [isLanguageDialogOpen, setIsLanguageDialogOpen] = useState(false);
-  const [localToast, setLocalToast] = useState<{ message: string; tone: 'success' | 'error'; } | null>(null);
+  const [localToast, setLocalToast] = useState<{
+    message: string;
+    tone: 'success' | 'error';
+  } | null>(null);
   const dismissLocalToast = useCallback(() => setLocalToast(null), []);
-  const showToast = useCallback((message: string, tone: 'success' | 'error') => {
-    if (onToast) onToast(message, tone);
-    else setLocalToast({ message, tone });
-  }, [onToast]);
+  const showToast = useCallback(
+    (message: string, tone: 'success' | 'error') => {
+      if (onToast) onToast(message, tone);
+      else setLocalToast({ message, tone });
+    },
+    [onToast],
+  );
   function requestLanguageChange(language: AppLanguage): void {
     if (language === getLanguage()) return;
     setPendingLanguage(language);
@@ -55,8 +73,10 @@ export function useAdminProfile({ user: initialUser, onUserUpdated, onToast }: A
     let active = true;
     const controller = new AbortController();
     apiRequest('/me', { signal: controller.signal })
-      .then(async (response) => {
-        const data = await response.json().catch(() => ({})) as AuthenticatedUser & { message?: string; };
+      .then(async response => {
+        const data = (await response
+          .json()
+          .catch(() => ({}))) as AuthenticatedUser & { message?: string };
         if (!response.ok) throw new Error(data.message ?? t('adminLoadFailed'));
         if (!active) return;
         setUser(data);
@@ -64,13 +84,19 @@ export function useAdminProfile({ user: initialUser, onUserUpdated, onToast }: A
         setLanguage(data.preferredLanguage ?? 'en');
         onUserUpdated(data);
       })
-      .catch((error) => {
-        if (active) setShowCurrentError(error instanceof Error ? error.message : t('adminLoadFailed'));
+      .catch(error => {
+        if (active)
+          setShowCurrentError(
+            error instanceof Error ? error.message : t('adminLoadFailed'),
+          );
       })
       .finally(() => {
         if (active) setIsLoading(false);
       });
-    return () => { active = false; controller.abort(); };
+    return () => {
+      active = false;
+      controller.abort();
+    };
   }, [onUserUpdated]);
   async function saveName(): Promise<void> {
     setNameError('');
@@ -85,7 +111,10 @@ export function useAdminProfile({ user: initialUser, onUserUpdated, onToast }: A
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name: name.trim() }),
       });
-      const data = await response.json().catch(() => ({})) as { message?: string; token?: string; };
+      const data = (await response.json().catch(() => ({}))) as {
+        message?: string;
+        token?: string;
+      };
       if (!response.ok) throw new Error(data.message ?? t('adminSaveFailed'));
       if (data.token) setAccessToken(data.token);
       const updated = { ...user, name: name.trim() };
@@ -93,12 +122,16 @@ export function useAdminProfile({ user: initialUser, onUserUpdated, onToast }: A
       onUserUpdated(updated);
       showToast(t('adminNameUpdated'), 'success');
     } catch (error) {
-      setNameError(error instanceof Error ? error.message : t('adminSaveFailed'));
+      setNameError(
+        error instanceof Error ? error.message : t('adminSaveFailed'),
+      );
     } finally {
       setIsSavingName(false);
     }
   }
-  async function savePreferredLanguage(language: AppLanguage): Promise<boolean> {
+  async function savePreferredLanguage(
+    language: AppLanguage,
+  ): Promise<boolean> {
     if (language === getLanguage()) return false;
     setLanguageError('');
     setIsSavingLanguage(true);
@@ -108,8 +141,12 @@ export function useAdminProfile({ user: initialUser, onUserUpdated, onToast }: A
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ preferredLanguage: language }),
       });
-      const data = await response.json().catch(() => ({})) as { message?: string; token?: string; };
-      if (!response.ok) throw new Error(data.message ?? t('adminLanguageSaveFailed'));
+      const data = (await response.json().catch(() => ({}))) as {
+        message?: string;
+        token?: string;
+      };
+      if (!response.ok)
+        throw new Error(data.message ?? t('adminLanguageSaveFailed'));
       if (data.token) setAccessToken(data.token);
       const updated = { ...user, preferredLanguage: language };
       setUser(updated);
@@ -118,24 +155,39 @@ export function useAdminProfile({ user: initialUser, onUserUpdated, onToast }: A
       setLanguage(language);
       return true;
     } catch (error) {
-      setLanguageError(error instanceof Error ? error.message : t('adminLanguageSaveFailed'));
+      setLanguageError(
+        error instanceof Error ? error.message : t('adminLanguageSaveFailed'),
+      );
       return false;
     } finally {
       setIsSavingLanguage(false);
     }
   }
   // Each rule names its field explicitly so routing never depends on the (translated) message text.
-  function validatePassword(): { field: 'current' | 'new' | 'confirm'; key: TranslationKey } | null {
-    if (!currentPassword.trim()) return { field: 'current', key: 'adminPasswordRequired' };
-    if (!newPassword.trim()) return { field: 'new', key: 'adminNewPasswordRequired' };
-    if (!confirmPassword.trim()) return { field: 'confirm', key: 'adminConfirmPasswordRequired' };
-    if (newPassword !== confirmPassword) return { field: 'confirm', key: 'adminPasswordMismatch' };
-    if (newPassword.length < 12) return { field: 'new', key: 'adminPasswordLength' };
-    if (!/[A-Z]/.test(newPassword)) return { field: 'new', key: 'adminPasswordUppercase' };
-    if (!/[a-z]/.test(newPassword)) return { field: 'new', key: 'adminPasswordLowercase' };
-    if (!/[^A-Za-z0-9]/.test(newPassword)) return { field: 'new', key: 'adminPasswordSpecial' };
-    if (!/\d/.test(newPassword)) return { field: 'new', key: 'adminPasswordNumber' };
-    if (currentPassword === newPassword) return { field: 'new', key: 'adminPasswordSame' };
+  function validatePassword(): {
+    field: 'current' | 'new' | 'confirm';
+    key: TranslationKey;
+  } | null {
+    if (!currentPassword.trim())
+      return { field: 'current', key: 'adminPasswordRequired' };
+    if (!newPassword.trim())
+      return { field: 'new', key: 'adminNewPasswordRequired' };
+    if (!confirmPassword.trim())
+      return { field: 'confirm', key: 'adminConfirmPasswordRequired' };
+    if (newPassword !== confirmPassword)
+      return { field: 'confirm', key: 'adminPasswordMismatch' };
+    if (newPassword.length < 12)
+      return { field: 'new', key: 'adminPasswordLength' };
+    if (!/[A-Z]/.test(newPassword))
+      return { field: 'new', key: 'adminPasswordUppercase' };
+    if (!/[a-z]/.test(newPassword))
+      return { field: 'new', key: 'adminPasswordLowercase' };
+    if (!/[^A-Za-z0-9]/.test(newPassword))
+      return { field: 'new', key: 'adminPasswordSpecial' };
+    if (!/\d/.test(newPassword))
+      return { field: 'new', key: 'adminPasswordNumber' };
+    if (currentPassword === newPassword)
+      return { field: 'new', key: 'adminPasswordSame' };
     return null;
   }
   async function changePassword(): Promise<void> {
@@ -159,10 +211,14 @@ export function useAdminProfile({ user: initialUser, onUserUpdated, onToast }: A
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ currentPassword, newPassword }),
       });
-      const data = await response.json().catch(() => ({})) as { message?: string; token?: string; };
+      const data = (await response.json().catch(() => ({}))) as {
+        message?: string;
+        token?: string;
+      };
       if (!response.ok) {
         const message = data.message ?? t('adminSaveFailed');
-        if (/current password|incorrect/i.test(message)) setCurrentPasswordError(message);
+        if (/current password|incorrect/i.test(message))
+          setCurrentPasswordError(message);
         else setPasswordError(message);
         return;
       }
@@ -176,7 +232,9 @@ export function useAdminProfile({ user: initialUser, onUserUpdated, onToast }: A
       setShowConfirm(false);
       showToast(t('adminPasswordUpdated'), 'success');
     } catch (error) {
-      setPasswordError(error instanceof Error ? error.message : t('adminNetworkError'));
+      setPasswordError(
+        error instanceof Error ? error.message : t('adminNetworkError'),
+      );
     } finally {
       setIsSavingPassword(false);
     }

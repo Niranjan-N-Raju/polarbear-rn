@@ -9,7 +9,12 @@ import { getAdminLayout } from '../../../utils/adminLayout';
 import { getDashboardCardColor } from '../../../utils/dashboardConfig';
 import { formatMoney } from '../DashboardCharts';
 import type { SaleRecord } from '../types';
-import { defaultSaleRange, type SaleRange, saleRangeError, summarizeSales } from './utils';
+import {
+  defaultSaleRange,
+  type SaleRange,
+  saleRangeError,
+  summarizeSales,
+} from './utils';
 export { pageSize };
 export interface FranchiseSalesScreenProps {
   storeId: string;
@@ -37,10 +42,17 @@ export function useFranchiseSales({ storeId }: FranchiseSalesScreenProps) {
     let active = true;
     setIsLoading(true);
     setError(null);
-    const query = new URLSearchParams({ storeId, from: range.from, to: range.to });
+    const query = new URLSearchParams({
+      storeId,
+      from: range.from,
+      to: range.to,
+    });
     apiRequest(`/sales?${query.toString()}`, { signal: controller.signal })
-      .then(async (response) => {
-        const data = await response.json().catch(() => ({})) as { sales?: SaleRecord[]; message?: string; };
+      .then(async response => {
+        const data = (await response.json().catch(() => ({}))) as {
+          sales?: SaleRecord[];
+          message?: string;
+        };
         if (!active) return;
         if (!response.ok) {
           setError(data.message || t('adminLoadFailed'));
@@ -61,9 +73,10 @@ export function useFranchiseSales({ storeId }: FranchiseSalesScreenProps) {
     };
   }, [storeId, range, reloadKey]);
   const summary = useMemo(() => summarizeSales(sales), [sales]);
-  const existingDates = useMemo(() => sales.map((sale) => sale.date), [sales]);
+  const existingDates = useMemo(() => sales.map(sale => sale.date), [sales]);
   const defaultRange = useMemo(() => defaultSaleRange(), []);
-  const hasActiveFilters = range.from !== defaultRange.from || range.to !== defaultRange.to;
+  const hasActiveFilters =
+    range.from !== defaultRange.from || range.to !== defaultRange.to;
   const visibleSales = sales.slice(0, visibleCount);
   // Pagination reveals the loaded date range; it does not fetch another server page.
   const openFilters = () => {
@@ -93,16 +106,36 @@ export function useFranchiseSales({ storeId }: FranchiseSalesScreenProps) {
     setIsFormOpen(true);
   }, []);
   const handleSaved = (message: string) => {
-    setReloadKey((key) => key + 1);
+    setReloadKey(key => key + 1);
     setPendingToast(message);
     setIsFormOpen(false);
   };
   const summaryCards = [
-    { label: t('franchiseTotalSales'), value: formatMoney(summary.totalSales), Icon: IndianRupee },
-    { label: t('franchiseOnlineSales'), value: formatMoney(summary.onlineSales), Icon: CreditCard },
-    { label: t('franchiseTotalExpenses'), value: formatMoney(summary.totalExpenses), Icon: Receipt },
-    { label: t('franchiseSaleBankingCash'), value: formatMoney(summary.bankingCash), Icon: Banknote },
-  ].map((card, index) => ({ ...card, color: theme.colors[getDashboardCardColor(index, layout.desktopWeb ? 4 : 2)] }));
+    {
+      label: t('franchiseTotalSales'),
+      value: formatMoney(summary.totalSales),
+      Icon: IndianRupee,
+    },
+    {
+      label: t('franchiseOnlineSales'),
+      value: formatMoney(summary.onlineSales),
+      Icon: CreditCard,
+    },
+    {
+      label: t('franchiseTotalExpenses'),
+      value: formatMoney(summary.totalExpenses),
+      Icon: Receipt,
+    },
+    {
+      label: t('franchiseSaleBankingCash'),
+      value: formatMoney(summary.bankingCash),
+      Icon: Banknote,
+    },
+  ].map((card, index) => ({
+    ...card,
+    color:
+      theme.colors[getDashboardCardColor(index, layout.desktopWeb ? 4 : 2)],
+  }));
   return {
     height,
     layout,

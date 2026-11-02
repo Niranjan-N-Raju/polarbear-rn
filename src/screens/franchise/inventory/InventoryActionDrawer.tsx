@@ -30,7 +30,15 @@ const titles: Record<InventoryAction, Parameters<typeof t>[0]> = {
   dump: 'franchiseInventoryDumpTitle',
 };
 
-export function InventoryActionDrawer({ visible, storeId, item, action, onClose, onAfterClose, onDone }: InventoryActionDrawerProps) {
+export function InventoryActionDrawer({
+  visible,
+  storeId,
+  item,
+  action,
+  onClose,
+  onAfterClose,
+  onDone,
+}: InventoryActionDrawerProps) {
   const [quantity, setQuantity] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
@@ -38,7 +46,9 @@ export function InventoryActionDrawer({ visible, storeId, item, action, onClose,
 
   useEffect(() => {
     if (!visible) return;
-    setQuantity(action === 'useMany' && item ? String(Math.min(2, item.quantity)) : '');
+    setQuantity(
+      action === 'useMany' && item ? String(Math.min(2, item.quantity)) : '',
+    );
     setError(null);
     setToast(null);
   }, [visible, action, item]);
@@ -65,12 +75,21 @@ export function InventoryActionDrawer({ visible, storeId, item, action, onClose,
           quantity: amount,
         }),
       });
-      const data = await response.json().catch(() => ({})) as { message?: string };
+      const data = (await response.json().catch(() => ({}))) as {
+        message?: string;
+      };
       if (!response.ok) {
         setToast(data.message || t('adminSaveFailed'));
         return;
       }
-      onDone(data.message || t(action === 'dump' ? 'franchiseInventoryDumped' : 'franchiseInventoryConsumed'));
+      onDone(
+        data.message ||
+          t(
+            action === 'dump'
+              ? 'franchiseInventoryDumped'
+              : 'franchiseInventoryConsumed',
+          ),
+      );
     } catch {
       setToast(t('adminNetworkError'));
     } finally {
@@ -86,25 +105,47 @@ export function InventoryActionDrawer({ visible, storeId, item, action, onClose,
       closeLabel={t('adminCloseMenu')}
       onClose={onClose}
       onAfterClose={onAfterClose}
-      overlay={visible && toast ? <AppToast message={toast} tone="error" onDismiss={() => setToast(null)} /> : null}
+      overlay={
+        visible && toast ? (
+          <AppToast
+            message={toast}
+            tone="error"
+            onDismiss={() => setToast(null)}
+          />
+        ) : null
+      }
     >
       <View style={styles.drawerContent}>
         <View style={styles.drawerHeading}>
-          <Text style={[styles.modalTitle, styles.drawerHeadingTitle]}>{action ? t(titles[action]) : ''}</Text>
-          <Pressable accessibilityRole="button" accessibilityLabel={t('adminCloseMenu')} onPress={onClose} style={styles.userIconAction}>
+          <Text style={[styles.modalTitle, styles.drawerHeadingTitle]}>
+            {action ? t(titles[action]) : ''}
+          </Text>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel={t('adminCloseMenu')}
+            onPress={onClose}
+            style={styles.userIconAction}
+          >
             <X color={theme.colors.muted} size={18} />
           </Pressable>
         </View>
         {item ? (
           <View style={inventoryStyles.actionSummary}>
-            <Text style={inventoryStyles.actionSummaryTitle}>{item.product}</Text>
+            <Text style={inventoryStyles.actionSummaryTitle}>
+              {item.product}
+            </Text>
             <Text style={inventoryStyles.actionSummaryText}>
-              {t('franchiseInventoryActionSummary', { date: formatInventoryDate(item.expiryDate), count: item.quantity })}
+              {t('franchiseInventoryActionSummary', {
+                date: formatInventoryDate(item.expiryDate),
+                count: item.quantity,
+              })}
             </Text>
             <Text style={inventoryStyles.actionSummaryText}>
               {dump
                 ? t('franchiseInventoryDumpMessage', { count: item.quantity })
-                : action === 'useOne' ? t('franchiseInventoryUseOneMessage') : t('franchiseInventoryUseManyMessage')}
+                : action === 'useOne'
+                ? t('franchiseInventoryUseOneMessage')
+                : t('franchiseInventoryUseManyMessage')}
             </Text>
           </View>
         ) : null}
@@ -113,14 +154,21 @@ export function InventoryActionDrawer({ visible, storeId, item, action, onClose,
             label={t('franchiseInventoryQuantityToUse', { max: item.quantity })}
             placeholder="2"
             value={quantity}
-            onChangeText={(value) => { setQuantity(digitsOnly(value)); setError(null); }}
+            onChangeText={value => {
+              setQuantity(digitsOnly(value));
+              setError(null);
+            }}
             keyboardType="number-pad"
             error={error ?? undefined}
           />
         ) : null}
         <View style={styles.modalActions}>
           <View style={styles.drawerActionSlot}>
-            <Pressable accessibilityRole="button" onPress={onClose} style={[styles.secondaryButton, styles.drawerActionButton]}>
+            <Pressable
+              accessibilityRole="button"
+              onPress={onClose}
+              style={[styles.secondaryButton, styles.drawerActionButton]}
+            >
               <Text style={styles.secondaryButtonText}>{t('adminCancel')}</Text>
             </Pressable>
           </View>
@@ -129,11 +177,23 @@ export function InventoryActionDrawer({ visible, storeId, item, action, onClose,
               accessibilityRole="button"
               disabled={saving}
               onPress={() => void confirm()}
-              style={[styles.primaryButton, styles.drawerActionButton, dump && inventoryStyles.dangerButton]}
+              style={[
+                styles.primaryButton,
+                styles.drawerActionButton,
+                dump && inventoryStyles.dangerButton,
+              ]}
             >
-              {saving
-                ? <AppLoader variant="inline" color={theme.colors.white} />
-                : <Text style={styles.primaryButtonText}>{t(dump ? 'franchiseInventoryConfirmDump' : 'franchiseInventoryConfirmUse')}</Text>}
+              {saving ? (
+                <AppLoader variant="inline" color={theme.colors.white} />
+              ) : (
+                <Text style={styles.primaryButtonText}>
+                  {t(
+                    dump
+                      ? 'franchiseInventoryConfirmDump'
+                      : 'franchiseInventoryConfirmUse',
+                  )}
+                </Text>
+              )}
             </Pressable>
           </View>
         </View>

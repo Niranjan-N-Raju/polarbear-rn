@@ -390,8 +390,7 @@ export function getLoginSafeAreaStyles(
       paddingTop: Math.max(topInset, theme.spacing['9xl']),
     },
     mobileBrandTop: {
-      paddingTop:
-        Math.max(topInset, theme.spacing['7xl']) + theme.spacing.lg,
+      paddingTop: Math.max(topInset, theme.spacing['7xl']) + theme.spacing.lg,
     },
     scrollBottom: {
       paddingBottom: Math.max(

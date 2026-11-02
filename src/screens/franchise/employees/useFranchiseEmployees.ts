@@ -21,14 +21,19 @@ export interface Employee {
   dateOfJoining?: string;
   isActive?: boolean;
   archivedAt?: string;
-  aadharDocument?: { fileName: string; };
-  panDocument?: { fileName: string; };
+  aadharDocument?: { fileName: string };
+  panDocument?: { fileName: string };
 }
-export interface EmployeeData { users?: Employee[]; pagination?: { total: number; }; message?: string; }
+export interface EmployeeData {
+  users?: Employee[];
+  pagination?: { total: number };
+  message?: string;
+}
 export { pageSize };
-const defaultStatus: EmployeeStatusFilter = Platform.OS === 'web' ? 'active' : 'all';
+const defaultStatus: EmployeeStatusFilter =
+  Platform.OS === 'web' ? 'active' : 'all';
 
-export function useFranchiseEmployees({ storeId }: { storeId: string; }) {
+export function useFranchiseEmployees({ storeId }: { storeId: string }) {
   const { width } = useWindowDimensions();
   const layout = getAdminLayout(width);
   const [employees, setEmployees] = useState<Employee[]>([]);
@@ -39,7 +44,8 @@ export function useFranchiseEmployees({ storeId }: { storeId: string; }) {
   const [search, setSearch] = useState('');
   const [draftSearch, setDraftSearch] = useState('');
   const [status, setStatus] = useState<EmployeeStatusFilter>(defaultStatus);
-  const [draftStatus, setDraftStatus] = useState<EmployeeStatusFilter>(defaultStatus);
+  const [draftStatus, setDraftStatus] =
+    useState<EmployeeStatusFilter>(defaultStatus);
   const [visibleCount, setVisibleCount] = useState(pageSize);
   const [formVisible, setFormVisible] = useState(false);
   const [editing, setEditing] = useState<Employee | null>(null);
@@ -47,73 +53,190 @@ export function useFranchiseEmployees({ storeId }: { storeId: string; }) {
   const [archiveTarget, setArchiveTarget] = useState<Employee | null>(null);
   const [exitDate, setExitDate] = useState(() => businessDate());
   const [busy, setBusy] = useState(false);
-  const [toast, setToast] = useState<{ message: string; tone: 'success' | 'error'; } | null>(null);
+  const [toast, setToast] = useState<{
+    message: string;
+    tone: 'success' | 'error';
+  } | null>(null);
   const [pendingToast, setPendingToast] = useState('');
   const load = useCallback(async () => {
     setLoading(true);
     setLoadError('');
     try {
-      const query = new URLSearchParams({ storeId, includeArchived: 'true', limit: '500' });
+      const query = new URLSearchParams({
+        storeId,
+        includeArchived: 'true',
+        limit: '500',
+      });
       const response = await apiRequest(`/users?${query.toString()}`);
-      const data = await response.json().catch(() => ({})) as EmployeeData;
-      if (!response.ok) throw new Error(data.message ?? t('franchiseEmployeesLoadFailed'));
+      const data = (await response.json().catch(() => ({}))) as EmployeeData;
+      if (!response.ok)
+        throw new Error(data.message ?? t('franchiseEmployeesLoadFailed'));
       setEmployees(data.users ?? []);
       setVisibleCount(pageSize);
     } catch (failure) {
-      setLoadError(failure instanceof Error ? failure.message : t('franchiseEmployeesLoadFailed'));
-    } finally { setLoading(false); }
+      setLoadError(
+        failure instanceof Error
+          ? failure.message
+          : t('franchiseEmployeesLoadFailed'),
+      );
+    } finally {
+      setLoading(false);
+    }
   }, [storeId]);
-  useEffect(() => { load(); }, [load, reloadKey]);
+  useEffect(() => {
+    load();
+  }, [load, reloadKey]);
   // Search/status and visibleCount operate on the loaded roster, not server-side pagination.
-  const filtered = useMemo(() => employees.filter((employee) => {
-    const needle = search.trim().toLocaleLowerCase();
-    const matchesSearch = !needle || employee.name.toLocaleLowerCase().includes(needle) || (employee.phone ?? '').toLocaleLowerCase().includes(needle) || (employee.employeeCode ?? '').toLocaleLowerCase().includes(needle);
-    const matchesStatus = status === 'all' || (status === 'active' ? employee.isActive !== false : employee.isActive === false);
-    return matchesSearch && matchesStatus;
-  }), [employees, search, status]);
-  const activeCount = employees.filter((employee) => employee.isActive !== false).length;
+  const filtered = useMemo(
+    () =>
+      employees.filter(employee => {
+        const needle = search.trim().toLocaleLowerCase();
+        const matchesSearch =
+          !needle ||
+          employee.name.toLocaleLowerCase().includes(needle) ||
+          (employee.phone ?? '').toLocaleLowerCase().includes(needle) ||
+          (employee.employeeCode ?? '').toLocaleLowerCase().includes(needle);
+        const matchesStatus =
+          status === 'all' ||
+          (status === 'active'
+            ? employee.isActive !== false
+            : employee.isActive === false);
+        return matchesSearch && matchesStatus;
+      }),
+    [employees, search, status],
+  );
+  const activeCount = employees.filter(
+    employee => employee.isActive !== false,
+  ).length;
   const archivedCount = employees.length - activeCount;
   const hasActiveFilters = Boolean(search.trim() || status !== defaultStatus);
   const summary = [
-    { label: t('franchiseEmployeesAll'), value: String(employees.length), color: theme.colors.teal, Icon: UsersRound },
-    { label: t('franchiseEmployeesActive'), value: String(activeCount), color: theme.colors.orange, Icon: UserRound },
-    { label: t('franchiseEmployeesArchived'), value: String(archivedCount), color: theme.colors.yellow, Icon: Archive },
+    {
+      label: t('franchiseEmployeesAll'),
+      value: String(employees.length),
+      color: theme.colors.teal,
+      Icon: UsersRound,
+    },
+    {
+      label: t('franchiseEmployeesActive'),
+      value: String(activeCount),
+      color: theme.colors.orange,
+      Icon: UserRound,
+    },
+    {
+      label: t('franchiseEmployeesArchived'),
+      value: String(archivedCount),
+      color: theme.colors.yellow,
+      Icon: Archive,
+    },
   ];
-  const openFilters = () => { setDraftSearch(search); setDraftStatus(status); setFilterVisible(true); };
-  const applyFilters = () => { setSearch(draftSearch.trim()); setStatus(draftStatus); setVisibleCount(pageSize); setFilterVisible(false); };
-  const clearFilters = () => { setDraftSearch(''); setDraftStatus(defaultStatus); setSearch(''); setStatus(defaultStatus); setVisibleCount(pageSize); setFilterVisible(false); };
-  const openCreate = () => { setEditing(null); setFormVisible(true); };
-  const openEdit = (employee: Employee) => { setEditing(employee); setFormVisible(true); };
-  const saved = (message: string) => { setPendingToast(message); setFormVisible(false); setReloadKey((key) => key + 1); };
+  const openFilters = () => {
+    setDraftSearch(search);
+    setDraftStatus(status);
+    setFilterVisible(true);
+  };
+  const applyFilters = () => {
+    setSearch(draftSearch.trim());
+    setStatus(draftStatus);
+    setVisibleCount(pageSize);
+    setFilterVisible(false);
+  };
+  const clearFilters = () => {
+    setDraftSearch('');
+    setDraftStatus(defaultStatus);
+    setSearch('');
+    setStatus(defaultStatus);
+    setVisibleCount(pageSize);
+    setFilterVisible(false);
+  };
+  const openCreate = () => {
+    setEditing(null);
+    setFormVisible(true);
+  };
+  const openEdit = (employee: Employee) => {
+    setEditing(employee);
+    setFormVisible(true);
+  };
+  const saved = (message: string) => {
+    setPendingToast(message);
+    setFormVisible(false);
+    setReloadKey(key => key + 1);
+  };
   const archive = async () => {
     if (!archiveTarget) return;
     setBusy(true);
     try {
       // DELETE archives with an exit date so historical attendance and payroll remain available.
-      const response = await apiRequest(`/users/${encodeURIComponent(archiveTarget._id)}?storeId=${encodeURIComponent(storeId)}`, { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ exitDate }) });
-      const data = await response.json().catch(() => ({})) as { message?: string; };
-      if (!response.ok) throw new Error(data.message ?? t('franchiseEmployeesActionFailed'));
+      const response = await apiRequest(
+        `/users/${encodeURIComponent(
+          archiveTarget._id,
+        )}?storeId=${encodeURIComponent(storeId)}`,
+        {
+          method: 'DELETE',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ exitDate }),
+        },
+      );
+      const data = (await response.json().catch(() => ({}))) as {
+        message?: string;
+      };
+      if (!response.ok)
+        throw new Error(data.message ?? t('franchiseEmployeesActionFailed'));
       setPendingToast(data.message ?? t('franchiseEmployeesArchivedSuccess'));
       setArchiveTarget(null);
-      setReloadKey((key) => key + 1);
-    } catch (failure) { setToast({ message: failure instanceof Error ? failure.message : t('franchiseEmployeesActionFailed'), tone: 'error' }); }
-    finally { setBusy(false); }
+      setReloadKey(key => key + 1);
+    } catch (failure) {
+      setToast({
+        message:
+          failure instanceof Error
+            ? failure.message
+            : t('franchiseEmployeesActionFailed'),
+        tone: 'error',
+      });
+    } finally {
+      setBusy(false);
+    }
   };
   const restore = async (employee: Employee) => {
     try {
-      const response = await apiRequest(`/users/${encodeURIComponent(employee._id)}?storeId=${encodeURIComponent(storeId)}`, { method: 'PUT' });
-      const data = await response.json().catch(() => ({})) as { message?: string; };
-      if (!response.ok) throw new Error(data.message ?? t('franchiseEmployeesActionFailed'));
-      setToast({ message: data.message ?? t('franchiseEmployeesRestoredSuccess'), tone: 'success' });
-      setReloadKey((key) => key + 1);
-    } catch (failure) { setToast({ message: failure instanceof Error ? failure.message : t('franchiseEmployeesActionFailed'), tone: 'error' }); }
+      const response = await apiRequest(
+        `/users/${encodeURIComponent(
+          employee._id,
+        )}?storeId=${encodeURIComponent(storeId)}`,
+        { method: 'PUT' },
+      );
+      const data = (await response.json().catch(() => ({}))) as {
+        message?: string;
+      };
+      if (!response.ok)
+        throw new Error(data.message ?? t('franchiseEmployeesActionFailed'));
+      setToast({
+        message: data.message ?? t('franchiseEmployeesRestoredSuccess'),
+        tone: 'success',
+      });
+      setReloadKey(key => key + 1);
+    } catch (failure) {
+      setToast({
+        message:
+          failure instanceof Error
+            ? failure.message
+            : t('franchiseEmployeesActionFailed'),
+        tone: 'error',
+      });
+    }
   };
   const afterFormClose = () => {
-    if (pendingToast) { setToast({ message: pendingToast, tone: 'success' }); setPendingToast(''); }
+    if (pendingToast) {
+      setToast({ message: pendingToast, tone: 'success' });
+      setPendingToast('');
+    }
     setEditing(null);
   };
   const afterArchiveClose = () => {
-    if (pendingToast) { setToast({ message: pendingToast, tone: 'success' }); setPendingToast(''); }
+    if (pendingToast) {
+      setToast({ message: pendingToast, tone: 'success' });
+      setPendingToast('');
+    }
     setArchiveTarget(null);
   };
   return {

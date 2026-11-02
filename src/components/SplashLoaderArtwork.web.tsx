@@ -3,7 +3,11 @@ import { Image, StyleSheet, View } from 'react-native';
 export function SplashLoaderArtwork() {
   return (
     <View pointerEvents="none" style={styles.artwork}>
-      <Image source={{ uri: '/loader.svg' }} style={styles.image} resizeMode="contain" />
+      <Image
+        source={{ uri: '/loader.svg' }}
+        style={styles.image}
+        resizeMode="contain"
+      />
     </View>
   );
 }

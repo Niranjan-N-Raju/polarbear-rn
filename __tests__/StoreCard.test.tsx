@@ -28,30 +28,58 @@ describe('StoreCard', () => {
       />,
     );
 
-    expect(renderer.root.findAllByProps({ children: 'Central' }).length).toBeGreaterThan(0);
-    expect(renderer.root.findAllByProps({ children: 'C001' }).length).toBeGreaterThan(0);
-    expect(renderer.root.findAllByProps({ children: t('adminFranchiseStore') }).length).toBeGreaterThan(0);
-    expect(renderer.root.findAllByProps({ children: t('adminActive') }).length).toBeGreaterThan(0);
-    expect(renderer.root.findAllByProps({ children: 'Main road' }).length).toBeGreaterThan(0);
-    expect(renderer.root.findAllByProps({ children: '8123456789' }).length).toBeGreaterThan(0);
-    expect(renderer.root.findAllByProps({ children: store.description })).toHaveLength(0);
+    expect(
+      renderer.root.findAllByProps({ children: 'Central' }).length,
+    ).toBeGreaterThan(0);
+    expect(
+      renderer.root.findAllByProps({ children: 'C001' }).length,
+    ).toBeGreaterThan(0);
+    expect(
+      renderer.root.findAllByProps({ children: t('adminFranchiseStore') })
+        .length,
+    ).toBeGreaterThan(0);
+    expect(
+      renderer.root.findAllByProps({ children: t('adminActive') }).length,
+    ).toBeGreaterThan(0);
+    expect(
+      renderer.root.findAllByProps({ children: 'Main road' }).length,
+    ).toBeGreaterThan(0);
+    expect(
+      renderer.root.findAllByProps({ children: '8123456789' }).length,
+    ).toBeGreaterThan(0);
+    expect(
+      renderer.root.findAllByProps({ children: store.description }),
+    ).toHaveLength(0);
     act(() => renderer.unmount());
   });
 
   it('renders store card states and dispatches edit/archive actions only for its owner', () => {
-      const onEdit = jest.fn();
-      const onArchive = jest.fn();
-      const renderer = render(
-        <StoreCard store={store} userId="user-1" storeCardStyle={null} actionsAtBottom={false} isUpdatingArchive={false} onEdit={onEdit} onArchive={onArchive} />,
-      );
-      expect(renderer.root.findAllByProps({ children: 'Central' }).length).toBeGreaterThan(0);
-      expect(renderer.root.findAllByProps({ children: 'Main road' }).length).toBeGreaterThan(0);
-      act(() => buttons(renderer)[0].props.onPress());
-      act(() => buttons(renderer)[1].props.onPress());
-      expect(onEdit).toHaveBeenCalledWith(store);
-      expect(onArchive).toHaveBeenCalledWith(store);
-  
-      act(() => renderer.update(
+    const onEdit = jest.fn();
+    const onArchive = jest.fn();
+    const renderer = render(
+      <StoreCard
+        store={store}
+        userId="user-1"
+        storeCardStyle={null}
+        actionsAtBottom={false}
+        isUpdatingArchive={false}
+        onEdit={onEdit}
+        onArchive={onArchive}
+      />,
+    );
+    expect(
+      renderer.root.findAllByProps({ children: 'Central' }).length,
+    ).toBeGreaterThan(0);
+    expect(
+      renderer.root.findAllByProps({ children: 'Main road' }).length,
+    ).toBeGreaterThan(0);
+    act(() => buttons(renderer)[0].props.onPress());
+    act(() => buttons(renderer)[1].props.onPress());
+    expect(onEdit).toHaveBeenCalledWith(store);
+    expect(onArchive).toHaveBeenCalledWith(store);
+
+    act(() =>
+      renderer.update(
         <StoreCard
           store={{ ...store, archivedAt: '2025-01-01' }}
           userId="someone-else"
@@ -60,10 +88,13 @@ describe('StoreCard', () => {
           isUpdatingArchive={false}
           onEdit={onEdit}
           onArchive={onArchive}
-        />
-      ));
-      expect(renderer.root.findAllByProps({ children: t('adminArchived') }).length).toBeGreaterThan(0);
-      expect(buttons(renderer)).toHaveLength(0);
-      act(() => renderer.unmount());
-    })
+        />,
+      ),
+    );
+    expect(
+      renderer.root.findAllByProps({ children: t('adminArchived') }).length,
+    ).toBeGreaterThan(0);
+    expect(buttons(renderer)).toHaveLength(0);
+    act(() => renderer.unmount());
+  });
 });

@@ -1,6 +1,12 @@
 import { useCallback, useEffect, useRef } from 'react';
 import type { ComponentType } from 'react';
-import { Animated, Image, Platform, StyleSheet, TurboModuleRegistry } from 'react-native';
+import {
+  Animated,
+  Image,
+  Platform,
+  StyleSheet,
+  TurboModuleRegistry,
+} from 'react-native';
 import BootSplash from 'react-native-bootsplash';
 import type { WebViewMessageEvent, WebViewProps } from 'react-native-webview';
 import manifest from '../../assets/bootsplash/manifest.json';

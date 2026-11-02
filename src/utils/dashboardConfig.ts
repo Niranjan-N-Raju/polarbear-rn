@@ -1,4 +1,12 @@
-import { Building2, CircleCheck, Handshake, ShieldCheck, Store, UserRoundCog, UsersRound } from '../icons';
+import {
+  Building2,
+  CircleCheck,
+  Handshake,
+  ShieldCheck,
+  Store,
+  UserRoundCog,
+  UsersRound,
+} from '../icons';
 import { theme } from '../config/theme';
 import type { TranslationKey } from '../i18n/types';
 import { getAdminLayout } from './adminLayout';
@@ -21,7 +29,10 @@ export const dashboardStatCards: {
   { key: 'employees', label: 'adminEmployees', Icon: UsersRound },
 ];
 
-export function getDashboardCardColor(index: number, perRow: number): DashboardCardColor {
+export function getDashboardCardColor(
+  index: number,
+  perRow: number,
+): DashboardCardColor {
   const row = Math.floor(index / perRow);
   const column = index % perRow;
   return (row + column) % 2 === 0 ? 'teal' : 'orange';
@@ -30,7 +41,8 @@ export function getDashboardCardColor(index: number, perRow: number): DashboardC
 export function getDashboardLayout(width: number) {
   const adminLayout = getAdminLayout(width);
   return {
-    dashboardCardsTablet: width >= 768 && width < theme.layout.adminSidebarBreakpoint,
+    dashboardCardsTablet:
+      width >= 768 && width < theme.layout.adminSidebarBreakpoint,
     dashboardCardsWide: adminLayout.hasSidebar,
     dashboardEyebrow: !adminLayout.isWeb || adminLayout.desktopWeb,
     dashboardIconSize: adminLayout.isWeb ? 16 : theme.layout.iconSize,

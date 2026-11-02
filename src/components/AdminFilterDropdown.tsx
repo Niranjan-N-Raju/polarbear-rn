@@ -14,32 +14,43 @@ export function AdminFilterDropdown<Value extends string>({
   optionsPlacement = 'below',
   containerStyle,
 }: AdminFilterDropdownProps<Value>) {
-  const selectedLabel = options.find((option) => option.value === value)?.label ?? '';
+  const selectedLabel =
+    options.find(option => option.value === value)?.label ?? '';
 
   return (
-    <View style={[
-      styles.storeFilterDropdown,
-      expanded && styles.storeFilterDropdownOpen,
-      containerStyle,
-    ]}>
+    <View
+      style={[
+        styles.storeFilterDropdown,
+        expanded && styles.storeFilterDropdownOpen,
+        containerStyle,
+      ]}
+    >
       <Pressable
         accessibilityRole="button"
         accessibilityState={{ expanded }}
         onPress={onToggle}
-        style={[styles.storeFilterDropdownButton, expanded && styles.storeFilterDropdownButtonOpen]}
+        style={[
+          styles.storeFilterDropdownButton,
+          expanded && styles.storeFilterDropdownButtonOpen,
+        ]}
       >
         <View style={styles.storeFilterDropdownCopy}>
           <Text style={styles.storeFilterDropdownLabel}>{label}</Text>
-          <Text numberOfLines={1} style={styles.storeFilterDropdownValue}>{selectedLabel}</Text>
+          <Text numberOfLines={1} style={styles.storeFilterDropdownValue}>
+            {selectedLabel}
+          </Text>
         </View>
         <ChevronDown color={theme.colors.muted} size={14} />
       </Pressable>
       {expanded ? (
-        <View style={[
-          styles.storeFilterDropdownOptions,
-          optionsPlacement === 'above' && styles.storeFilterDropdownOptionsAbove,
-        ]}>
-          {options.map((option) => {
+        <View
+          style={[
+            styles.storeFilterDropdownOptions,
+            optionsPlacement === 'above' &&
+              styles.storeFilterDropdownOptionsAbove,
+          ]}
+        >
+          {options.map(option => {
             const selected = option.value === value;
             return (
               <Pressable
@@ -47,12 +58,17 @@ export function AdminFilterDropdown<Value extends string>({
                 accessibilityRole="button"
                 accessibilityState={{ selected }}
                 onPress={() => onSelect(option.value)}
-                style={[styles.storeFilterDropdownOption, selected && styles.storeFilterDropdownOptionActive]}
+                style={[
+                  styles.storeFilterDropdownOption,
+                  selected && styles.storeFilterDropdownOptionActive,
+                ]}
               >
-                <Text style={[
-                  styles.storeFilterDropdownOptionText,
-                  selected && styles.storeFilterDropdownOptionTextActive,
-                ]}>
+                <Text
+                  style={[
+                    styles.storeFilterDropdownOptionText,
+                    selected && styles.storeFilterDropdownOptionTextActive,
+                  ]}
+                >
                   {option.label}
                 </Text>
               </Pressable>

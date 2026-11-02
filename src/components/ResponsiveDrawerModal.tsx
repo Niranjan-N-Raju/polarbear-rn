@@ -1,4 +1,10 @@
-import { Modal, Pressable, StyleSheet, useWindowDimensions, View } from 'react-native';
+import {
+  Modal,
+  Pressable,
+  StyleSheet,
+  useWindowDimensions,
+  View,
+} from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import type { ReactNode } from 'react';
@@ -9,7 +15,16 @@ import { OverlayHostContext } from './OverlayHost';
 
 import type { ResponsiveDrawerModalProps } from './types';
 
-export function ResponsiveDrawerModal({ visible, closeLabel, onClose, onAfterClose, overlay, children, presentation = 'drawer', panelStyle }: ResponsiveDrawerModalProps) {
+export function ResponsiveDrawerModal({
+  visible,
+  closeLabel,
+  onClose,
+  onAfterClose,
+  overlay,
+  children,
+  presentation = 'drawer',
+  panelStyle,
+}: ResponsiveDrawerModalProps) {
   const insets = useSafeAreaInsets();
   const { width, height } = useWindowDimensions();
   const drawerLayout = getResponsiveDrawerLayout(width, height, presentation);
@@ -25,7 +40,7 @@ export function ResponsiveDrawerModal({ visible, closeLabel, onClose, onAfterClo
   const onAfterCloseRef = useRef(onAfterClose);
   const [hosted, setHosted] = useState<Record<string, ReactNode>>({});
   const hostOverlay = useCallback((key: string, node: ReactNode | null) => {
-    setHosted((current) => {
+    setHosted(current => {
       if (node === null || node === undefined) {
         if (!(key in current)) return current;
         const rest = { ...current };
@@ -59,12 +74,15 @@ export function ResponsiveDrawerModal({ visible, closeLabel, onClose, onAfterClo
         openTimerRef.current = null;
         setWebOpen(false);
         // Keep children mounted through the exit transition before firing cleanup/toast callbacks.
-        closeTimerRef.current = setTimeout(() => {
-          closeTimerRef.current = null;
-          webMountedRef.current = false;
-          setWebMounted(false);
-          onAfterCloseRef.current?.();
-        }, isDialog ? 180 : 260);
+        closeTimerRef.current = setTimeout(
+          () => {
+            closeTimerRef.current = null;
+            webMountedRef.current = false;
+            setWebMounted(false);
+            onAfterCloseRef.current?.();
+          },
+          isDialog ? 180 : 260,
+        );
       }
     } else if (visible) {
       if (closeTimerRef.current) clearTimeout(closeTimerRef.current);
@@ -83,10 +101,13 @@ export function ResponsiveDrawerModal({ visible, closeLabel, onClose, onAfterClo
     return undefined;
   }, [isDialog, isWeb, visible]);
 
-  useEffect(() => () => {
-    if (openTimerRef.current) clearTimeout(openTimerRef.current);
-    if (closeTimerRef.current) clearTimeout(closeTimerRef.current);
-  }, []);
+  useEffect(
+    () => () => {
+      if (openTimerRef.current) clearTimeout(openTimerRef.current);
+      if (closeTimerRef.current) clearTimeout(closeTimerRef.current);
+    },
+    [],
+  );
 
   return (
     <Modal
@@ -98,7 +119,14 @@ export function ResponsiveDrawerModal({ visible, closeLabel, onClose, onAfterClo
     >
       <AppLoaderProvider>
         <OverlayHostContext.Provider value={hostOverlay}>
-          <View style={[styles.root, isDialog ? styles.dialogRoot : drawerLayout.position === 'right' && styles.webRoot]}>
+          <View
+            style={[
+              styles.root,
+              isDialog
+                ? styles.dialogRoot
+                : drawerLayout.position === 'right' && styles.webRoot,
+            ]}
+          >
             <Pressable
               testID="responsive-drawer-scrim"
               accessibilityRole="button"
@@ -111,22 +139,48 @@ export function ResponsiveDrawerModal({ visible, closeLabel, onClose, onAfterClo
               testID="responsive-drawer-panel"
               style={[
                 styles.panel,
-                isDialog ? styles.dialogPanel : drawerLayout.position === 'right' ? styles.webPanel : styles.nativePanel,
-                drawerLayout.position === 'bottom' && !isDialog ? { paddingBottom: insets.bottom } : undefined,
+                isDialog
+                  ? styles.dialogPanel
+                  : drawerLayout.position === 'right'
+                  ? styles.webPanel
+                  : styles.nativePanel,
+                drawerLayout.position === 'bottom' && !isDialog
+                  ? { paddingBottom: insets.bottom }
+                  : undefined,
                 panelStyle,
-                isWeb ? {
-                  opacity: webOpen ? 1 : 0,
-                  transform: [
-                    { translateX: drawerLayout.position === 'right' && !webOpen ? drawerLayout.hiddenOffset : 0 },
-                    { translateY: drawerLayout.position === 'bottom' && !webOpen ? drawerLayout.hiddenOffset : 0 },
-                  ],
-                } : undefined,
+                isWeb
+                  ? {
+                      opacity: webOpen ? 1 : 0,
+                      transform: [
+                        {
+                          translateX:
+                            drawerLayout.position === 'right' && !webOpen
+                              ? drawerLayout.hiddenOffset
+                              : 0,
+                        },
+                        {
+                          translateY:
+                            drawerLayout.position === 'bottom' && !webOpen
+                              ? drawerLayout.hiddenOffset
+                              : 0,
+                        },
+                      ],
+                    }
+                  : undefined,
               ]}
             >
               {children}
             </View>
             {overlay}
-            {Object.entries(hosted).map(([key, node]) => <View key={key} style={StyleSheet.absoluteFill} pointerEvents="box-none">{node}</View>)}
+            {Object.entries(hosted).map(([key, node]) => (
+              <View
+                key={key}
+                style={StyleSheet.absoluteFill}
+                pointerEvents="box-none"
+              >
+                {node}
+              </View>
+            ))}
           </View>
         </OverlayHostContext.Provider>
       </AppLoaderProvider>

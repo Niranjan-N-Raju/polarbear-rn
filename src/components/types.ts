@@ -1,5 +1,11 @@
 import type { ReactNode } from 'react';
-import type { ColorValue, StyleProp, TextInputProps, TextStyle, ViewStyle } from 'react-native';
+import type {
+  ColorValue,
+  StyleProp,
+  TextInputProps,
+  TextStyle,
+  ViewStyle,
+} from 'react-native';
 
 export interface AdminFilterDropdownProps<Value extends string> {
   label: string;

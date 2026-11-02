@@ -12,7 +12,9 @@ export function useLogin() {
   const [emailError, setEmailError] = useState('');
   const [passwordError, setPasswordError] = useState('');
   const [formError, setFormError] = useState('');
-  const [session, setSession] = useState<Awaited<ReturnType<typeof login>> | null>(null);
+  const [session, setSession] = useState<Awaited<
+    ReturnType<typeof login>
+  > | null>(null);
   const [isRestoring, setIsRestoring] = useState(Platform.OS === 'web');
 
   useEffect(() => {
@@ -20,7 +22,7 @@ export function useLogin() {
     let active = true;
     const controller = new AbortController();
     restoreSession(controller.signal)
-      .then((result) => {
+      .then(result => {
         if (!active || !result) return;
         if (!['admin', 'franchise_admin'].includes(result.user.role)) {
           setFormError(t('mobileRoleNotSupported'));
@@ -33,8 +35,13 @@ export function useLogin() {
       .catch(() => {
         if (active) setFormError(t('unableToReachServer'));
       })
-      .finally(() => { if (active) setIsRestoring(false); });
-    return () => { active = false; controller.abort(); };
+      .finally(() => {
+        if (active) setIsRestoring(false);
+      });
+    return () => {
+      active = false;
+      controller.abort();
+    };
   }, []);
 
   async function submit(): Promise<void> {
@@ -81,15 +88,26 @@ export function useLogin() {
   }
 
   const completePasswordChange = useCallback((): void => {
-    setSession((current) => current ? { ...current, user: { ...current.user, mustChangePassword: false } } : current);
+    setSession(current =>
+      current
+        ? { ...current, user: { ...current.user, mustChangePassword: false } }
+        : current,
+    );
   }, []);
 
   const requirePasswordChange = useCallback((): void => {
-    setSession((current) => current ? { ...current, user: { ...current.user, mustChangePassword: true } } : current);
+    setSession(current =>
+      current
+        ? { ...current, user: { ...current.user, mustChangePassword: true } }
+        : current,
+    );
   }, []);
 
   const signOut = useCallback((): void => {
-    if (Platform.OS === 'web') void apiRequest('/auth/session', { method: 'DELETE' }).catch(() => undefined);
+    if (Platform.OS === 'web')
+      void apiRequest('/auth/session', { method: 'DELETE' }).catch(
+        () => undefined,
+      );
     setAccessToken(null);
     setSession(null);
     // Never leave the previous user's credentials (or dev defaults) in the form after a real sign-out.

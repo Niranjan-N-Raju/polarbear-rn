@@ -6,23 +6,20 @@ import {
   StatusBar,
   Text,
   TextInput,
-  View
+  View,
 } from 'react-native';
 import { AppLoader } from '../components/AppLoader';
 import { AppToast } from '../components/AppToast';
 import { theme } from '../config/theme';
 import { t } from '../i18n';
 import { Eye, EyeOff, LockKeyhole, Mail } from '../icons';
-import {
-  getSignInButtonStyle,
-  styles
-} from '../styles/loginScreenStyles';
+import { getSignInButtonStyle, styles } from '../styles/loginScreenStyles';
 import { AdminHomeScreen } from './admin/AdminHomeScreen';
 import { ForcePasswordChangeScreen } from './ForcePasswordChangeScreen';
 import { FranchiseHomeScreen } from './franchise/FranchiseHomeScreen';
 import { useLoginScreen } from './useLoginScreen';
 
-function Brand({ compact = false }: { compact?: boolean; }) {
+function Brand({ compact = false }: { compact?: boolean }) {
   return (
     <View style={styles.brandRow}>
       <View style={[styles.brandMark, compact && styles.brandMarkCompact]}>
@@ -61,7 +58,9 @@ export function LoginScreen() {
             onCompleted={loginState.completePasswordChange}
             onSignOut={loginState.signOut}
           />
-          {authToastMessage ? <AppToast message={authToastMessage} onDismiss={dismissAuthToast} /> : null}
+          {authToastMessage ? (
+            <AppToast message={authToastMessage} onDismiss={dismissAuthToast} />
+          ) : null}
         </>
       );
     }
@@ -73,15 +72,22 @@ export function LoginScreen() {
             user={loginState.session.user}
             onLogout={loginState.signOut}
           />
-          {authToastMessage ? <AppToast message={authToastMessage} onDismiss={dismissAuthToast} /> : null}
+          {authToastMessage ? (
+            <AppToast message={authToastMessage} onDismiss={dismissAuthToast} />
+          ) : null}
         </>
       );
     }
 
     return (
       <>
-        <AdminHomeScreen user={loginState.session.user} onLogout={loginState.signOut} />
-        {authToastMessage ? <AppToast message={authToastMessage} onDismiss={dismissAuthToast} /> : null}
+        <AdminHomeScreen
+          user={loginState.session.user}
+          onLogout={loginState.signOut}
+        />
+        {authToastMessage ? (
+          <AppToast message={authToastMessage} onDismiss={dismissAuthToast} />
+        ) : null}
       </>
     );
   }
@@ -112,9 +118,7 @@ export function LoginScreen() {
               <View style={styles.heroCopy}>
                 <Text style={styles.heroEyebrow}>{t('heroEyebrow')}</Text>
                 <Text style={styles.heroHeading}>{t('heroHeadline')}</Text>
-                <Text style={styles.heroText}>
-                  {t('heroDescription')}
-                </Text>
+                <Text style={styles.heroText}>{t('heroDescription')}</Text>
               </View>
             </View>
             <Text style={styles.heroFooter}>{t('heroFooter')}</Text>
@@ -130,12 +134,7 @@ export function LoginScreen() {
           ]}
         >
           {!isWide ? (
-            <View
-              style={[
-                styles.mobileBrand,
-                safeAreaStyles.mobileBrandTop,
-              ]}
-            >
+            <View style={[styles.mobileBrand, safeAreaStyles.mobileBrandTop]}>
               <Brand compact />
             </View>
           ) : null}
@@ -196,12 +195,17 @@ export function LoginScreen() {
                       placeholderTextColor={theme.colors.placeholder}
                       onSubmitEditing={() => passwordInputRef.current?.focus()}
                       returnKeyType="next"
-                      style={[styles.input, loginState.emailError ? styles.inputError : null]}
+                      style={[
+                        styles.input,
+                        loginState.emailError ? styles.inputError : null,
+                      ]}
                       value={loginState.email}
                     />
                   </View>
                   {loginState.emailError ? (
-                    <Text style={styles.fieldError}>{loginState.emailError}</Text>
+                    <Text style={styles.fieldError}>
+                      {loginState.emailError}
+                    </Text>
                   ) : null}
                 </View>
 
@@ -225,15 +229,22 @@ export function LoginScreen() {
                       placeholderTextColor={theme.colors.placeholder}
                       returnKeyType="done"
                       secureTextEntry={!loginState.showPassword}
-                      style={[styles.input, loginState.passwordError ? styles.inputError : null]}
+                      style={[
+                        styles.input,
+                        loginState.passwordError ? styles.inputError : null,
+                      ]}
                       value={loginState.password}
                     />
                     <Pressable
                       accessibilityRole="button"
                       accessibilityLabel={
-                        loginState.showPassword ? t('hidePassword') : t('showPassword')
+                        loginState.showPassword
+                          ? t('hidePassword')
+                          : t('showPassword')
                       }
-                      onPress={() => loginState.setShowPassword(!loginState.showPassword)}
+                      onPress={() =>
+                        loginState.setShowPassword(!loginState.showPassword)
+                      }
                       style={styles.visibilityButton}
                     >
                       {loginState.showPassword ? (
@@ -252,7 +263,9 @@ export function LoginScreen() {
                     </Pressable>
                   </View>
                   {loginState.passwordError ? (
-                    <Text style={styles.fieldError}>{loginState.passwordError}</Text>
+                    <Text style={styles.fieldError}>
+                      {loginState.passwordError}
+                    </Text>
                   ) : null}
                 </View>
 
@@ -273,13 +286,13 @@ export function LoginScreen() {
                 </Pressable>
               </View>
             </>
-            <Text style={styles.footer}>
-              {t('protectedAccess')}
-            </Text>
+            <Text style={styles.footer}>{t('protectedAccess')}</Text>
           </ScrollView>
         </KeyboardAvoidingView>
       </View>
-      {authToastMessage ? <AppToast message={authToastMessage} onDismiss={dismissAuthToast} /> : null}
+      {authToastMessage ? (
+        <AppToast message={authToastMessage} onDismiss={dismissAuthToast} />
+      ) : null}
     </View>
   );
 }

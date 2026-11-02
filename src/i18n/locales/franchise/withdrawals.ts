@@ -2,7 +2,8 @@ export const withdrawalsEn = {
   franchisePreviousMonth: 'Previous month',
   franchiseNextMonth: 'Next month',
   franchiseWithdrawalsTitle: 'Withdrawals',
-  franchiseWithdrawalsDescription: 'Track money withdrawn from the store and any repayments.',
+  franchiseWithdrawalsDescription:
+    'Track money withdrawn from the store and any repayments.',
   franchiseWithdrawalsAdd: 'Add Entry',
   franchiseWithdrawalsMonthTotal: 'Month Withdrawals',
   franchiseWithdrawalsRepayments: 'Repayments',
@@ -22,8 +23,10 @@ export const withdrawalsEn = {
   franchiseWithdrawalsEdit: 'Edit withdrawal dated {{date}}',
   franchiseWithdrawalsDelete: 'Delete withdrawal dated {{date}}',
   franchiseWithdrawalsDeleteTitle: 'Remove entry?',
-  franchiseWithdrawalsDeleteConfirm: 'Remove this entry? This action cannot be undone.',
-  franchiseWithdrawalsDateInvalid: 'Enter a valid date that is not in the future.',
+  franchiseWithdrawalsDeleteConfirm:
+    'Remove this entry? This action cannot be undone.',
+  franchiseWithdrawalsDateInvalid:
+    'Enter a valid date that is not in the future.',
   franchiseWithdrawalsAmountInvalid: 'Enter a valid amount greater than zero.',
   franchiseWithdrawalsSaveFailed: 'Failed to save entry.',
   franchiseWithdrawalsDeleteFailed: 'Failed to remove entry.',

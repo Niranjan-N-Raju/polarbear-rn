@@ -4,7 +4,12 @@ import { apiRequest } from '../../../api/auth';
 import type { SummaryCardItem } from '../../../components/SummaryCards';
 import { theme } from '../../../config/theme';
 import { t } from '../../../i18n';
-import { ChartNoAxesCombined, IndianRupee, Receipt, Users } from '../../../icons';
+import {
+  ChartNoAxesCombined,
+  IndianRupee,
+  Receipt,
+  Users,
+} from '../../../icons';
 import { getAdminLayout } from '../../../utils/adminLayout';
 import { formatMoney } from '../DashboardCharts';
 import type { PnlData, PnlMonth } from './types';
@@ -29,33 +34,76 @@ export function useFranchisePnl({ storeId }: FranchisePnlScreenProps) {
     let active = true;
     setLoading(true);
     setError(null);
-    apiRequest(`/pnl?${new URLSearchParams({ storeId }).toString()}`, { signal: controller.signal })
-      .then(async (response) => {
-        const result = await response.json().catch(() => ({})) as PnlData & { message?: string; };
+    apiRequest(`/pnl?${new URLSearchParams({ storeId }).toString()}`, {
+      signal: controller.signal,
+    })
+      .then(async response => {
+        const result = (await response.json().catch(() => ({}))) as PnlData & {
+          message?: string;
+        };
         if (!active) return;
-        if (!response.ok) throw new Error(result.message || t('franchisePnlLoadFailed'));
+        if (!response.ok)
+          throw new Error(result.message || t('franchisePnlLoadFailed'));
         setData(result);
         // Keep the selected period across refreshes unless it is no longer returned by the API.
-        setSelectedPeriod((current) => result.months.some((month) => month.period === current)
-          ? current
-          : result.months.find((month) => month.isCurrent)?.period ?? result.months[0]?.period ?? '');
+        setSelectedPeriod(current =>
+          result.months.some(month => month.period === current)
+            ? current
+            : result.months.find(month => month.isCurrent)?.period ??
+              result.months[0]?.period ??
+              '',
+        );
       })
       .catch((reason: unknown) => {
-        if (active && !controller.signal.aborted) setError(reason instanceof Error ? reason.message : t('franchisePnlLoadFailed'));
+        if (active && !controller.signal.aborted)
+          setError(
+            reason instanceof Error
+              ? reason.message
+              : t('franchisePnlLoadFailed'),
+          );
       })
-      .finally(() => { if (active) setLoading(false); });
-    return () => { active = false; controller.abort(); };
+      .finally(() => {
+        if (active) setLoading(false);
+      });
+    return () => {
+      active = false;
+      controller.abort();
+    };
   }, [storeId, reloadKey]);
   const months = data?.months ?? [];
-  const latest = months.find((month) => month.isCurrent) ?? months[0];
-  const selected = months.find((month) => month.period === selectedPeriod) ?? latest;
+  const latest = months.find(month => month.isCurrent) ?? months[0];
+  const selected =
+    months.find(month => month.period === selectedPeriod) ?? latest;
   const lastPeriod = months[0]?.period ?? '';
-  const cards: SummaryCardItem[] = latest ? [
-    { label: t('franchisePnlRevenue'), value: formatMoney(latest.revenue), color: theme.colors.teal, Icon: IndianRupee },
-    { label: t('franchisePnlStoreExpenses'), value: formatMoney(latest.storeExpenses), color: theme.colors.orange, Icon: Receipt },
-    { label: t('franchisePnlPayroll'), value: formatMoney(latest.payroll), color: theme.colors.orange, Icon: Users },
-    { label: t('franchisePnlNetProfit'), value: formatMoney(latest.netProfit), color: latest.netProfit >= 0 ? theme.colors.teal : theme.colors.yellow, Icon: ChartNoAxesCombined },
-  ] : [];
+  const cards: SummaryCardItem[] = latest
+    ? [
+        {
+          label: t('franchisePnlRevenue'),
+          value: formatMoney(latest.revenue),
+          color: theme.colors.teal,
+          Icon: IndianRupee,
+        },
+        {
+          label: t('franchisePnlStoreExpenses'),
+          value: formatMoney(latest.storeExpenses),
+          color: theme.colors.orange,
+          Icon: Receipt,
+        },
+        {
+          label: t('franchisePnlPayroll'),
+          value: formatMoney(latest.payroll),
+          color: theme.colors.orange,
+          Icon: Users,
+        },
+        {
+          label: t('franchisePnlNetProfit'),
+          value: formatMoney(latest.netProfit),
+          color:
+            latest.netProfit >= 0 ? theme.colors.teal : theme.colors.yellow,
+          Icon: ChartNoAxesCombined,
+        },
+      ]
+    : [];
   const openMonth = useCallback((month: PnlMonth) => {
     setDrawerMonth(month);
     setDrawerVisible(true);

@@ -11,7 +11,10 @@ const originalPlatform = Platform.OS;
 afterEach(() => {
   jest.useRealTimers();
   jest.restoreAllMocks();
-  Object.defineProperty(Platform, 'OS', { configurable: true, value: originalPlatform });
+  Object.defineProperty(Platform, 'OS', {
+    configurable: true,
+    value: originalPlatform,
+  });
 });
 
 describe('ResponsiveDrawerModal', () => {
@@ -21,7 +24,11 @@ describe('ResponsiveDrawerModal', () => {
       renderer = TestRenderer.create(
         <SafeAreaProvider initialMetrics={initialMetrics}>
           <AppLoaderProvider>
-            <ResponsiveDrawerModal visible closeLabel="Close" onClose={jest.fn()}>
+            <ResponsiveDrawerModal
+              visible
+              closeLabel="Close"
+              onClose={jest.fn()}
+            >
               <AppLoader />
             </ResponsiveDrawerModal>
           </AppLoaderProvider>
@@ -30,8 +37,16 @@ describe('ResponsiveDrawerModal', () => {
     });
     expect(renderer.root.findAllByType(Modal)).toHaveLength(1);
     const modal = renderer.root.findByType(Modal);
-    expect(modal.findAllByType(View).filter((node) => node.props.testID === 'app-loader-overlay')).toHaveLength(1);
-    expect(renderer.root.findAllByType(View).filter((node) => node.props.testID === 'app-loader-overlay')).toHaveLength(1);
+    expect(
+      modal
+        .findAllByType(View)
+        .filter(node => node.props.testID === 'app-loader-overlay'),
+    ).toHaveLength(1);
+    expect(
+      renderer.root
+        .findAllByType(View)
+        .filter(node => node.props.testID === 'app-loader-overlay'),
+    ).toHaveLength(1);
     act(() => renderer.unmount());
   });
 
@@ -42,7 +57,12 @@ describe('ResponsiveDrawerModal', () => {
     let renderer!: TestRenderer.ReactTestRenderer;
     const renderDrawer = (visible: boolean) => (
       <SafeAreaProvider initialMetrics={initialMetrics}>
-        <ResponsiveDrawerModal visible={visible} closeLabel="Close" onClose={onClose} onAfterClose={onAfterClose}>
+        <ResponsiveDrawerModal
+          visible={visible}
+          closeLabel="Close"
+          onClose={onClose}
+          onAfterClose={onAfterClose}
+        >
           <></>
         </ResponsiveDrawerModal>
       </SafeAreaProvider>
@@ -51,7 +71,9 @@ describe('ResponsiveDrawerModal', () => {
     act(() => {
       renderer = TestRenderer.create(renderDrawer(true));
     });
-    const scrim = renderer.root.find((node) => node.props.testID === 'responsive-drawer-scrim');
+    const scrim = renderer.root.find(
+      node => node.props.testID === 'responsive-drawer-scrim',
+    );
     act(() => scrim.props.onPress());
     expect(onClose).toHaveBeenCalled();
     act(() => jest.advanceTimersByTime(50));
@@ -94,7 +116,9 @@ describe('ResponsiveDrawerModal', () => {
     const modal = renderer.root.findByType(Modal);
     expect(modal.props.visible).toBe(true);
     expect(modal.props.animationType).toBe('none');
-    const panel = renderer.root.findByProps({ testID: 'responsive-drawer-panel' });
+    const panel = renderer.root.findByProps({
+      testID: 'responsive-drawer-panel',
+    });
     expect(panel.props.style[panel.props.style.length - 1].opacity).toBe(0);
 
     await act(async () => {

@@ -1,5 +1,11 @@
 import { useState, type ComponentType } from 'react';
-import { Image, Platform, StyleSheet, TurboModuleRegistry, View } from 'react-native';
+import {
+  Image,
+  Platform,
+  StyleSheet,
+  TurboModuleRegistry,
+  View,
+} from 'react-native';
 import type { WebViewProps } from 'react-native-webview';
 import { SvgXml } from 'react-native-svg';
 import { LOADER_SVG } from '../assets/loaderSvg';
@@ -35,7 +41,9 @@ export function SplashLoaderArtwork() {
           bounces={false}
           javaScriptEnabled={false}
           originWhitelist={['*']}
-          onShouldStartLoadWithRequest={(request) => request.url === 'about:blank'}
+          onShouldStartLoadWithRequest={request =>
+            request.url === 'about:blank'
+          }
         />
       ) : (
         <SvgXml xml={svg} width="100%" height="100%" />

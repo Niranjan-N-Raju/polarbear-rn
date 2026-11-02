@@ -1,14 +1,20 @@
-import { getLanguage, getLocale, setLanguage, t, translateRole } from '../src/i18n';
+import {
+  getLanguage,
+  getLocale,
+  setLanguage,
+  t,
+  translateRole,
+} from '../src/i18n';
 
 describe('i18n', () => {
   afterEach(() => setLanguage('en'));
 
   it('translates interpolation values, missing values, and roles', () => {
-      expect(t('adminStoreCount', { count: 3 })).toContain('3');
-      expect(t('adminStoreCount')).toContain('');
-      expect(translateRole('admin')).toBe(t('roleAdmin'));
-      expect(translateRole('unrecognized')).toBe(t('unknownRole'));
-    })
+    expect(t('adminStoreCount', { count: 3 })).toContain('3');
+    expect(t('adminStoreCount')).toContain('');
+    expect(translateRole('admin')).toBe(t('roleAdmin'));
+    expect(translateRole('unrecognized')).toBe(t('unknownRole'));
+  });
 });
 
 describe('Kannada localization', () => {
@@ -42,9 +48,15 @@ describe('Kannada localization', () => {
     expect(getLocale()).toBe('en-IN');
     setLanguage('kn');
     expect(getLocale()).toBe('kn-IN');
-    const kannada = [t('franchiseAttendanceRemoveConfirm', { name: 'Asha', date: '5' }), t('franchiseEmployeesSalaryInvalid')];
+    const kannada = [
+      t('franchiseAttendanceRemoveConfirm', { name: 'Asha', date: '5' }),
+      t('franchiseEmployeesSalaryInvalid'),
+    ];
     setLanguage('en');
-    const english = [t('franchiseAttendanceRemoveConfirm', { name: 'Asha', date: '5' }), t('franchiseEmployeesSalaryInvalid')];
+    const english = [
+      t('franchiseAttendanceRemoveConfirm', { name: 'Asha', date: '5' }),
+      t('franchiseEmployeesSalaryInvalid'),
+    ];
     expect(kannada[0]).toContain('Asha');
     expect(kannada[0]).not.toBe(english[0]);
     expect(kannada[1]).not.toBe(english[1]);

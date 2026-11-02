@@ -11,7 +11,12 @@ export function getAdminLayout(width: number) {
 
   let storeCardStyle: StoreCardStyleKey | null = null;
   if (isWeb) {
-    storeCardStyle = width >= 960 ? 'storeCardTriple' : width >= 640 ? 'storeCardDouble' : 'storeCardSingle';
+    storeCardStyle =
+      width >= 960
+        ? 'storeCardTriple'
+        : width >= 640
+        ? 'storeCardDouble'
+        : 'storeCardSingle';
   }
 
   return {
@@ -28,9 +33,27 @@ export function getAdminLayout(width: number) {
   } as const;
 }
 
-export function getResponsiveDrawerLayout(width: number, height: number, presentation: 'drawer' | 'dialog' = 'drawer') {
+export function getResponsiveDrawerLayout(
+  width: number,
+  height: number,
+  presentation: 'drawer' | 'dialog' = 'drawer',
+) {
   const layout = getAdminLayout(width);
-  if (presentation === 'dialog') return { isWeb: layout.isWeb, position: 'dialog' as const, hiddenOffset: 0 };
-  if (layout.hasSidebar) return { isWeb: true, position: 'right' as const, hiddenOffset: width * 0.3 };
-  return { isWeb: layout.isWeb, position: 'bottom' as const, hiddenOffset: height * 0.7 };
+  if (presentation === 'dialog')
+    return {
+      isWeb: layout.isWeb,
+      position: 'dialog' as const,
+      hiddenOffset: 0,
+    };
+  if (layout.hasSidebar)
+    return {
+      isWeb: true,
+      position: 'right' as const,
+      hiddenOffset: width * 0.3,
+    };
+  return {
+    isWeb: layout.isWeb,
+    position: 'bottom' as const,
+    hiddenOffset: height * 0.7,
+  };
 }

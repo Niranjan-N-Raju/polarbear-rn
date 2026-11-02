@@ -24,7 +24,9 @@ export interface UserForm {
   franchiseIds: string[];
 }
 
-export type UserFieldErrors = Partial<Record<'name' | 'email' | 'password' | 'franchiseIds', string>>;
+export type UserFieldErrors = Partial<
+  Record<'name' | 'email' | 'password' | 'franchiseIds', string>
+>;
 export type UserStatusFilter = 'all' | 'active' | 'inactive';
 export type OpenUserFilter = 'store' | 'status' | 'type' | null;
 

@@ -1666,7 +1666,9 @@ const webAdminStyles = StyleSheet.create({
   },
 });
 
-export const adminStyles = (Platform.OS === 'web' ? webAdminStyles : baseAdminStyles) as typeof baseAdminStyles & typeof webAdminStyles;
+export const adminStyles = (
+  Platform.OS === 'web' ? webAdminStyles : baseAdminStyles
+) as typeof baseAdminStyles & typeof webAdminStyles;
 
 export function getAdminSafeAreaStyles(topInset: number, bottomInset: number) {
   return {
@@ -1677,7 +1679,10 @@ export function getAdminSafeAreaStyles(topInset: number, bottomInset: number) {
   };
 }
 
-export function getAdminDrawerSafeAreaStyles(topInset: number, bottomInset: number) {
+export function getAdminDrawerSafeAreaStyles(
+  topInset: number,
+  bottomInset: number,
+) {
   return {
     drawerTop: {
       paddingTop: topInset + theme.spacing['2xl'],

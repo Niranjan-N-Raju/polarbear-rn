@@ -13,7 +13,9 @@ export function AnimatedSplash({ onFinish }: Props) {
   useEffect(() => {
     const timer = setTimeout(() => {
       BootSplash.hide({ fade: true })
-        .catch((error: unknown) => console.error('Unable to dismiss launch splash:', error))
+        .catch((error: unknown) =>
+          console.error('Unable to dismiss launch splash:', error),
+        )
         .finally(() => onFinishRef.current());
     }, MIN_SPLASH_MS);
     return () => clearTimeout(timer);

@@ -10,11 +10,8 @@ import { adminStyles as styles } from '../../../styles/adminStyles';
 import { UserFiltersDrawer } from './UserFiltersDrawer';
 import { UserFormDrawer } from './UserFormDrawer';
 import { UserList } from './UserList';
-import type {
-  AdminUsersScreenProps
-} from './types';
+import type { AdminUsersScreenProps } from './types';
 import { useAdminUsers } from './useAdminUsers';
-
 
 export function AdminUsersScreen({ onToast }: AdminUsersScreenProps) {
   const {
@@ -75,14 +72,38 @@ export function AdminUsersScreen({ onToast }: AdminUsersScreenProps) {
     deleteUser,
   } = useAdminUsers({ onToast });
   if (isLoading) return <AppLoader variant="screen" />;
-  if (loadError) return <AppErrorState message={loadError} onRetry={() => void load(1, appliedFilters)} />;
+  if (loadError)
+    return (
+      <AppErrorState
+        message={loadError}
+        onRetry={() => void load(1, appliedFilters)}
+      />
+    );
   return (
     <View style={styles.screen}>
-      <View style={[styles.screenHeader, layout.desktopWeb && styles.screenHeaderInline, layout.compactWeb && styles.screenHeaderStack]}>
-        <View style={layout.isWeb ? styles.screenHeaderCopy : styles.screenHeaderCopyNative}>
-          {layout.desktopWeb ? <Text style={[styles.screenEyebrow, styles.screenEyebrowTeal]}>{t('adminUsersEyebrow')}</Text> : null}
+      <View
+        style={[
+          styles.screenHeader,
+          layout.desktopWeb && styles.screenHeaderInline,
+          layout.compactWeb && styles.screenHeaderStack,
+        ]}
+      >
+        <View
+          style={
+            layout.isWeb
+              ? styles.screenHeaderCopy
+              : styles.screenHeaderCopyNative
+          }
+        >
+          {layout.desktopWeb ? (
+            <Text style={[styles.screenEyebrow, styles.screenEyebrowTeal]}>
+              {t('adminUsersEyebrow')}
+            </Text>
+          ) : null}
           <View style={styles.screenTitleRow}>
-            <Text style={[styles.screenTitle, styles.screenTitleInline]}>{t('adminUsers')}</Text>
+            <Text style={[styles.screenTitle, styles.screenTitleInline]}>
+              {t('adminUsers')}
+            </Text>
             <Pressable
               accessibilityRole="button"
               accessibilityLabel={t('adminOpenFilters')}
@@ -90,14 +111,20 @@ export function AdminUsersScreen({ onToast }: AdminUsersScreenProps) {
               style={styles.filterIconButton}
             >
               <Filter color={theme.colors.teal} size={18} />
-              {hasActiveFilters ? <View style={styles.filterActiveDot} /> : null}
+              {hasActiveFilters ? (
+                <View style={styles.filterActiveDot} />
+              ) : null}
             </Pressable>
           </View>
           <Text style={styles.screenDescription}>{t('adminManageUsers')}</Text>
         </View>
         <View style={styles.screenHeaderActions}>
           {layout.desktopWeb ? (
-            <Pressable accessibilityRole="button" onPress={openCreate} style={[styles.primaryButton, styles.screenHeaderAction]}>
+            <Pressable
+              accessibilityRole="button"
+              onPress={openCreate}
+              style={[styles.primaryButton, styles.screenHeaderAction]}
+            >
               <Text style={styles.primaryButtonText}>{t('adminAddUser')}</Text>
             </Pressable>
           ) : null}
@@ -105,28 +132,41 @@ export function AdminUsersScreen({ onToast }: AdminUsersScreenProps) {
       </View>
 
       {isRefreshing ? <AppLoader variant="inline" /> : null}
-      {visibleUsers.length === 0 ? <Text style={styles.stateMessage}>{hasActiveFilters ? t('adminNoMatchingUsers') : t('adminNoUsers')}</Text> : null}
+      {visibleUsers.length === 0 ? (
+        <Text style={styles.stateMessage}>
+          {hasActiveFilters ? t('adminNoMatchingUsers') : t('adminNoUsers')}
+        </Text>
+      ) : null}
       {visibleUsers.length > 0 ? (
         <UserList
           users={visibleUsers}
           isTable={layout.usersTable}
           isDesktopWeb={layout.desktopWeb}
-          footer={pageInfo.page < pageInfo.totalPages ? (
-            <View style={styles.loadMoreFooter}>
-              <Pressable
-                accessibilityRole="button"
-                disabled={isLoadingMore}
-                onPress={loadMore}
-                style={[styles.loadMoreButton, isLoadingMore && styles.loadMoreButtonDisabled]}
-              >
-                {isLoadingMore
-                  ? <AppLoader variant="inline" />
-                  : <Text style={styles.loadMoreButtonText}>{t('adminLoadMore')}</Text>}
-              </Pressable>
-            </View>
-          ) : null}
+          footer={
+            pageInfo.page < pageInfo.totalPages ? (
+              <View style={styles.loadMoreFooter}>
+                <Pressable
+                  accessibilityRole="button"
+                  disabled={isLoadingMore}
+                  onPress={loadMore}
+                  style={[
+                    styles.loadMoreButton,
+                    isLoadingMore && styles.loadMoreButtonDisabled,
+                  ]}
+                >
+                  {isLoadingMore ? (
+                    <AppLoader variant="inline" />
+                  ) : (
+                    <Text style={styles.loadMoreButtonText}>
+                      {t('adminLoadMore')}
+                    </Text>
+                  )}
+                </Pressable>
+              </View>
+            ) : null
+          }
           onEdit={openEdit}
-          onDelete={(user) => {
+          onDelete={user => {
             setPendingDelete(user);
             setIsDeleteDialogOpen(true);
           }}
@@ -134,7 +174,12 @@ export function AdminUsersScreen({ onToast }: AdminUsersScreenProps) {
       ) : null}
 
       {!layout.desktopWeb ? (
-        <Pressable accessibilityRole="button" accessibilityLabel={t('adminAddUser')} onPress={openCreate} style={styles.fab}>
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel={t('adminAddUser')}
+          onPress={openCreate}
+          style={styles.fab}
+        >
           <Plus color={theme.colors.white} size={24} />
         </Pressable>
       ) : null}
@@ -154,25 +199,27 @@ export function AdminUsersScreen({ onToast }: AdminUsersScreenProps) {
         onClose={() => setIsFilterDrawerOpen(false)}
         onAfterClose={() => setOpenFilter(null)}
         onSearchChange={setSearchText}
-        onStoreSearchChange={(value) => {
+        onStoreSearchChange={value => {
           setStoreSearchText(value);
           setFilterStore('');
           setOpenFilter('store');
         }}
-        onStoreSelect={(store) => {
+        onStoreSelect={store => {
           setStoreSearchText(store.name);
           setFilterStore(store._id);
           setOpenFilter(null);
         }}
-        onFilterStatusChange={(value) => {
+        onFilterStatusChange={value => {
           setFilterStatus(value);
           setOpenFilter(null);
         }}
-        onFilterRoleChange={(value) => {
+        onFilterRoleChange={value => {
           setFilterRole(value);
           setOpenFilter(null);
         }}
-        onToggleFilter={(filter) => setOpenFilter((current) => current === filter ? null : filter)}
+        onToggleFilter={filter =>
+          setOpenFilter(current => (current === filter ? null : filter))
+        }
         onOpenStoreFilter={() => setOpenFilter('store')}
         onDismissDropdown={() => setOpenFilter(null)}
         onClearFilters={clearFilters}
@@ -195,9 +242,9 @@ export function AdminUsersScreen({ onToast }: AdminUsersScreenProps) {
           void load(1, appliedFilters);
         }}
         onDismissToast={dismissToast}
-        onNameChange={(value) => updateField('name', value)}
-        onEmailChange={(value) => updateField('email', value)}
-        onPasswordChange={(value) => updateField('password', value)}
+        onNameChange={value => updateField('name', value)}
+        onEmailChange={value => updateField('email', value)}
+        onPasswordChange={value => updateField('password', value)}
         onRoleChange={updateRole}
         onToggleStore={toggleStore}
         onSave={() => void save()}
@@ -215,22 +262,50 @@ export function AdminUsersScreen({ onToast }: AdminUsersScreenProps) {
           setPendingDeleteSuccess('');
           void load(1, appliedFilters);
         }}
-        overlay={toastMessage ? <AppToast message={toastMessage} onDismiss={dismissToast} /> : null}
+        overlay={
+          toastMessage ? (
+            <AppToast message={toastMessage} onDismiss={dismissToast} />
+          ) : null
+        }
       >
         <View style={styles.confirmDialogContent}>
           <View style={styles.confirmDialogHeader}>
-            <Text style={[styles.modalTitle, styles.confirmDialogTitle]}>{t('adminDeleteUser')}</Text>
+            <Text style={[styles.modalTitle, styles.confirmDialogTitle]}>
+              {t('adminDeleteUser')}
+            </Text>
           </View>
           <View style={styles.confirmDialogBody}>
-            <Text style={styles.screenDescription}>{t('adminConfirmDeleteUser', { name: pendingDelete?.name ?? '' })}</Text>
+            <Text style={styles.screenDescription}>
+              {t('adminConfirmDeleteUser', { name: pendingDelete?.name ?? '' })}
+            </Text>
           </View>
           <View style={styles.confirmDialogActions}>
             <View style={styles.confirmDialogActionSlot}>
-              <Pressable onPress={() => setIsDeleteDialogOpen(false)} style={[styles.secondaryButton, styles.confirmDialogActionButton]}><Text style={styles.secondaryButtonText}>{t('adminCancel')}</Text></Pressable>
+              <Pressable
+                onPress={() => setIsDeleteDialogOpen(false)}
+                style={[
+                  styles.secondaryButton,
+                  styles.confirmDialogActionButton,
+                ]}
+              >
+                <Text style={styles.secondaryButtonText}>
+                  {t('adminCancel')}
+                </Text>
+              </Pressable>
             </View>
             <View style={styles.confirmDialogActionSlot}>
-              <Pressable disabled={isDeleting} onPress={() => void deleteUser()} style={[styles.dangerButton, styles.confirmDialogActionButton]}>
-                {isDeleting ? <AppLoader variant="inline" color={theme.colors.white} /> : <Text style={styles.dangerButtonText}>{t('adminDelete')}</Text>}
+              <Pressable
+                disabled={isDeleting}
+                onPress={() => void deleteUser()}
+                style={[styles.dangerButton, styles.confirmDialogActionButton]}
+              >
+                {isDeleting ? (
+                  <AppLoader variant="inline" color={theme.colors.white} />
+                ) : (
+                  <Text style={styles.dangerButtonText}>
+                    {t('adminDelete')}
+                  </Text>
+                )}
               </Pressable>
             </View>
           </View>

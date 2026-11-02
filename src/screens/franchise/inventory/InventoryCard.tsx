@@ -17,16 +17,30 @@ interface InventoryCardProps {
   onAction: (item: InventoryStockItem, action: InventoryAction) => void;
 }
 
-export function InventoryCard({ item, priority, cardStyle, onAction }: InventoryCardProps) {
+export function InventoryCard({
+  item,
+  priority,
+  cardStyle,
+  onAction,
+}: InventoryCardProps) {
   const days = daysUntil(item.expiryDate);
   const expired = days < 0;
   const urgent = days >= 0 && days <= 1;
   const details = [
-    { label: t('franchiseInventoryExpiry'), value: formatInventoryDate(item.expiryDate) },
+    {
+      label: t('franchiseInventoryExpiry'),
+      value: formatInventoryDate(item.expiryDate),
+    },
     {
       label: t('franchiseInventoryStatus'),
-      value: expired ? t('franchiseInventoryExpired') : t('franchiseInventoryDaysLeft', { count: days }),
-      style: expired ? inventoryStyles.expiredValue : urgent ? inventoryStyles.urgentValue : undefined,
+      value: expired
+        ? t('franchiseInventoryExpired')
+        : t('franchiseInventoryDaysLeft', { count: days }),
+      style: expired
+        ? inventoryStyles.expiredValue
+        : urgent
+        ? inventoryStyles.urgentValue
+        : undefined,
     },
     { label: t('franchiseInventoryQuantity'), value: String(item.quantity) },
   ];
@@ -35,17 +49,24 @@ export function InventoryCard({ item, priority, cardStyle, onAction }: Inventory
     <View style={[styles.storeCard, cardStyle && styles[cardStyle]]}>
       <View style={styles.storeCardHeader}>
         <View style={styles.storeIconTile}>
-          <Boxes color={expired ? theme.colors.error : theme.colors.teal} size={20} />
+          <Boxes
+            color={expired ? theme.colors.error : theme.colors.teal}
+            size={20}
+          />
         </View>
         <View style={styles.storeCardBody}>
           <View style={styles.storeTitleRow}>
-            <Text numberOfLines={1} style={styles.storeTitle}>{item.product}</Text>
+            <Text numberOfLines={1} style={styles.storeTitle}>
+              {item.product}
+            </Text>
             <View style={styles.storeCodeBadge}>
               <Text style={styles.storeCodeText}>#{priority}</Text>
             </View>
             {urgent ? (
               <View style={inventoryStyles.useNowBadge}>
-                <Text style={inventoryStyles.useNowText}>{t('franchiseInventoryUseNow')}</Text>
+                <Text style={inventoryStyles.useNowText}>
+                  {t('franchiseInventoryUseNow')}
+                </Text>
               </View>
             ) : null}
           </View>
@@ -53,10 +74,15 @@ export function InventoryCard({ item, priority, cardStyle, onAction }: Inventory
       </View>
 
       <View style={inventoryStyles.detailRow}>
-        {details.map((detail) => (
+        {details.map(detail => (
           <View key={detail.label} style={inventoryStyles.detail}>
             <Text style={inventoryStyles.detailLabel}>{detail.label}</Text>
-            <Text numberOfLines={1} style={[inventoryStyles.detailValue, detail.style]}>{detail.value}</Text>
+            <Text
+              numberOfLines={1}
+              style={[inventoryStyles.detailValue, detail.style]}
+            >
+              {detail.value}
+            </Text>
           </View>
         ))}
       </View>
@@ -65,33 +91,45 @@ export function InventoryCard({ item, priority, cardStyle, onAction }: Inventory
         {expired ? (
           <Pressable
             accessibilityRole="button"
-            accessibilityLabel={t('franchiseInventoryDumpLabel', { name: item.product })}
+            accessibilityLabel={t('franchiseInventoryDumpLabel', {
+              name: item.product,
+            })}
             onPress={() => onAction(item, 'dump')}
             style={styles.storeCardAction}
           >
             <Trash2 color={theme.colors.error} size={14} />
-            <Text style={inventoryStyles.dumpActionText}>{t('franchiseInventoryMarkDumped')}</Text>
+            <Text style={inventoryStyles.dumpActionText}>
+              {t('franchiseInventoryMarkDumped')}
+            </Text>
           </Pressable>
         ) : (
           <>
             <Pressable
               accessibilityRole="button"
-              accessibilityLabel={t('franchiseInventoryUseOneLabel', { name: item.product })}
+              accessibilityLabel={t('franchiseInventoryUseOneLabel', {
+                name: item.product,
+              })}
               onPress={() => onAction(item, 'useOne')}
               style={styles.storeCardAction}
             >
               <Check color={theme.colors.teal} size={14} />
-              <Text style={styles.storeEditActionText}>{t('franchiseInventoryUseOne')}</Text>
+              <Text style={styles.storeEditActionText}>
+                {t('franchiseInventoryUseOne')}
+              </Text>
             </Pressable>
             {item.quantity >= 2 ? (
               <Pressable
                 accessibilityRole="button"
-                accessibilityLabel={t('franchiseInventoryUseManyLabel', { name: item.product })}
+                accessibilityLabel={t('franchiseInventoryUseManyLabel', {
+                  name: item.product,
+                })}
                 onPress={() => onAction(item, 'useMany')}
                 style={styles.storeCardAction}
               >
                 <Boxes color={theme.colors.orange} size={14} />
-                <Text style={styles.storeArchiveActionText}>{t('franchiseInventoryUseMany')}</Text>
+                <Text style={styles.storeArchiveActionText}>
+                  {t('franchiseInventoryUseMany')}
+                </Text>
               </Pressable>
             ) : null}
           </>

@@ -5,17 +5,17 @@ import { pressables, initialMetrics } from './testUtils';
 
 describe('AppErrorState', () => {
   it('renders the error state and invokes retry', () => {
-      const onRetry = jest.fn();
-      let renderer!: TestRenderer.ReactTestRenderer;
-      act(() => {
-        renderer = TestRenderer.create(
-          <SafeAreaProvider initialMetrics={initialMetrics}>
-            <AppErrorState message="Failed" onRetry={onRetry} />
-          </SafeAreaProvider>,
-        );
-      });
-      act(() => pressables(renderer)[0].props.onPress());
-      expect(onRetry).toHaveBeenCalled();
-      act(() => renderer.unmount());
-    })
+    const onRetry = jest.fn();
+    let renderer!: TestRenderer.ReactTestRenderer;
+    act(() => {
+      renderer = TestRenderer.create(
+        <SafeAreaProvider initialMetrics={initialMetrics}>
+          <AppErrorState message="Failed" onRetry={onRetry} />
+        </SafeAreaProvider>,
+      );
+    });
+    act(() => pressables(renderer)[0].props.onPress());
+    expect(onRetry).toHaveBeenCalled();
+    act(() => renderer.unmount());
+  });
 });

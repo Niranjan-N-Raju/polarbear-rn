@@ -20,7 +20,10 @@ interface SaleFiltersDrawerProps {
   onApply: () => void;
 }
 
-const presets: { key: SalePreset; label: 'franchiseToday' | 'franchiseThisWeek' | 'franchiseThisMonth'; }[] = [
+const presets: {
+  key: SalePreset;
+  label: 'franchiseToday' | 'franchiseThisWeek' | 'franchiseThisMonth';
+}[] = [
   { key: 'today', label: 'franchiseToday' },
   { key: 'week', label: 'franchiseThisWeek' },
   { key: 'month', label: 'franchiseThisMonth' },
@@ -53,7 +56,7 @@ export function SaleFiltersDrawer({
       onApply={onApply}
     >
       <View style={[salesStyles.presetRow, styles.filterDrawerField]}>
-        {presets.map((preset) => {
+        {presets.map(preset => {
           const range = salePresetRange(preset.key);
           const selected = range.from === draft.from && range.to === draft.to;
           return (
@@ -62,7 +65,11 @@ export function SaleFiltersDrawer({
               accessibilityRole="button"
               accessibilityState={{ selected }}
               onPress={() => onDraftChange(range)}
-              style={[styles.secondaryButton, salesStyles.presetButton, selected && styles.storeOptionSelected]}
+              style={[
+                styles.secondaryButton,
+                salesStyles.presetButton,
+                selected && styles.storeOptionSelected,
+              ]}
             >
               <Text style={styles.secondaryButtonText}>{t(preset.label)}</Text>
             </Pressable>
@@ -74,7 +81,7 @@ export function SaleFiltersDrawer({
         label={t('franchiseFrom')}
         placeholder={t('franchiseDatePlaceholder')}
         value={draft.from}
-        onChangeText={(from) => onDraftChange({ ...draft, from })}
+        onChangeText={from => onDraftChange({ ...draft, from })}
         containerStyle={styles.filterDrawerField}
         keyboardType="numbers-and-punctuation"
         autoCapitalize="none"
@@ -84,12 +91,16 @@ export function SaleFiltersDrawer({
         label={t('franchiseTo')}
         placeholder={t('franchiseDatePlaceholder')}
         value={draft.to}
-        onChangeText={(to) => onDraftChange({ ...draft, to })}
+        onChangeText={to => onDraftChange({ ...draft, to })}
         containerStyle={styles.filterDrawerField}
         keyboardType="numbers-and-punctuation"
         autoCapitalize="none"
       />
-      {error ? <Text accessibilityRole="alert" style={salesStyles.dateError}>{error}</Text> : null}
+      {error ? (
+        <Text accessibilityRole="alert" style={salesStyles.dateError}>
+          {error}
+        </Text>
+      ) : null}
     </FilterDrawer>
   );
 }

@@ -11,7 +11,9 @@ let accessToken: string | null = null;
 let unauthorizedHandler: (() => void) | null = null;
 let passwordChangeRequiredHandler: (() => void) | null = null;
 
-export function setPasswordChangeRequiredHandler(handler: (() => void) | null): void {
+export function setPasswordChangeRequiredHandler(
+  handler: (() => void) | null,
+): void {
   passwordChangeRequiredHandler = handler;
 }
 let hasHandledUnauthorized = false;
@@ -25,7 +27,10 @@ export function setAccessToken(token: string | null): void {
   if (token) hasHandledUnauthorized = false;
 }
 
-export async function apiRequest(path: string, init: RequestInit = {}): Promise<Response> {
+export async function apiRequest(
+  path: string,
+  init: RequestInit = {},
+): Promise<Response> {
   const headers = new Headers(init.headers);
   if (Platform.OS === 'web') headers.set('X-Web-Session', '1');
   // Responses are only allowed to end the session that actually sent them.
@@ -50,20 +55,42 @@ export async function apiRequest(path: string, init: RequestInit = {}): Promise<
     init.signal?.removeEventListener('abort', abortFromCaller);
   }
   // Parallel failed requests should trigger one sign-out notification, not one toast per request.
-  if (response.status === 401 && accessToken && requestToken === accessToken && path !== '/auth/logout' && !hasHandledUnauthorized) {
+  if (
+    response.status === 401 &&
+    accessToken &&
+    requestToken === accessToken &&
+    path !== '/auth/logout' &&
+    !hasHandledUnauthorized
+  ) {
     hasHandledUnauthorized = true;
     accessToken = null;
     unauthorizedHandler?.();
   }
-  if (response.status === 403 && accessToken && requestToken === accessToken && passwordChangeRequiredHandler && typeof response.clone === 'function') {
+  if (
+    response.status === 403 &&
+    accessToken &&
+    requestToken === accessToken &&
+    passwordChangeRequiredHandler &&
+    typeof response.clone === 'function'
+  ) {
     // Inspect a copy so feature callers can still read the original response body.
-    const body = (await response.clone().json().catch(() => null)) as { code?: string } | null;
-    if (body?.code === 'PASSWORD_CHANGE_REQUIRED' && requestToken === accessToken) passwordChangeRequiredHandler?.();
+    const body = (await response
+      .clone()
+      .json()
+      .catch(() => null)) as { code?: string } | null;
+    if (
+      body?.code === 'PASSWORD_CHANGE_REQUIRED' &&
+      requestToken === accessToken
+    )
+      passwordChangeRequiredHandler?.();
   }
   return response;
 }
 
-export async function login(email: string, password: string): Promise<LoginResponse> {
+export async function login(
+  email: string,
+  password: string,
+): Promise<LoginResponse> {
   let response: Response;
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), 15_000);
@@ -99,7 +126,9 @@ export async function login(email: string, password: string): Promise<LoginRespo
       429: t('tooManyAttempts'),
       500: t('internalServerError'),
     };
-    throw new Error(localizedErrors[response.status] ?? data.message ?? t('loginFailed'));
+    throw new Error(
+      localizedErrors[response.status] ?? data.message ?? t('loginFailed'),
+    );
   }
   if (!data.token || !data.user?.id || !data.user.name) {
     throw new Error(t('invalidLoginResponse'));
@@ -109,11 +138,17 @@ export async function login(email: string, password: string): Promise<LoginRespo
   return { token: data.token, user: data.user };
 }
 
-export async function restoreSession(signal: AbortSignal): Promise<LoginResponse | null> {
-  const response = await apiRequest('/auth/session', { method: 'POST', signal });
+export async function restoreSession(
+  signal: AbortSignal,
+): Promise<LoginResponse | null> {
+  const response = await apiRequest('/auth/session', {
+    method: 'POST',
+    signal,
+  });
   if (response.status === 401) return null;
   if (!response.ok) throw new Error(t('unableToReachServer'));
-  const data = await response.json() as LoginResponse;
-  if (!data.token || !data.user?.id || !data.user.name) throw new Error(t('invalidLoginResponse'));
+  const data = (await response.json()) as LoginResponse;
+  if (!data.token || !data.user?.id || !data.user.name)
+    throw new Error(t('invalidLoginResponse'));
   return data;
 }

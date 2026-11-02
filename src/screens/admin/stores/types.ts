@@ -77,7 +77,10 @@ export interface StoreFormDrawerProps {
   onClose: () => void;
   onAfterClose: () => void;
   onDismissToast: () => void;
-  onFieldChange: <Key extends keyof StoreForm>(key: Key, value: StoreForm[Key]) => void;
+  onFieldChange: <Key extends keyof StoreForm>(
+    key: Key,
+    value: StoreForm[Key],
+  ) => void;
   onArchivedChange: (archived: boolean) => void;
   onSave: () => void;
 }

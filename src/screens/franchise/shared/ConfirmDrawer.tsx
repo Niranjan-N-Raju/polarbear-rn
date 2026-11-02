@@ -41,12 +41,27 @@ export function ConfirmDrawer({
       closeLabel={t('adminCloseMenu')}
       onClose={onClose}
       onAfterClose={onAfterClose}
-      overlay={visible && error ? <AppToast message={error} tone="error" onDismiss={() => onDismissError?.()} /> : null}
+      overlay={
+        visible && error ? (
+          <AppToast
+            message={error}
+            tone="error"
+            onDismiss={() => onDismissError?.()}
+          />
+        ) : null
+      }
     >
       <View style={styles.drawerContent}>
         <View style={styles.drawerHeading}>
-          <Text style={[styles.modalTitle, styles.drawerHeadingTitle]}>{title}</Text>
-          <Pressable accessibilityRole="button" accessibilityLabel={t('adminCloseMenu')} onPress={onClose} style={styles.userIconAction}>
+          <Text style={[styles.modalTitle, styles.drawerHeadingTitle]}>
+            {title}
+          </Text>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel={t('adminCloseMenu')}
+            onPress={onClose}
+            style={styles.userIconAction}
+          >
             <X color={theme.colors.muted} size={18} />
           </Pressable>
         </View>
@@ -55,7 +70,11 @@ export function ConfirmDrawer({
         </View>
         <View style={styles.modalActions}>
           <View style={styles.drawerActionSlot}>
-            <Pressable accessibilityRole="button" onPress={onClose} style={[styles.secondaryButton, styles.drawerActionButton]}>
+            <Pressable
+              accessibilityRole="button"
+              onPress={onClose}
+              style={[styles.secondaryButton, styles.drawerActionButton]}
+            >
               <Text style={styles.secondaryButtonText}>{t('adminCancel')}</Text>
             </Pressable>
           </View>
@@ -64,11 +83,17 @@ export function ConfirmDrawer({
               accessibilityRole="button"
               disabled={busy}
               onPress={onConfirm}
-              style={[styles.primaryButton, styles.drawerActionButton, danger && inventoryStyles.dangerButton]}
+              style={[
+                styles.primaryButton,
+                styles.drawerActionButton,
+                danger && inventoryStyles.dangerButton,
+              ]}
             >
-              {busy
-                ? <AppLoader variant="inline" color={theme.colors.white} />
-                : <Text style={styles.primaryButtonText}>{confirmLabel}</Text>}
+              {busy ? (
+                <AppLoader variant="inline" color={theme.colors.white} />
+              ) : (
+                <Text style={styles.primaryButtonText}>{confirmLabel}</Text>
+              )}
             </Pressable>
           </View>
         </View>

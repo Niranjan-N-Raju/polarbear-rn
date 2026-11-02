@@ -4,29 +4,32 @@ import { SummaryCards } from '../../components/SummaryCards';
 import { theme } from '../../config/theme';
 import { t } from '../../i18n';
 import { adminStyles as styles } from '../../styles/adminStyles';
-import { dashboardStatCards, getDashboardCardColor } from '../../utils/dashboardConfig';
+import {
+  dashboardStatCards,
+  getDashboardCardColor,
+} from '../../utils/dashboardConfig';
 import { useAdminDashboard } from './useAdminDashboard';
 
-
 export function AdminDashboardScreen() {
-  const {
-    layout,
-    perRow,
-    stats,
-    isLoading,
-    hasError,
-  } = useAdminDashboard();
+  const { layout, perRow, stats, isLoading, hasError } = useAdminDashboard();
   if (isLoading) return <AppLoader variant="screen" />;
   return (
     <ScrollView contentContainerStyle={styles.screenScroll}>
       <View style={styles.screenHeader}>
-        {layout.dashboardEyebrow ? <Text style={styles.screenEyebrow}>{t('adminOverview')}</Text> : null}
+        {layout.dashboardEyebrow ? (
+          <Text style={styles.screenEyebrow}>{t('adminOverview')}</Text>
+        ) : null}
         <Text style={styles.screenTitle}>{t('adminDashboard')}</Text>
-        <Text style={styles.screenDescription}>{t('adminOverviewDescription')}</Text>
+        <Text style={styles.screenDescription}>
+          {t('adminOverviewDescription')}
+        </Text>
       </View>
 
       {hasError || !stats ? (
-        <Text accessibilityRole="alert" style={[styles.stateMessage, styles.stateError]}>
+        <Text
+          accessibilityRole="alert"
+          style={[styles.stateMessage, styles.stateError]}
+        >
           {t('adminLoadFailed')}
         </Text>
       ) : (

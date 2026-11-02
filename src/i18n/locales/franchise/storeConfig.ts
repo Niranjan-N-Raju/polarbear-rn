@@ -1,20 +1,23 @@
 export const storeConfigEn = {
   franchiseStoreConfigTitle: 'Store Config',
-  franchiseStoreConfigDescription: 'Configure this store’s branding and operating settings.',
+  franchiseStoreConfigDescription:
+    'Configure this store’s branding and operating settings.',
   franchiseStoreConfigBranding: 'Branding',
   franchiseStoreConfigCycle: 'Salary cycle',
   franchiseStoreConfigPositions: 'Employee positions',
   franchiseStoreConfigShifts: 'Shifts',
   franchiseStoreConfigName: 'Store name',
   franchiseStoreConfigLogo: 'Store logo',
-  franchiseStoreConfigLogoHelp: 'PNG, JPEG, or WEBP logos up to 2 MB. Logo upload is not available in this app.',
+  franchiseStoreConfigLogoHelp:
+    'PNG, JPEG, or WEBP logos up to 2 MB. Logo upload is not available in this app.',
   franchiseStoreConfigRemoveLogo: 'Remove logo',
   franchiseStoreConfigCycleType: 'Cycle type',
   franchiseStoreConfigCalendar: 'Calendar month',
   franchiseStoreConfigCustom: 'Custom monthly cycle',
   franchiseStoreConfigCustomSummary: '{{start}}th to {{end}}th of each cycle',
   franchiseStoreConfigStartDay: 'Cycle start day (2–28)',
-  franchiseStoreConfigCycleHint: 'A cycle starts on this day and ends on the day before it next month.',
+  franchiseStoreConfigCycleHint:
+    'A cycle starts on this day and ends on the day before it next month.',
   franchiseStoreConfigNotConfigured: 'Not configured',
   franchiseStoreConfigPositionCount: '{{count}} position option(s)',
   franchiseStoreConfigShiftCount: '{{count}} shift(s)',

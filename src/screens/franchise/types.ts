@@ -10,10 +10,22 @@ export interface FranchiseDashboardStats {
   employeeSummary: number;
   salesSummary: number;
   attendanceSummary: number;
-  attritionTrend: { month: string; monthLabel: string; headcount: number; leavers: number; rate: number }[];
+  attritionTrend: {
+    month: string;
+    monthLabel: string;
+    headcount: number;
+    leavers: number;
+    rate: number;
+  }[];
   weekdayPerformance: { day: string; average: number }[];
   expenseBreakdown: { name: string; amount: number }[];
-  paymentMixTrend: { month: string; monthLabel: string; onlinePercent: number; upiPercent: number; cashPercent: number }[];
+  paymentMixTrend: {
+    month: string;
+    monthLabel: string;
+    onlinePercent: number;
+    upiPercent: number;
+    cashPercent: number;
+  }[];
 }
 
 export interface DailySale {

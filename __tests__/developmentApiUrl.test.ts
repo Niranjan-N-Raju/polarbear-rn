@@ -12,10 +12,14 @@ describe('development API base URL', () => {
     [undefined, 'android'],
     [undefined, 'ios'],
   ])('uses the deployed API host for %s on %s', (url, platform) => {
-    expect(developmentApiUrl(url, platform)).toBe('https://polarbear-be.vercel.app/api');
+    expect(developmentApiUrl(url, platform)).toBe(
+      'https://polarbear-be.vercel.app/api',
+    );
   });
 
   it('ignores the bundle URL host in favor of the deployed API host', () => {
-    expect(developmentApiUrl('https://public.example.com/', 'web')).toBe('https://polarbear-be.vercel.app/api');
+    expect(developmentApiUrl('https://public.example.com/', 'web')).toBe(
+      'https://polarbear-be.vercel.app/api',
+    );
   });
 });
