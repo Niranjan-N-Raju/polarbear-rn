@@ -30,7 +30,7 @@ export const employeesEn = {
   franchiseEmployeesSalary: 'Salary',
   franchiseEmployeesPaidLeave: 'Paid leave',
   franchiseEmployeesPaidLeaveEligible: 'Eligible',
-  franchiseEmployeesPaidLeaveNotEligible: 'Available after six months',
+  franchiseEmployeesPaidLeaveNotEligible: 'N/A',
   franchiseEmployeesPaidLeaveIncrement: 'Increase paid leave for {{name}}',
   franchiseEmployeesPaidLeaveDecrement: 'Decrease paid leave for {{name}}',
   franchiseEmployeesPaidLeaveUpdated: 'Paid leave balance updated.',

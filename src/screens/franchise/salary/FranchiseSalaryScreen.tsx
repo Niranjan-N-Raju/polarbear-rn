@@ -383,11 +383,7 @@ export function FranchiseSalaryScreen({ storeId }: { storeId: string }) {
                 })}
               </Text>
               <Text>
-                {formatMoney(
-                  selectedEmployee.basicSalary ??
-                    (selectedEmployee.salary * selectedEmployee.paidDays) /
-                      (data?.cycle.totalDays ?? 1),
-                )}
+                {formatMoney(selectedEmployee.basicSalary ?? 0)}
               </Text>
             </View>
             <View style={salaryStyles.detailLine}>
