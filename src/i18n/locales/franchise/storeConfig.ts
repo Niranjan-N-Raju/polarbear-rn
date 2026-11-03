@@ -6,6 +6,12 @@ export const storeConfigEn = {
   franchiseStoreConfigCycle: 'Salary cycle',
   franchiseStoreConfigPositions: 'Employee positions',
   franchiseStoreConfigShifts: 'Shifts',
+  franchiseStoreConfigPaidLeave: 'Paid leave',
+  franchiseStoreConfigPaidLeaveEnable: 'Enable paid leave for this store',
+  franchiseStoreConfigPaidLeaveDescription:
+    'Employees become eligible after six months. Balances are adjusted manually.',
+  franchiseStoreConfigPaidLeaveEnabled: 'Enabled for this store',
+  franchiseStoreConfigPaidLeaveDisabled: 'Not enabled for this store',
   franchiseStoreConfigName: 'Store name',
   franchiseStoreConfigLogo: 'Store logo',
   franchiseStoreConfigLogoHelp:

@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { theme } from '../../../config/theme';
 import { getLocale, t } from '../../../i18n';
-import { Archive, Pencil, RotateCcw } from '../../../icons';
+import { Archive, Minus, Pencil, Plus, RotateCcw } from '../../../icons';
 import { formatMoney } from '../DashboardCharts';
 import type { Employee } from './useFranchiseEmployees';
 
@@ -11,17 +11,22 @@ interface EmployeeTableProps {
   onEdit: (employee: Employee) => void;
   onArchive: (employee: Employee) => void;
   onRestore: (employee: Employee) => void;
+  paidLeaveEnabled: boolean;
+  adjustingPaidLeaveId: string | null;
+  onAdjustPaidLeave: (employee: Employee, action: 'increment' | 'decrement') => void;
 }
 
 function EmployeeAction({
   label,
   Icon,
   color,
+  disabled,
   onPress,
 }: {
   label: string;
   Icon: typeof Pencil;
   color: string;
+  disabled?: boolean;
   onPress: () => void;
 }) {
   const [showTooltip, setShowTooltip] = useState(false);
@@ -29,6 +34,7 @@ function EmployeeAction({
     <Pressable
       accessibilityRole="button"
       accessibilityLabel={label}
+      disabled={disabled}
       onPress={onPress}
       onHoverIn={() => setShowTooltip(true)}
       onHoverOut={() => setShowTooltip(false)}
@@ -65,6 +71,9 @@ export function EmployeeTable({
   onEdit,
   onArchive,
   onRestore,
+  paidLeaveEnabled,
+  adjustingPaidLeaveId,
+  onAdjustPaidLeave,
 }: EmployeeTableProps) {
   const showExitDate = employees.some(employee => employee.isActive === false);
   const columns = [
@@ -72,6 +81,9 @@ export function EmployeeTable({
     { label: t('franchiseEmployeesPhone'), width: 140 },
     { label: t('franchiseEmployeesPosition'), width: 140 },
     { label: t('franchiseEmployeesSalary'), width: 130 },
+    ...(paidLeaveEnabled
+      ? [{ label: t('franchiseEmployeesPaidLeave'), width: 185 }]
+      : []),
     { label: t('franchiseEmployeesJoined'), width: 130 },
     { label: t('franchiseEmployeesStatus'), width: 100 },
     ...(showExitDate
@@ -121,6 +133,37 @@ export function EmployeeTable({
             <Text role="cell" style={[styles.cell, { width: 130 }]}>
               {employee.salary == null ? '-' : formatMoney(employee.salary)}
             </Text>
+            {paidLeaveEnabled ? (
+              <View role="cell" style={[styles.statusCell, { width: 185 }]}>
+                <Text style={styles.cell}>
+                  {employee.paidLeaveBalance ?? 0}
+                </Text>
+                {employee.isActive !== false && employee.paidLeaveEligible ? (
+                  <View style={styles.actions}>
+                    <EmployeeAction
+                      label={`${t('franchiseEmployeesPaidLeaveIncrement', { name: employee.name })}`}
+                      Icon={Plus}
+                      color={theme.colors.teal}
+                      disabled={adjustingPaidLeaveId === employee._id}
+                      onPress={() => onAdjustPaidLeave(employee, 'increment')}
+                    />
+                    <EmployeeAction
+                      label={`${t('franchiseEmployeesPaidLeaveDecrement', { name: employee.name })}`}
+                      Icon={Minus}
+                      color={theme.colors.orange}
+                      disabled={adjustingPaidLeaveId === employee._id || (employee.paidLeaveBalance ?? 0) < 1}
+                      onPress={() => onAdjustPaidLeave(employee, 'decrement')}
+                    />
+                  </View>
+                ) : (
+                  <Text style={styles.cell}>
+                    {employee.paidLeaveEligible
+                      ? t('franchiseEmployeesArchived')
+                      : t('franchiseEmployeesPaidLeaveNotEligible')}
+                  </Text>
+                )}
+              </View>
+            ) : null}
             <Text role="cell" style={[styles.cell, { width: 130 }]}>
               {formatDate(employee.dateOfJoining)}
             </Text>

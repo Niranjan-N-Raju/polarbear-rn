@@ -3,6 +3,7 @@ import {
   Pressable,
   ScrollView,
   StyleSheet,
+  Switch,
   Text,
   TextInput,
   View,
@@ -20,7 +21,12 @@ export type StoreShift = {
   endTime: string;
 };
 export type StoreCycleType = 'calendar_month' | 'custom';
-export type StoreConfigSection = 'branding' | 'cycle' | 'positions' | 'shifts';
+export type StoreConfigSection =
+  | 'branding'
+  | 'cycle'
+  | 'positions'
+  | 'shifts'
+  | 'paid-leave';
 export interface StoreConfigValues {
   name: string;
   hasLogo: boolean;
@@ -30,6 +36,7 @@ export interface StoreConfigValues {
   endDay: number;
   positions: string[];
   shifts: StoreShift[];
+  paidLeaveEnabled: boolean;
 }
 export type StoreConfigPayload = {
   name?: string;
@@ -37,6 +44,7 @@ export type StoreConfigPayload = {
   startDay?: number;
   positions?: string[];
   shifts?: StoreShift[];
+  enabled?: boolean;
 };
 
 interface Props {
@@ -93,6 +101,9 @@ export function StoreConfigDrawer({
   const [positions, setPositions] = useState(value.positions);
   const [positionDraft, setPositionDraft] = useState('');
   const [shifts, setShifts] = useState(value.shifts);
+  const [paidLeaveEnabled, setPaidLeaveEnabled] = useState(
+    value.paidLeaveEnabled,
+  );
   const [shiftName, setShiftName] = useState('');
   const [shiftStart, setShiftStart] = useState('09:00');
   const [shiftEnd, setShiftEnd] = useState('17:00');
@@ -106,6 +117,7 @@ export function StoreConfigDrawer({
     setPositions(value.positions);
     setPositionDraft('');
     setShifts(value.shifts);
+    setPaidLeaveEnabled(value.paidLeaveEnabled);
     setShiftName('');
     setShiftStart('09:00');
     setShiftEnd('17:00');
@@ -119,7 +131,9 @@ export function StoreConfigDrawer({
       ? t('franchiseStoreConfigCycle')
       : section === 'positions'
       ? t('franchiseStoreConfigPositions')
-      : t('franchiseStoreConfigShifts');
+      : section === 'shifts'
+      ? t('franchiseStoreConfigShifts')
+      : t('franchiseStoreConfigPaidLeave');
 
   function addPosition() {
     const next = positionDraft.trim();
@@ -186,7 +200,8 @@ export function StoreConfigDrawer({
     else if (section === 'cycle')
       onSave(section, { cycleType, startDay: Number(startDay) });
     else if (section === 'positions') onSave(section, { positions });
-    else onSave(section, { shifts });
+    else if (section === 'shifts') onSave(section, { shifts });
+    else onSave(section, { enabled: paidLeaveEnabled });
   }
 
   return (
@@ -444,6 +459,27 @@ export function StoreConfigDrawer({
                 </Text>
               </Pressable>
             </>
+          ) : null}
+          {section === 'paid-leave' ? (
+            <View style={drawerStyles.positionRow}>
+              <View style={{ flex: 1, paddingRight: theme.spacing.md }}>
+                <Text style={{ color: theme.colors.primaryText }}>
+                  {t('franchiseStoreConfigPaidLeaveEnable')}
+                </Text>
+                <Text
+                  style={{ color: theme.colors.muted, marginTop: theme.spacing.xs }}
+                >
+                  {t('franchiseStoreConfigPaidLeaveDescription')}
+                </Text>
+              </View>
+              <Switch
+                accessibilityLabel={t('franchiseStoreConfigPaidLeaveEnable')}
+                value={paidLeaveEnabled}
+                onValueChange={setPaidLeaveEnabled}
+                disabled={busy}
+                trackColor={{ true: theme.colors.teal }}
+              />
+            </View>
           ) : null}
         </ScrollView>
         <View style={styles.modalActions}>

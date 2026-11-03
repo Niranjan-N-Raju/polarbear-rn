@@ -6,7 +6,7 @@ import { ResponsiveDrawerModal } from '../../../components/ResponsiveDrawerModal
 import { SummaryCards } from '../../../components/SummaryCards';
 import { theme } from '../../../config/theme';
 import { getLocale, t } from '../../../i18n';
-import { Archive, Filter, Pencil, Plus, RotateCcw, X } from '../../../icons';
+import { Archive, Filter, Minus, Pencil, Plus, RotateCcw, X } from '../../../icons';
 import { adminStyles as styles } from '../../../styles/adminStyles';
 import { EmployeeFiltersDrawer } from './EmployeeFiltersDrawer';
 import { EmployeeFormDrawer } from './EmployeeFormDrawer';
@@ -19,6 +19,8 @@ export function FranchiseEmployeesScreen() {
   const {
     layout,
     employees,
+    paidLeaveEnabled,
+    adjustingPaidLeaveId,
     loading,
     loadError,
     setReloadKey,
@@ -51,6 +53,7 @@ export function FranchiseEmployeesScreen() {
     saved,
     archive,
     restore,
+    adjustPaidLeave,
     afterFormClose,
     afterArchiveClose,
   } = useFranchiseEmployees();
@@ -141,6 +144,9 @@ export function FranchiseEmployeesScreen() {
             <EmployeeTable
               employees={filtered.slice(0, visibleCount)}
               onEdit={openEdit}
+              paidLeaveEnabled={paidLeaveEnabled}
+              adjustingPaidLeaveId={adjustingPaidLeaveId}
+              onAdjustPaidLeave={adjustPaidLeave}
               onArchive={employee => {
                 setExitDate(businessDate());
                 setArchiveTarget(employee);
@@ -239,6 +245,41 @@ export function FranchiseEmployeesScreen() {
                         : '—'}
                     </Text>
                   </View>
+                  {paidLeaveEnabled ? (
+                    <View style={employeeStyles.metrics}>
+                      <Text style={employeeStyles.detail}>
+                        {t('franchiseEmployeesPaidLeave')}: {employee.paidLeaveBalance ?? 0}
+                      </Text>
+                      {employee.isActive !== false && employee.paidLeaveEligible ? (
+                        <View style={employeeStyles.metrics}>
+                          <Pressable
+                            accessibilityRole="button"
+                            accessibilityLabel={t('franchiseEmployeesPaidLeaveIncrement', { name: employee.name })}
+                            disabled={adjustingPaidLeaveId === employee._id}
+                            onPress={() => void adjustPaidLeave(employee, 'increment')}
+                            style={styles.userIconAction}
+                          >
+                            <Plus color={theme.colors.teal} size={16} />
+                          </Pressable>
+                          <Pressable
+                            accessibilityRole="button"
+                            accessibilityLabel={t('franchiseEmployeesPaidLeaveDecrement', { name: employee.name })}
+                            disabled={adjustingPaidLeaveId === employee._id || (employee.paidLeaveBalance ?? 0) < 1}
+                            onPress={() => void adjustPaidLeave(employee, 'decrement')}
+                            style={styles.userIconAction}
+                          >
+                            <Minus color={theme.colors.orange} size={16} />
+                          </Pressable>
+                        </View>
+                      ) : (
+                        <Text style={employeeStyles.detail}>
+                          {employee.paidLeaveEligible
+                            ? t('franchiseEmployeesArchived')
+                            : t('franchiseEmployeesPaidLeaveNotEligible')}
+                        </Text>
+                      )}
+                    </View>
+                  ) : null}
                   <View
                     style={[
                       employeeStyles.badge,

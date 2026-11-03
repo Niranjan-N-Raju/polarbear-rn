@@ -17,6 +17,7 @@ export const initial: StoreConfigValues = {
   endDay: 31,
   positions: [],
   shifts: [],
+  paidLeaveEnabled: false,
 };
 // Encode bytes without relying on browser btoa or Node Buffer, neither of which is universal on native.
 export function bytesToBase64(bytes: Uint8Array) {
@@ -62,6 +63,7 @@ export function useFranchiseStoreConfig({ storeId }: { storeId: string }) {
         `/stores/cycle?period=${currentPeriod()}`,
         '/stores/positions',
         '/stores/shifts',
+        '/stores/paid-leave',
       ];
       const responses = await Promise.all(paths.map(path => apiRequest(path)));
       // Publish a combined configuration only when every section has loaded successfully.
@@ -78,6 +80,7 @@ export function useFranchiseStoreConfig({ storeId }: { storeId: string }) {
             };
             positions?: string[];
             shifts?: StoreShift[];
+            enabled?: boolean;
           };
           if (!response.ok)
             throw new Error(
@@ -96,6 +99,7 @@ export function useFranchiseStoreConfig({ storeId }: { storeId: string }) {
         endDay: cycle.endDay ?? 31,
         positions: results[2].positions ?? [],
         shifts: results[3].shifts ?? [],
+        paidLeaveEnabled: results[4].enabled === true,
       });
     } catch (error) {
       setLoadError(

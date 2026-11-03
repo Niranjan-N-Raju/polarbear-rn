@@ -73,6 +73,8 @@ CREATE TABLE stores (
         CASE WHEN salary_cycle_type = 'calendar_month' THEN 31 ELSE salary_cycle_start_day - 1 END
     ) STORED,
     salary_cycle_configured_at DATETIME(3) NULL,
+    -- Store-level opt-in; employee leave balances remain unchanged when disabled.
+    paid_leave_enabled BOOLEAN NOT NULL DEFAULT FALSE,
     is_active BOOLEAN NOT NULL DEFAULT TRUE,
     archived_at DATETIME(3) NULL,
     created_by BIGINT UNSIGNED NULL,
@@ -119,6 +121,8 @@ CREATE TABLE employee_profiles (
     employment_type ENUM('full_time', 'part_time') NULL,
     salary DECIMAL(14,2) NULL,
     salary_baseline DECIMAL(14,2) NULL,
+    -- Manually adjusted balance; six-month joining eligibility is enforced by the API.
+    paid_leave_balance INT UNSIGNED NOT NULL DEFAULT 0,
     date_of_joining DATE NULL,
     actual_dob DATE NULL,
     dob_in_records DATE NULL,
@@ -484,6 +488,7 @@ SELECT employee.employee_number AS employee_id,
        account.is_active,
        account.archived_at,
        account.created_at,
+    employee.paid_leave_balance,
        COALESCE((
            SELECT revision.position
            FROM employee_salary_revisions AS revision

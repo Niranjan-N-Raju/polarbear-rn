@@ -18,6 +18,8 @@ export interface Employee {
   employmentType?: 'full_time' | 'part_time';
   salary?: number | null;
   latestSalary?: number | null;
+  paidLeaveBalance?: number;
+  paidLeaveEligible?: boolean;
   dateOfJoining?: string;
   isActive?: boolean;
   archivedAt?: string;
@@ -58,6 +60,8 @@ export function useFranchiseEmployees() {
     tone: 'success' | 'error';
   } | null>(null);
   const [pendingToast, setPendingToast] = useState('');
+  const [paidLeaveEnabled, setPaidLeaveEnabled] = useState(false);
+  const [adjustingPaidLeaveId, setAdjustingPaidLeaveId] = useState<string | null>(null);
   const load = useCallback(async () => {
     setLoading(true);
     setLoadError('');
@@ -66,11 +70,20 @@ export function useFranchiseEmployees() {
         includeArchived: 'true',
         limit: '500',
       });
-      const response = await apiRequest(`/users?${query.toString()}`);
-      const data = (await response.json().catch(() => ({}))) as EmployeeData;
+      const [response, paidLeaveResponse] = await Promise.all([
+        apiRequest(`/users?${query.toString()}`),
+        apiRequest('/stores/paid-leave'),
+      ]);
+      const [data, paidLeaveData] = await Promise.all([
+        response.json().catch(() => ({})) as Promise<EmployeeData>,
+        paidLeaveResponse.json().catch(() => ({})) as Promise<{ enabled?: boolean; message?: string }>,
+      ]);
       if (!response.ok)
         throw new Error(data.message ?? t('franchiseEmployeesLoadFailed'));
+      if (!paidLeaveResponse.ok)
+        throw new Error(paidLeaveData.message ?? t('franchiseEmployeesLoadFailed'));
       setEmployees(data.users ?? []);
+      setPaidLeaveEnabled(paidLeaveData.enabled === true);
       setVisibleCount(pageSize);
     } catch (failure) {
       setLoadError(
@@ -224,6 +237,43 @@ export function useFranchiseEmployees() {
       });
     }
   };
+  const adjustPaidLeave = async (
+    employee: Employee,
+    action: 'increment' | 'decrement',
+  ) => {
+    if (adjustingPaidLeaveId) return;
+    setAdjustingPaidLeaveId(employee._id);
+    try {
+      const response = await apiRequest(
+        `/users/${encodeURIComponent(employee._id)}/paid-leave`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action, amount: 1 }),
+        },
+      );
+      const data = (await response.json().catch(() => ({}))) as {
+        message?: string;
+      };
+      if (!response.ok)
+        throw new Error(data.message ?? t('franchiseEmployeesActionFailed'));
+      setToast({
+        message: data.message ?? t('franchiseEmployeesPaidLeaveUpdated'),
+        tone: 'success',
+      });
+      setReloadKey(key => key + 1);
+    } catch (failure) {
+      setToast({
+        message:
+          failure instanceof Error
+            ? failure.message
+            : t('franchiseEmployeesActionFailed'),
+        tone: 'error',
+      });
+    } finally {
+      setAdjustingPaidLeaveId(null);
+    }
+  };
   const afterFormClose = () => {
     if (pendingToast) {
       setToast({ message: pendingToast, tone: 'success' });
@@ -241,6 +291,8 @@ export function useFranchiseEmployees() {
   return {
     layout,
     employees,
+    paidLeaveEnabled,
+    adjustingPaidLeaveId,
     loading,
     loadError,
     setReloadKey,
@@ -275,6 +327,7 @@ export function useFranchiseEmployees() {
     saved,
     archive,
     restore,
+    adjustPaidLeave,
     afterFormClose,
     afterArchiveClose,
   };

@@ -87,6 +87,14 @@ export function FranchiseStoreConfigScreen({ storeId }: { storeId: string }) {
       }),
       Icon: Coffee,
     },
+    {
+      section: 'paid-leave',
+      title: t('franchiseStoreConfigPaidLeave'),
+      summary: value.paidLeaveEnabled
+        ? t('franchiseStoreConfigPaidLeaveEnabled')
+        : t('franchiseStoreConfigPaidLeaveDisabled'),
+      Icon: UsersRound,
+    },
   ];
   return (
     <View style={styles.content}>
