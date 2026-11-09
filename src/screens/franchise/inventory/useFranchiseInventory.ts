@@ -19,7 +19,6 @@ export { pageSize };
 export type DrawerState =
   | { type: 'filters' }
   | { type: 'stock' }
-  | { type: 'products' }
   | { type: 'action'; item: InventoryStockItem; action: InventoryAction }
   | null;
 export interface FranchiseInventoryScreenProps {

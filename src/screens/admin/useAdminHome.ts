@@ -2,7 +2,13 @@ import { useCallback, useState } from 'react';
 import { useWindowDimensions } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { apiRequest, setAccessToken } from '../../api/auth';
-import { LayoutDashboard, Store, UserRound, UsersRound } from '../../icons';
+import {
+  LayoutDashboard,
+  Package,
+  Store,
+  UserRound,
+  UsersRound,
+} from '../../icons';
 import {
   getAdminDrawerSafeAreaStyles,
   getAdminSafeAreaStyles,
@@ -67,6 +73,15 @@ export function useAdminHome({
     },
     { key: 'stores' as const, label: 'adminStores' as const, Icon: Store },
     { key: 'users' as const, label: 'adminUsers' as const, Icon: UsersRound },
+    ...(initialUser.role === 'admin'
+      ? [
+          {
+            key: 'raw-materials' as const,
+            label: 'adminRawMaterials' as const,
+            Icon: Package,
+          },
+        ]
+      : []),
     {
       key: 'profile' as const,
       label: 'adminProfile' as const,

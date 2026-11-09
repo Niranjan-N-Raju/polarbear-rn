@@ -8,6 +8,7 @@ import { ChevronsLeft, LogOut, Menu, UserRound, X } from '../../icons';
 import { adminStyles as styles } from '../../styles/adminStyles';
 import { AdminDashboardScreen } from './AdminDashboardScreen';
 import { AdminProfileScreen } from './AdminProfileScreen';
+import { AdminRawMaterialsScreen } from './raw-materials/AdminRawMaterialsScreen';
 import { AdminStoresScreen } from './stores/AdminStoresScreen';
 import type { AdminHomeScreenProps } from './types';
 import { useAdminHome } from './useAdminHome';
@@ -234,6 +235,9 @@ export function AdminHomeScreen({
           ) : null}
           {activeTab === 'users' ? (
             <AdminUsersScreen onToast={showAppToast} />
+          ) : null}
+          {activeTab === 'raw-materials' && user.role === 'admin' ? (
+            <AdminRawMaterialsScreen onToast={showAppToast} />
           ) : null}
           {activeTab === 'profile' ? (
             <AdminProfileScreen

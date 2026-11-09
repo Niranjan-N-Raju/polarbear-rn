@@ -5,13 +5,12 @@ import { AppToast } from '../../../components/AppToast';
 import { SummaryCards } from '../../../components/SummaryCards';
 import { theme } from '../../../config/theme';
 import { t } from '../../../i18n';
-import { Filter, Package, Plus } from '../../../icons';
+import { Filter, Plus } from '../../../icons';
 import { adminStyles as styles } from '../../../styles/adminStyles';
 import { InventoryActionDrawer } from './InventoryActionDrawer';
 import { InventoryCard } from './InventoryCard';
 import { InventoryFiltersDrawer } from './InventoryFiltersDrawer';
 import { inventoryStyles } from './inventoryStyles';
-import { ProductsDrawer } from './ProductsDrawer';
 import { StockFormDrawer } from './StockFormDrawer';
 import {
   type FranchiseInventoryScreenProps,
@@ -69,51 +68,34 @@ export function FranchiseInventoryScreen({
               : styles.screenHeaderCopyNative
           }
         >
-          <View style={styles.screenTitleRow}>
-            <Text style={[styles.screenTitle, styles.screenTitleInline]}>
-              {t('franchiseInventory')}
-            </Text>
+          <View style={inventoryStyles.headerCopyRow}>
+            <View style={inventoryStyles.headerText}>
+              <Text style={[styles.screenTitle, styles.screenTitleInline]}>
+                {t('franchiseInventory')}
+              </Text>
+              <Text style={styles.screenDescription}>
+                {t('franchiseInventoryDescription', {
+                  count: items.length,
+                  units: totalUnits,
+                })}
+              </Text>
+            </View>
             <Pressable
               accessibilityRole="button"
               accessibilityLabel={t('franchiseInventoryFilter')}
               onPress={openFilters}
-              style={styles.filterIconButton}
+              style={[styles.filterIconButton, inventoryStyles.filterIconButton]}
             >
               <Filter color={theme.colors.teal} size={18} />
               {hasActiveFilters ? (
                 <View style={styles.filterActiveDot} />
               ) : null}
             </Pressable>
-            {!layout.desktopWeb ? (
-              <Pressable
-                accessibilityRole="button"
-                accessibilityLabel={t('franchiseInventoryProducts')}
-                onPress={() => setDrawer({ type: 'products' })}
-                style={styles.filterIconButton}
-              >
-                <Package color={theme.colors.teal} size={18} />
-              </Pressable>
-            ) : null}
           </View>
-          <Text style={styles.screenDescription}>
-            {t('franchiseInventoryDescription', {
-              count: items.length,
-              units: totalUnits,
-            })}
-          </Text>
         </View>
         <View style={styles.screenHeaderActions}>
           {layout.desktopWeb ? (
             <View style={inventoryStyles.headerButtons}>
-              <Pressable
-                accessibilityRole="button"
-                onPress={() => setDrawer({ type: 'products' })}
-                style={[styles.secondaryButton, styles.screenHeaderAction]}
-              >
-                <Text style={styles.secondaryButtonText}>
-                  {t('franchiseInventoryProducts')}
-                </Text>
-              </Pressable>
               <Pressable
                 accessibilityRole="button"
                 onPress={() => setDrawer({ type: 'stock' })}
@@ -234,12 +216,6 @@ export function FranchiseInventoryScreen({
         onClose={() => setDrawer(null)}
         onAfterClose={handleAfterClose}
         onSaved={completeWithToast}
-      />
-
-      <ProductsDrawer
-        visible={drawer?.type === 'products'}
-        onClose={() => setDrawer(null)}
-        onAfterClose={handleAfterClose}
       />
 
       <InventoryActionDrawer

@@ -4,6 +4,24 @@ import { theme } from '../../../config/theme';
 const { colors, spacing, typography } = theme;
 
 export const inventoryStyles = StyleSheet.create({
+  headerCopyRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.md,
+  },
+  headerText: {
+    flex: 1,
+    minWidth: 0,
+  },
+  filterIconButton: {
+    alignSelf: 'center',
+    flexShrink: 0,
+  },
+  headerIconGroup: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.xs,
+  },
   headerIconButton: {
     width: 40,
     height: 40,

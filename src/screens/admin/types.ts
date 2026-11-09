@@ -1,6 +1,11 @@
 import type { AuthenticatedUser } from '../../api/types';
 
-export type AdminTab = 'dashboard' | 'stores' | 'users' | 'profile';
+export type AdminTab =
+  | 'dashboard'
+  | 'stores'
+  | 'users'
+  | 'raw-materials'
+  | 'profile';
 
 export interface AdminHomeScreenProps {
   user: AuthenticatedUser;
