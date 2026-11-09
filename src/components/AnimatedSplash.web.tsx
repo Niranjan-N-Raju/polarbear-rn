@@ -1,5 +1,4 @@
 import { useEffect, useRef } from 'react';
-import BootSplash from 'react-native-bootsplash';
 
 export const MIN_SPLASH_MS = 1500;
 
@@ -12,11 +11,13 @@ export function AnimatedSplash({ onFinish }: Props) {
 
   useEffect(() => {
     const timer = setTimeout(() => {
-      BootSplash.hide({ fade: true })
-        .catch((error: unknown) =>
-          console.error('Unable to dismiss launch splash:', error),
-        )
-        .finally(() => onFinishRef.current());
+      const splash = document.getElementById('bootsplash');
+      if (splash) {
+        splash.style.transition = 'opacity 240ms ease';
+        splash.style.opacity = '0';
+        setTimeout(() => splash.remove(), 240);
+      }
+      onFinishRef.current();
     }, MIN_SPLASH_MS);
     return () => clearTimeout(timer);
   }, []);

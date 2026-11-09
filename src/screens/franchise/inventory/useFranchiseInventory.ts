@@ -78,6 +78,10 @@ export function useFranchiseInventory() {
     };
   }, [reloadKey]);
   const summary = useMemo(() => summarizeInventory(items), [items]);
+  const totalUnits = useMemo(
+    () => items.reduce((sum, item) => sum + item.quantity, 0),
+    [items],
+  );
   // Summary badges describe all loaded stock, while filters only narrow the visible list.
   const filteredItems = useMemo(
     () => filterInventory(items, filters),
@@ -86,10 +90,6 @@ export function useFranchiseInventory() {
   const visibleItems = filteredItems.slice(0, visibleCount);
   const hasActiveFilters =
     filters.status !== 'all' || filters.search.trim() !== '';
-  const totalUnits = useMemo(
-    () => items.reduce((sum, item) => sum + item.quantity, 0),
-    [items],
-  );
   const applyFilterState = (next: InventoryFilters) => {
     setFilters(next);
     setVisibleCount(pageSize);

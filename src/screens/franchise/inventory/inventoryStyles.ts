@@ -91,33 +91,6 @@ export const inventoryStyles = StyleSheet.create({
   addInput: {
     flex: 1,
   },
-  addButton: {
-    minHeight: 44,
-    paddingHorizontal: spacing.lg,
-  },
-  hint: {
-    color: colors.muted,
-    fontSize: typography.xs,
-    marginBottom: spacing.lg,
-  },
-  productIndex: {
-    width: 24,
-    color: colors.muted,
-    fontSize: typography.xs,
-    fontWeight: theme.fontWeight.bold,
-  },
-  confirmBox: {
-    marginTop: spacing.sm,
-    padding: spacing.md,
-    gap: spacing.sm,
-    borderWidth: theme.border.width,
-    borderColor: 'rgba(220, 38, 38, 0.3)',
-    backgroundColor: 'rgba(220, 38, 38, 0.06)',
-  },
-  confirmText: {
-    color: colors.ink,
-    fontSize: typography.sm,
-  },
   dangerButton: {
     backgroundColor: colors.error,
     borderColor: colors.error,

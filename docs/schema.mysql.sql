@@ -400,16 +400,16 @@ CREATE TABLE withdrawals (
     CONSTRAINT ck_withdrawals_amount CHECK (amount >= 0)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
-CREATE TABLE raw_materials (
+CREATE TABLE products (
     id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
     mongo_id CHAR(24) CHARACTER SET ascii COLLATE ascii_bin NULL,
     name VARCHAR(100) NOT NULL,
     normalized_name VARCHAR(100) GENERATED ALWAYS AS (LOWER(TRIM(name))) STORED,
     created_at DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
     PRIMARY KEY (id),
-    UNIQUE KEY uq_raw_materials_mongo (mongo_id),
-    UNIQUE KEY uq_raw_materials_normalized_name (normalized_name),
-    CONSTRAINT ck_raw_materials_name CHECK (CHAR_LENGTH(TRIM(name)) > 0)
+    UNIQUE KEY uq_products_mongo (mongo_id),
+    UNIQUE KEY uq_products_normalized_name (normalized_name),
+    CONSTRAINT ck_products_name CHECK (CHAR_LENGTH(TRIM(name)) > 0)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 -- product_id retains the MongoDB inventory field's existing name for compatibility.
@@ -427,7 +427,7 @@ CREATE TABLE inventory_items (
     UNIQUE KEY uq_inventory_items_scope (id, store_id, product_id),
     KEY ix_inventory_items_expiry (store_id, expiry_date),
     CONSTRAINT fk_inventory_items_store FOREIGN KEY (store_id) REFERENCES stores (id) ON DELETE RESTRICT,
-    CONSTRAINT fk_inventory_items_raw_material FOREIGN KEY (product_id) REFERENCES raw_materials (id) ON DELETE RESTRICT,
+    CONSTRAINT fk_inventory_items_product FOREIGN KEY (product_id) REFERENCES products (id) ON DELETE RESTRICT,
     CONSTRAINT ck_inventory_items_quantity CHECK (quantity >= 0)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 

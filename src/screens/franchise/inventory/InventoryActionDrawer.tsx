@@ -139,7 +139,9 @@ export function InventoryActionDrawer({
             </Text>
             <Text style={inventoryStyles.actionSummaryText}>
               {dump
-                ? t('franchiseInventoryDumpMessage', { count: item.quantity })
+                ? t('franchiseInventoryDumpMessage', {
+                    count: item.quantity,
+                  })
                 : action === 'useOne'
                 ? t('franchiseInventoryUseOneMessage')
                 : t('franchiseInventoryUseManyMessage')}
