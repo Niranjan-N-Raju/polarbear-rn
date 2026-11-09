@@ -37,7 +37,7 @@ export function useFranchiseHome({
   const pickerPanelStyle = hasSidebar
     ? undefined
     : {
-        height: 'auto' as const,
+        height: Math.min(height * 0.85, 680),
         maxHeight: height * 0.85,
         borderTopLeftRadius: 20,
         borderTopRightRadius: 20,

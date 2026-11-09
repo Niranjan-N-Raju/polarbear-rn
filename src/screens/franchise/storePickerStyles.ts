@@ -4,7 +4,7 @@ import { theme } from '../../config/theme';
 const { colors, spacing, typography } = theme;
 
 export const storePickerStyles = StyleSheet.create({
-  sheet: { flexShrink: 1, minHeight: 0, backgroundColor: colors.white },
+  sheet: { flex: 1, minHeight: 0, backgroundColor: colors.white },
   sheetFill: { flex: 1 },
   handle: {
     width: 40,
@@ -46,7 +46,7 @@ export const storePickerStyles = StyleSheet.create({
     justifyContent: 'center',
     backgroundColor: colors.paleBackground,
   },
-  list: { flexGrow: 0, flexShrink: 1, minHeight: 0 },
+  list: { flex: 1, minHeight: 0 },
   listFill: { flex: 1 },
   listContent: {
     paddingHorizontal: spacing['2xl'],
