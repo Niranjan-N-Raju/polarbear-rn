@@ -4,7 +4,10 @@ export type AdminTab =
   | 'dashboard'
   | 'stores'
   | 'users'
+  | 'catalog'
   | 'raw-materials'
+  | 'product-categories'
+  | 'products'
   | 'profile';
 
 export interface AdminHomeScreenProps {

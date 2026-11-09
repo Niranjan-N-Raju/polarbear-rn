@@ -4,9 +4,17 @@ import { AppLoader } from '../../components/AppLoader';
 import { AppToast } from '../../components/AppToast';
 import { theme } from '../../config/theme';
 import { t, translateRole } from '../../i18n';
-import { ChevronsLeft, LogOut, Menu, UserRound, X } from '../../icons';
+import {
+  ChevronRight,
+  ChevronsLeft,
+  LogOut,
+  Menu,
+  UserRound,
+  X,
+} from '../../icons';
 import { adminStyles as styles } from '../../styles/adminStyles';
 import { AdminDashboardScreen } from './AdminDashboardScreen';
+import { AdminProductCategoriesScreen } from './product-categories/AdminProductCategoriesScreen';
 import { AdminProfileScreen } from './AdminProfileScreen';
 import { AdminRawMaterialsScreen } from './raw-materials/AdminRawMaterialsScreen';
 import { AdminStoresScreen } from './stores/AdminStoresScreen';
@@ -25,6 +33,8 @@ export function AdminHomeScreen({
     setUser,
     activeTab,
     setActiveTab,
+    catalogExpanded,
+    setCatalogExpanded,
     isSidebarCollapsed,
     setIsSidebarCollapsed,
     isDrawerOpen,
@@ -38,9 +48,11 @@ export function AdminHomeScreen({
     logout,
     tabs,
     primaryTabs,
+    catalogTabs,
   } = useAdminHome({ user: initialUser, onLogout });
   const activeLabel =
-    tabs.find(tab => tab.key === activeTab)?.label ?? 'adminDashboard';
+    [...tabs, ...catalogTabs].find(tab => tab.key === activeTab)?.label ??
+    'adminDashboard';
   const documentTitle = `${t(activeLabel)} · ${t('brandName')}`;
   useEffect(() => {
     if (Platform.OS === 'web' && typeof document !== 'undefined') {
@@ -107,6 +119,78 @@ export function AdminHomeScreen({
           <View style={styles.webSidebarNav}>
             {primaryTabs.map(({ key, label, Icon }) => {
               const active = activeTab === key;
+              if (key === 'catalog') {
+                const catalogActive = catalogTabs.some(
+                  tab => tab.key === activeTab,
+                );
+                return (
+                  <View key={key}>
+                    <Pressable
+                      accessibilityRole="button"
+                      accessibilityLabel={isSidebarCollapsed ? t(label) : undefined}
+                      accessibilityState={{ expanded: catalogExpanded, selected: catalogActive }}
+                      onPress={() => {
+                        if (isSidebarCollapsed) {
+                          setIsSidebarCollapsed(false);
+                          setCatalogExpanded(true);
+                        } else {
+                          setCatalogExpanded(value => !value);
+                        }
+                      }}
+                      style={[
+                        styles.webSidebarItem,
+                        isSidebarCollapsed && styles.webSidebarItemCollapsed,
+                        catalogActive && styles.webSidebarItemActive,
+                      ]}
+                    >
+                      <Icon
+                        color={catalogActive ? theme.colors.teal : theme.colors.muted}
+                        size={layout.sidebarIconSize}
+                      />
+                      {!isSidebarCollapsed ? (
+                        <>
+                          <Text style={[styles.webSidebarItemText, catalogActive && styles.webSidebarItemTextActive]}>
+                            {t(label)}
+                          </Text>
+                          <ChevronRight
+                            color={theme.colors.muted}
+                            size={14}
+                            style={{ transform: [{ rotate: catalogExpanded ? '90deg' : '0deg' }] }}
+                          />
+                        </>
+                      ) : null}
+                    </Pressable>
+                    {catalogExpanded && !isSidebarCollapsed ? (
+                      <View>
+                        {catalogTabs.map(({ key: childKey, label: childLabel, Icon: ChildIcon }) => {
+                          const childActive = activeTab === childKey;
+                          return (
+                            <Pressable
+                              key={childKey}
+                              accessibilityRole="button"
+                              accessibilityState={{ selected: childActive }}
+                              onPress={() => {
+                                setActiveTab(childKey);
+                                setCatalogExpanded(true);
+                              }}
+                              style={[
+                                styles.webSidebarItem,
+                                { paddingLeft: 38 },
+                                childActive && styles.webSidebarItemActive,
+                              ]}
+                            >
+                              <ChildIcon color={childActive ? theme.colors.teal : theme.colors.muted} size={16} />
+                              <Text style={[styles.webSidebarItemText, childActive && styles.webSidebarItemTextActive]}>
+                                {t(childLabel)}
+                              </Text>
+                            </Pressable>
+                          );
+                        })}
+                      </View>
+                    ) : null}
+                  </View>
+                );
+              }
               return (
                 <Pressable
                   key={key}
@@ -215,9 +299,7 @@ export function AdminHomeScreen({
               <Text style={styles.headerUser} numberOfLines={1}>
                 {user.name} · {translateRole(user.role)}
               </Text>
-              <Text style={styles.headerTitle}>
-                {t(tabs.find(tab => tab.key === activeTab)!.label)}
-              </Text>
+              <Text style={styles.headerTitle}>{t(activeLabel)}</Text>
             </View>
           </View>
         </View>
@@ -238,6 +320,17 @@ export function AdminHomeScreen({
           ) : null}
           {activeTab === 'raw-materials' && user.role === 'admin' ? (
             <AdminRawMaterialsScreen onToast={showAppToast} />
+          ) : null}
+          {activeTab === 'product-categories' && user.role === 'admin' ? (
+            <AdminProductCategoriesScreen onToast={showAppToast} />
+          ) : null}
+          {activeTab === 'products' && user.role === 'admin' ? (
+            <View style={styles.screen}>
+              <Text style={styles.screenTitle}>{t('adminProducts')}</Text>
+              <Text style={styles.screenDescription}>
+                {t('adminProductsNotReady')}
+              </Text>
+            </View>
           ) : null}
           {activeTab === 'profile' ? (
             <AdminProfileScreen
@@ -310,6 +403,59 @@ export function AdminHomeScreen({
               >
                 {primaryTabs.map(({ key, label, Icon }) => {
                   const active = activeTab === key;
+                  if (key === 'catalog') {
+                    const catalogActive = catalogTabs.some(
+                      tab => tab.key === activeTab,
+                    );
+                    return (
+                      <View key={key}>
+                        <Pressable
+                          accessibilityRole="button"
+                          accessibilityState={{ expanded: catalogExpanded, selected: catalogActive }}
+                          onPress={() => setCatalogExpanded(value => !value)}
+                          style={[
+                            layout.isWeb ? styles.webSidebarItem : styles.drawerItem,
+                            catalogActive && (layout.isWeb ? styles.webSidebarItemActive : styles.drawerItemActive),
+                          ]}
+                        >
+                          <Icon color={catalogActive ? theme.colors.teal : theme.colors.muted} size={layout.isWeb ? layout.sidebarIconSize : theme.layout.iconSize} />
+                          <Text style={[layout.isWeb ? styles.webSidebarItemText : styles.drawerItemText, catalogActive && (layout.isWeb ? styles.webSidebarItemTextActive : styles.drawerItemTextActive)]}>
+                            {t(label)}
+                          </Text>
+                          <ChevronRight
+                            color={theme.colors.muted}
+                            size={14}
+                            style={{ transform: [{ rotate: catalogExpanded ? '90deg' : '0deg' }] }}
+                          />
+                        </Pressable>
+                        {catalogExpanded ? catalogTabs.map(({ key: childKey, label: childLabel, Icon: ChildIcon }) => {
+                          const childActive = activeTab === childKey;
+                          return (
+                            <Pressable
+                              key={childKey}
+                              accessibilityRole="button"
+                              accessibilityState={{ selected: childActive }}
+                              onPress={() => {
+                                setActiveTab(childKey);
+                                setCatalogExpanded(true);
+                                setIsDrawerOpen(false);
+                              }}
+                              style={[
+                                layout.isWeb ? styles.webSidebarItem : styles.drawerItem,
+                                { paddingLeft: layout.isWeb ? 38 : theme.spacing['3xl'] },
+                                childActive && (layout.isWeb ? styles.webSidebarItemActive : styles.drawerItemActive),
+                              ]}
+                            >
+                              <ChildIcon color={childActive ? theme.colors.teal : theme.colors.muted} size={layout.isWeb ? 16 : theme.layout.iconSize - 2} />
+                              <Text style={[layout.isWeb ? styles.webSidebarItemText : styles.drawerItemText, childActive && (layout.isWeb ? styles.webSidebarItemTextActive : styles.drawerItemTextActive)]}>
+                                {t(childLabel)}
+                              </Text>
+                            </Pressable>
+                          );
+                        }) : null}
+                      </View>
+                    );
+                  }
                   return (
                     <Pressable
                       key={key}

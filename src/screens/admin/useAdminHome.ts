@@ -25,6 +25,7 @@ export function useAdminHome({
   const layout = getAdminLayout(width);
   const [user, setUser] = useState(initialUser);
   const [activeTab, setActiveTab] = useState<AdminTab>('dashboard');
+  const [catalogExpanded, setCatalogExpanded] = useState(false);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
@@ -76,8 +77,8 @@ export function useAdminHome({
     ...(initialUser.role === 'admin'
       ? [
           {
-            key: 'raw-materials' as const,
-            label: 'adminRawMaterials' as const,
+            key: 'catalog' as const,
+            label: 'adminCatalog' as const,
             Icon: Package,
           },
         ]
@@ -88,6 +89,26 @@ export function useAdminHome({
       Icon: UserRound,
     },
   ];
+  const catalogTabs =
+    initialUser.role === 'admin'
+      ? [
+          {
+            key: 'raw-materials' as const,
+            label: 'adminRawMaterials' as const,
+            Icon: Package,
+          },
+          {
+            key: 'product-categories' as const,
+            label: 'adminProductCategories' as const,
+            Icon: Package,
+          },
+          {
+            key: 'products' as const,
+            label: 'adminProducts' as const,
+            Icon: Package,
+          },
+        ]
+      : [];
   const primaryTabs = tabs.filter(tab => tab.key !== 'profile');
   return {
     layout,
@@ -95,6 +116,8 @@ export function useAdminHome({
     setUser,
     activeTab,
     setActiveTab,
+    catalogExpanded,
+    setCatalogExpanded,
     isSidebarCollapsed,
     setIsSidebarCollapsed,
     isDrawerOpen,
@@ -108,5 +131,6 @@ export function useAdminHome({
     logout,
     tabs,
     primaryTabs,
+    catalogTabs,
   };
 }

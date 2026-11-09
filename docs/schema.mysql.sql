@@ -412,6 +412,18 @@ CREATE TABLE products (
     CONSTRAINT ck_products_name CHECK (CHAR_LENGTH(TRIM(name)) > 0)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
+CREATE TABLE product_categories (
+    id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+    mongo_id CHAR(24) CHARACTER SET ascii COLLATE ascii_bin NULL,
+    name VARCHAR(100) NOT NULL,
+    normalized_name VARCHAR(100) GENERATED ALWAYS AS (LOWER(TRIM(name))) STORED,
+    created_at DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+    PRIMARY KEY (id),
+    UNIQUE KEY uq_product_categories_mongo (mongo_id),
+    UNIQUE KEY uq_product_categories_normalized_name (normalized_name),
+    CONSTRAINT ck_product_categories_name CHECK (CHAR_LENGTH(TRIM(name)) > 0)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
 -- product_id retains the MongoDB inventory field's existing name for compatibility.
 CREATE TABLE inventory_items (
     id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
