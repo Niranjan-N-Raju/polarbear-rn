@@ -45,6 +45,7 @@ export const styles = StyleSheet.create({
     flex: 0,
     flexShrink: 1,
     maxHeight: '100%',
+    borderRadius: 8,
   },
   webCompactShell: {
     flexGrow: 0,
@@ -132,16 +133,16 @@ export const styles = StyleSheet.create({
     minHeight: 0,
   },
   mobileBrand: {
-    backgroundColor: colors.teal,
+    backgroundColor: 'transparent',
     paddingHorizontal: spacing['5xl'],
-    paddingBottom: spacing['3xl'],
+    paddingBottom: spacing.lg,
   },
   mobileProgress: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: spacing.sm,
-    paddingHorizontal: spacing['6xl'],
-    paddingBottom: spacing.lg,
+    paddingHorizontal: 0,
+    paddingBottom: spacing.md,
   },
   mobileProgressOrange: {
     width: spacing['8xl'],
@@ -162,6 +163,7 @@ export const styles = StyleSheet.create({
   },
   scrollContentCompact: {
     flexGrow: 0,
+    paddingTop: spacing['4xl'],
   },
   webCompactScrollContent: {
     flexGrow: 1,
@@ -185,12 +187,40 @@ export const styles = StyleSheet.create({
     gap: spacing.lg,
     minHeight: theme.layout.brandMarkSize,
   },
+  brandRowCompact: {
+    justifyContent: 'center',
+  },
+  brandLogoPlate: {
+    width: 184,
+    height: 66,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: 8,
+    backgroundColor: colors.white,
+    paddingHorizontal: spacing.sm,
+    paddingVertical: spacing.xxs,
+  },
+  brandLogoPlateCompact: {
+    width: 184,
+    height: 66,
+    backgroundColor: 'transparent',
+    paddingHorizontal: 0,
+    paddingVertical: 0,
+    shadowOpacity: 0,
+    shadowRadius: 0,
+    shadowOffset: { width: 0, height: 0 },
+    elevation: 0,
+  },
+  brandLogo: {
+    width: '100%',
+    height: '100%',
+  },
   brandMark: {
     width: theme.layout.brandMarkSize,
     height: theme.layout.brandMarkSize,
     alignItems: 'center',
     justifyContent: 'center',
-    borderRadius: theme.radius.none,
+    borderRadius: 8,
     backgroundColor: colors.white,
     ...theme.shadows.brandMark,
   },
@@ -310,7 +340,7 @@ export const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    borderRadius: theme.radius.none,
+    borderRadius: 8,
     backgroundColor: colors.orange,
     shadowColor: colors.orange,
     ...theme.shadows.button,
@@ -384,13 +414,16 @@ export function getLoginSafeAreaStyles(
   topInset: number,
   bottomInset: number,
   viewportHeight: number,
+  isIOS = false,
 ) {
   return {
     heroTop: {
       paddingTop: Math.max(topInset, theme.spacing['9xl']),
     },
     mobileBrandTop: {
-      paddingTop: Math.max(topInset, theme.spacing['7xl']) + theme.spacing.lg,
+      paddingTop: isIOS
+        ? Math.max(topInset, theme.spacing['5xl'])
+        : Math.max(topInset, theme.spacing['7xl']) + theme.spacing.lg,
     },
     scrollBottom: {
       paddingBottom: Math.max(

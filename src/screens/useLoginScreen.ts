@@ -47,6 +47,7 @@ export function useLoginScreen() {
     safeAreaInsets.top,
     safeAreaInsets.bottom,
     height,
+    Platform.OS === 'ios',
   );
   return {
     isWide,

@@ -138,13 +138,20 @@ export function useFranchiseAttendance() {
         .sort((a, b) => a.name.localeCompare(b.name)),
     [employeeFilter, employees, selectedDate],
   );
+  const isRecordActive = (record: AttendanceRecord) => {
+    const employee = employees.find(item => item._id === record.employeeId);
+    return !employee || isActiveOn(employee, record.date);
+  };
   const dayRecords = records.filter(
     record =>
       record.date === selectedDate &&
+      isRecordActive(record) &&
       (employeeFilter === 'all' || record.employeeId === employeeFilter),
   );
   const periodRecords = records.filter(
-    record => employeeFilter === 'all' || record.employeeId === employeeFilter,
+    record =>
+      isRecordActive(record) &&
+      (employeeFilter === 'all' || record.employeeId === employeeFilter),
   );
   const dayCounts = statuses.map(
     status => dayRecords.filter(record => record.status === status).length,

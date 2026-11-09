@@ -1,4 +1,5 @@
 import {
+  Image,
   KeyboardAvoidingView,
   Platform,
   Pressable,
@@ -22,18 +23,30 @@ import { useLoginScreen } from './useLoginScreen';
 
 function Brand({ compact = false }: { compact?: boolean }) {
   return (
-    <View style={styles.brandRow}>
-      <View style={[styles.brandMark, compact && styles.brandMarkCompact]}>
-        <Text style={styles.brandMarkText}>{t('brandInitials')}</Text>
-      </View>
-      <View>
-        {compact ? (
-          <>
-            <Text style={styles.brandCompactName}>{t('brandShortName')}</Text>
-            <Text style={styles.brandSubtitle}>{t('brandSubtitle')}</Text>
-          </>
+    <View style={[styles.brandRow, compact && styles.brandRowCompact]}>
+      <View
+        style={[
+          styles.brandLogoPlate,
+          compact && styles.brandLogoPlateCompact,
+        ]}
+      >
+        {Platform.OS === 'web' ? (
+          <img
+            alt={t('brandName')}
+            src="/login-logo.png"
+            style={{
+              width: '100%',
+              height: '100%',
+              objectFit: 'contain',
+            }}
+          />
         ) : (
-          <Text style={styles.brand}>{t('brandName')}</Text>
+          <Image
+            accessibilityLabel={t('brandName')}
+            resizeMode="contain"
+            source={require('../../assets/bootsplash/logo.png')}
+            style={styles.brandLogo}
+          />
         )}
       </View>
     </View>
@@ -112,6 +125,11 @@ export function LoginScreen() {
       ]}
     >
       <StatusBar barStyle={isWide ? 'light-content' : 'dark-content'} />
+      {!isWide ? (
+        <View style={[styles.mobileBrand, safeAreaStyles.mobileBrandTop]}>
+          <Brand compact />
+        </View>
+      ) : null}
       <View
         style={[
           styles.shell,
@@ -144,11 +162,6 @@ export function LoginScreen() {
             isWebCompact && styles.webCompactFormPanel,
           ]}
         >
-          {!isWide ? (
-            <View style={[styles.mobileBrand, safeAreaStyles.mobileBrandTop]}>
-              <Brand compact />
-            </View>
-          ) : null}
           <ScrollView
             style={[
               styles.scrollView,
