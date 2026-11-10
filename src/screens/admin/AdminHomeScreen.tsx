@@ -15,6 +15,7 @@ import {
 import { adminStyles as styles } from '../../styles/adminStyles';
 import { AdminDashboardScreen } from './AdminDashboardScreen';
 import { AdminProductCategoriesScreen } from './product-categories/AdminProductCategoriesScreen';
+import { AdminProductsScreen } from './menu-items/AdminProductsScreen';
 import { AdminProfileScreen } from './AdminProfileScreen';
 import { AdminRawMaterialsScreen } from './raw-materials/AdminRawMaterialsScreen';
 import { AdminStoresScreen } from './stores/AdminStoresScreen';
@@ -321,12 +322,7 @@ export function AdminHomeScreen({
             <AdminProductCategoriesScreen onToast={showAppToast} />
           ) : null}
           {activeTab === 'products' && user.role === 'admin' ? (
-            <View style={styles.screen}>
-              <Text style={styles.screenTitle}>{t('adminProducts')}</Text>
-              <Text style={styles.screenDescription}>
-                {t('adminProductsNotReady')}
-              </Text>
-            </View>
+            <AdminProductsScreen onToast={showAppToast} />
           ) : null}
           {activeTab === 'profile' ? (
             <AdminProfileScreen

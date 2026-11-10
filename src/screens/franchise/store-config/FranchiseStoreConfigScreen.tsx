@@ -18,6 +18,7 @@ import {
 } from './StoreConfigDrawer';
 import { localStyles } from './storeConfigStyles';
 import { useFranchiseStoreConfig } from './useFranchiseStoreConfig';
+import { StoreTablesSection } from './StoreTablesSection';
 
 export function FranchiseStoreConfigScreen({ storeId }: { storeId: string }) {
   const {
@@ -107,6 +108,7 @@ export function FranchiseStoreConfigScreen({ storeId }: { storeId: string }) {
             {value.name || t('franchiseStoreConfigDescription')}
           </Text>
         </View>
+        <StoreTablesSection key={storeId} storeId={storeId} />
         {cards.map(({ section: key, title, summary, Icon }) => (
           <Pressable
             key={key}

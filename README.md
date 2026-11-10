@@ -2,6 +2,35 @@ This is a new [**React Native**](https://reactnative.dev) project, bootstrapped 
 
 # Getting Started
 
+## Products and Billing
+
+Deploy the updated Express backend before using these features on devices;
+the configured `API_BASE_URL` / `VITE_API_BASE_URL` must serve the new routes.
+The app and Next.js use the same MongoDB catalog, serving tokens, and bills.
+
+- Admin **Catalog > Products** supports mandatory categories, unique names,
+  tax-exclusive INR prices, and separate dine-in/takeaway compositions.
+  Material and category selectors are searchable; compositions preserve raw
+  material units and reject duplicate rows and non-positive quantities.
+- Franchise **Point of Sale > New Order** defaults to dine-in and requires a
+  serving token for either order type. Search the menu, edit quantities, review
+  5% GST, optionally add customer details, and save an immutable bill.
+- **Point of Sale > Billing History** defaults to today in IST and supports
+  date, order type, token, and bill-number filters with pagination and receipts.
+- **Store Config > Table Configuration** lists T1..T10 plus store-specific
+  additions. Table numbers are serving tokens for dine-in AND takeaway.
+- Native receipts use the platform share sheet; the web app opens a printable
+  receipt. Customer details are encrypted on the server using the same
+  `FIELD_ENCRYPTION_KEY` as Next.js. Saving without customer details does not
+  require transmitting customer PII.
+
+Billing uses server-issued UUIDs for idempotent retries and integer-paise
+server calculations. Saving a bill does not collect payment, deduct stock, or
+automatically create daily sales/P&L records. New labels use the existing
+translation system and fall back to English where a locale has no translation.
+The MySQL reference already describes these shared collections; no production
+data or schema migration is run from the client.
+
 ## Launch splash screen
 
 Android, iOS, and web display the artwork from `public/splash-screen.svg`

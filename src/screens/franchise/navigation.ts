@@ -7,12 +7,16 @@ import {
   LayoutDashboard,
   Package,
   Receipt,
+  ShoppingCart,
+  History,
   Settings,
   UserRound,
   UsersRound,
   Wallet,
 } from '../../icons';
 export const menuIcons = {
+  'new-order': ShoppingCart,
+  'billing-history': History,
   dashboard: LayoutDashboard,
   sales: Receipt,
   inventory: Package,
@@ -32,6 +36,13 @@ export interface MenuItem {
 }
 export const menuGroups: { label?: TranslationKey; items: MenuItem[] }[] = [
   { items: [{ key: 'dashboard', label: 'adminDashboard' }] },
+  {
+    label: 'billingPos',
+    items: [
+      { key: 'new-order', label: 'billingNewOrder' },
+      { key: 'billing-history', label: 'billingHistory' },
+    ],
+  },
   {
     label: 'franchiseStoreGroup',
     items: [

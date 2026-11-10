@@ -433,12 +433,16 @@ CREATE TABLE menu_products (
     name VARCHAR(100) NOT NULL,
     normalized_name VARCHAR(100) GENERATED ALWAYS AS (LOWER(TRIM(name))) STORED,
     category_id BIGINT UNSIGNED NOT NULL,
+    -- NULL represents legacy unpriced products; all new/edited products require a price.
+    -- INR before GST. Billing excludes unpriced products; historical bill prices are snapshots.
+    price DECIMAL(9,2) NULL,
     created_at DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
     PRIMARY KEY (id),
     UNIQUE KEY uq_menu_products_mongo (mongo_id),
     UNIQUE KEY uq_menu_products_normalized_name (normalized_name),
     KEY ix_menu_products_category (category_id),
     CONSTRAINT fk_menu_products_category FOREIGN KEY (category_id) REFERENCES product_categories (id) ON DELETE RESTRICT,
+    CONSTRAINT ck_menu_products_price CHECK (price IS NULL OR (price >= 0.01 AND price <= 1000000)),
     CONSTRAINT ck_menu_products_name CHECK (CHAR_LENGTH(TRIM(name)) > 0)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
@@ -456,6 +460,79 @@ CREATE TABLE menu_product_compositions (
     CONSTRAINT fk_menu_compositions_menu FOREIGN KEY (menu_product_id) REFERENCES menu_products (id) ON DELETE RESTRICT,
     CONSTRAINT fk_menu_compositions_material FOREIGN KEY (product_id) REFERENCES products (id) ON DELETE RESTRICT,
     CONSTRAINT ck_menu_compositions_quantity CHECK (quantity > 0)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+-- T1..T10 are implicit defaults for every store and are not inserted as data here.
+-- MongoDB billing_tables contains only additional store-specific table numbers.
+CREATE TABLE billing_tables (
+    id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+    mongo_id CHAR(24) CHARACTER SET ascii COLLATE ascii_bin NULL,
+    store_id BIGINT UNSIGNED NOT NULL,
+    table_number VARCHAR(5) CHARACTER SET ascii COLLATE ascii_bin NOT NULL,
+    created_by BIGINT UNSIGNED NOT NULL,
+    created_at DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+    PRIMARY KEY (id),
+    UNIQUE KEY uq_billing_tables_mongo (mongo_id),
+    UNIQUE KEY uq_billing_tables_store_number (store_id, table_number),
+    CONSTRAINT fk_billing_tables_store FOREIGN KEY (store_id) REFERENCES stores (id) ON DELETE RESTRICT,
+    CONSTRAINT fk_billing_tables_creator FOREIGN KEY (created_by) REFERENCES users (id) ON DELETE RESTRICT,
+    CONSTRAINT ck_billing_tables_number CHECK (REGEXP_LIKE(table_number, '^T[1-9][0-9]{0,3}$', 'c'))
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+-- Completed bill documents are immutable snapshots, not proof of payment.
+-- Monetary values are integer paise (INR). GST is rounded once on the subtotal.
+-- Bills do not automatically deduct stock or create daily sales/P&L records.
+-- Table numbers act as serving tokens for BOTH dine-in and takeaway orders.
+-- New bills require a token validated against implicit defaults or billing_tables.
+-- Values are snapshots, not foreign keys; historical labels must remain intact.
+-- NULL is retained only for legacy takeaway bills created before tokens were required.
+-- Customer fields are optional AES-256-GCM ciphertext, including names. Keep the key.
+CREATE TABLE bills (
+    id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+    mongo_id CHAR(24) CHARACTER SET ascii COLLATE ascii_bin NULL,
+    bill_number VARCHAR(26) CHARACTER SET ascii COLLATE ascii_bin NOT NULL,
+    store_name VARCHAR(150) NOT NULL,
+    store_id BIGINT UNSIGNED NOT NULL,
+    request_id CHAR(36) CHARACTER SET ascii COLLATE ascii_bin NOT NULL,
+    order_type ENUM('dineIn', 'takeAway') NOT NULL,
+    table_number VARCHAR(5) CHARACTER SET ascii COLLATE ascii_bin NULL,
+    subtotal_paise BIGINT UNSIGNED NOT NULL,
+    gst_percent TINYINT UNSIGNED NOT NULL DEFAULT 5,
+    gst_paise BIGINT UNSIGNED NOT NULL,
+    total_paise BIGINT UNSIGNED NOT NULL,
+    customer_mobile TEXT NULL,
+    customer_first_name TEXT NULL,
+    customer_middle_name TEXT NULL,
+    customer_last_name TEXT NULL,
+    created_by BIGINT UNSIGNED NOT NULL,
+    created_at DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+    PRIMARY KEY (id),
+    UNIQUE KEY uq_bills_mongo (mongo_id),
+    UNIQUE KEY uq_bills_number (bill_number),
+    UNIQUE KEY uq_bills_store_request (store_id, request_id),
+    KEY ix_bills_store_created (store_id, created_at),
+    CONSTRAINT fk_bills_store FOREIGN KEY (store_id) REFERENCES stores (id) ON DELETE RESTRICT,
+    CONSTRAINT fk_bills_creator FOREIGN KEY (created_by) REFERENCES users (id) ON DELETE RESTRICT,
+    CONSTRAINT ck_bills_token CHECK (table_number IS NULL OR REGEXP_LIKE(table_number, '^T[1-9][0-9]{0,3}$', 'c')),
+    CONSTRAINT ck_bills_totals CHECK (subtotal_paise > 0 AND gst_percent = 5 AND gst_paise = FLOOR((subtotal_paise * 5 + 50) / 100) AND total_paise = subtotal_paise + gst_paise AND total_paise <= 100000000),
+    CONSTRAINT ck_bills_customer CHECK ((customer_mobile IS NULL AND customer_first_name IS NULL AND customer_middle_name IS NULL AND customer_last_name IS NULL) OR (customer_mobile IS NOT NULL AND customer_first_name IS NOT NULL AND customer_middle_name IS NOT NULL AND customer_last_name IS NOT NULL))
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+-- MongoDB embeds items in bills; SQL normalizes them below. Application writes
+-- header + 1..100 unique lines atomically and verifies their sum matches the header.
+-- Snapshot names/prices survive catalog edits; historical references are restricted.
+CREATE TABLE bill_items (
+    bill_id BIGINT UNSIGNED NOT NULL,
+    menu_product_id BIGINT UNSIGNED NOT NULL,
+    product_name VARCHAR(100) NOT NULL,
+    quantity SMALLINT UNSIGNED NOT NULL,
+    unit_price_paise BIGINT UNSIGNED NOT NULL,
+    amount_paise BIGINT UNSIGNED NOT NULL,
+    PRIMARY KEY (bill_id, menu_product_id),
+    CONSTRAINT fk_bill_items_bill FOREIGN KEY (bill_id) REFERENCES bills (id) ON DELETE RESTRICT,
+    CONSTRAINT fk_bill_items_product FOREIGN KEY (menu_product_id) REFERENCES menu_products (id) ON DELETE RESTRICT,
+    CONSTRAINT ck_bill_items_quantity CHECK (quantity BETWEEN 1 AND 999),
+    CONSTRAINT ck_bill_items_price CHECK (unit_price_paise BETWEEN 1 AND 100000000 AND amount_paise = unit_price_paise * quantity)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 -- product_id retains the MongoDB inventory field's existing name for compatibility.

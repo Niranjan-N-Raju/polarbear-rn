@@ -14,6 +14,7 @@ import { theme } from '../../config/theme';
 import { t } from '../../i18n';
 import {
   ChevronsLeft,
+  Calculator,
   LogOut,
   Menu,
   RefreshCw,
@@ -40,6 +41,8 @@ import {
   type FranchiseHomeScreenProps,
 } from './useFranchiseHome';
 import { FranchiseWithdrawalsScreen } from './withdrawals/FranchiseWithdrawalsScreen';
+import { FranchiseBillingScreen } from './billing/FranchiseBillingScreen';
+import { FranchiseBillingHistoryScreen } from './billing/FranchiseBillingHistoryScreen';
 
 export function FranchiseHomeScreen({
   user: initialUser,
@@ -172,7 +175,7 @@ export function FranchiseHomeScreen({
                   <FranchiseMenuGroup
                     label={t(group.label)}
                     Icon={
-                      group.label === 'franchiseStoreGroup' ? Store : UsersRound
+                      group.label === 'billingPos' ? Calculator : group.label === 'franchiseStoreGroup' ? Store : UsersRound
                     }
                     expanded={expandedGroup === group.label}
                     onPress={() =>
@@ -324,6 +327,10 @@ export function FranchiseHomeScreen({
               key={activeStore._id}
               storeId={activeStore._id}
             />
+          ) : tab === 'new-order' ? (
+            <FranchiseBillingScreen key={activeStore._id} storeId={activeStore._id} />
+          ) : tab === 'billing-history' ? (
+            <FranchiseBillingHistoryScreen key={activeStore._id} storeId={activeStore._id} />
           ) : tab === 'sales' ? (
             <FranchiseSalesScreen
               key={activeStore._id}

@@ -3,6 +3,7 @@ import { useWindowDimensions } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { apiRequest, setAccessToken } from '../../api/auth';
 import {
+  Box,
   Boxes,
   LayoutDashboard,
   Package,

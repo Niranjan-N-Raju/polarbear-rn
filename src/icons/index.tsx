@@ -73,6 +73,8 @@ export {
   Landmark,
   IdCard,
   Calculator,
+  ShoppingCart,
+  History,
   ClipboardList,
   BadgeCheck,
   CircleX,
