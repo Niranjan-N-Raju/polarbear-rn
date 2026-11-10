@@ -404,6 +404,8 @@ CREATE TABLE products (
     id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
     mongo_id CHAR(24) CHARACTER SET ascii COLLATE ascii_bin NULL,
     name VARCHAR(100) NOT NULL,
+    unit ENUM('g', 'ml', 'each') NOT NULL DEFAULT 'each',
+    material_type ENUM('food', 'packing', 'none') NOT NULL DEFAULT 'food',
     normalized_name VARCHAR(100) GENERATED ALWAYS AS (LOWER(TRIM(name))) STORED,
     created_at DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
     PRIMARY KEY (id),
@@ -422,6 +424,38 @@ CREATE TABLE product_categories (
     UNIQUE KEY uq_product_categories_mongo (mongo_id),
     UNIQUE KEY uq_product_categories_normalized_name (normalized_name),
     CONSTRAINT ck_product_categories_name CHECK (CHAR_LENGTH(TRIM(name)) > 0)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+-- Menu products are distinct from products, which contains raw materials.
+CREATE TABLE menu_products (
+    id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+    mongo_id CHAR(24) CHARACTER SET ascii COLLATE ascii_bin NULL,
+    name VARCHAR(100) NOT NULL,
+    normalized_name VARCHAR(100) GENERATED ALWAYS AS (LOWER(TRIM(name))) STORED,
+    category_id BIGINT UNSIGNED NOT NULL,
+    created_at DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+    PRIMARY KEY (id),
+    UNIQUE KEY uq_menu_products_mongo (mongo_id),
+    UNIQUE KEY uq_menu_products_normalized_name (normalized_name),
+    KEY ix_menu_products_category (category_id),
+    CONSTRAINT fk_menu_products_category FOREIGN KEY (category_id) REFERENCES product_categories (id) ON DELETE RESTRICT,
+    CONSTRAINT ck_menu_products_name CHECK (CHAR_LENGTH(TRIM(name)) > 0)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+-- MongoDB embeds dineIn/takeAway arrays; SQL stores one row per material and mode.
+-- Quantities use the referenced raw material's unit (g, ml, each), not a copied unit.
+-- Unlike decimal stock quantities, DOUBLE preserves MongoDB Number representation.
+-- The application must enforce 1..100 rows for EACH mode in the same transaction;
+-- row-level SQL CHECK constraints cannot enforce a minimum across child records.
+CREATE TABLE menu_product_compositions (
+    menu_product_id BIGINT UNSIGNED NOT NULL,
+    order_type ENUM('dineIn', 'takeAway') NOT NULL,
+    product_id BIGINT UNSIGNED NOT NULL,
+    quantity DOUBLE NOT NULL,
+    PRIMARY KEY (menu_product_id, order_type, product_id),
+    CONSTRAINT fk_menu_compositions_menu FOREIGN KEY (menu_product_id) REFERENCES menu_products (id) ON DELETE RESTRICT,
+    CONSTRAINT fk_menu_compositions_material FOREIGN KEY (product_id) REFERENCES products (id) ON DELETE RESTRICT,
+    CONSTRAINT ck_menu_compositions_quantity CHECK (quantity > 0)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 -- product_id retains the MongoDB inventory field's existing name for compatibility.

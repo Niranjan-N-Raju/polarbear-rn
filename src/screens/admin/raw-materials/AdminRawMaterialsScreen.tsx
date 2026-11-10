@@ -12,6 +12,8 @@ interface RawMaterial {
   _id: string;
   name: string;
   normalizedName?: string;
+  unit: 'g' | 'ml' | 'each';
+  materialType: 'food' | 'packing' | 'none';
 }
 
 interface Props {
@@ -20,14 +22,20 @@ interface Props {
 
 export function AdminRawMaterialsScreen({ onToast }: Props) {
   const [materials, setMaterials] = useState<RawMaterial[]>([]);
+  const [search, setSearch] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [formOpen, setFormOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [name, setName] = useState('');
+  const [unit, setUnit] = useState<RawMaterial['unit']>('each');
+  const [materialType, setMaterialType] = useState<RawMaterial['materialType']>('food');
   const [formError, setFormError] = useState('');
   const [saving, setSaving] = useState(false);
   const [reloadKey, setReloadKey] = useState(0);
+  const filteredMaterials = materials.filter(material =>
+    material.name.toLocaleLowerCase().includes(search.trim().toLocaleLowerCase()),
+  );
 
   useEffect(() => {
     const controller = new AbortController();
@@ -60,6 +68,8 @@ export function AdminRawMaterialsScreen({ onToast }: Props) {
   function openCreate() {
     setEditingId(null);
     setName('');
+    setUnit('each');
+    setMaterialType('food');
     setFormError('');
     setFormOpen(true);
   }
@@ -67,6 +77,8 @@ export function AdminRawMaterialsScreen({ onToast }: Props) {
   function openEdit(material: RawMaterial) {
     setEditingId(material._id);
     setName(material.name);
+    setUnit(material.unit ?? 'each');
+    setMaterialType(material.materialType ?? 'food');
     setFormError('');
     setFormOpen(true);
   }
@@ -84,7 +96,9 @@ export function AdminRawMaterialsScreen({ onToast }: Props) {
         method: editingId ? 'PATCH' : 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(
-          editingId ? { productId: editingId, name: value } : { name: value },
+          editingId
+            ? { productId: editingId, name: value, unit, materialType }
+            : { name: value, unit, materialType },
         ),
       });
       const data = (await response.json().catch(() => ({}))) as {
@@ -101,6 +115,8 @@ export function AdminRawMaterialsScreen({ onToast }: Props) {
                     ...material,
                     name: value,
                     normalizedName: value.toLowerCase(),
+                    unit,
+                    materialType,
                   }
                 : material,
             )
@@ -166,6 +182,16 @@ export function AdminRawMaterialsScreen({ onToast }: Props) {
       </View>
 
       <ScrollView style={styles.list} contentContainerStyle={styles.listContent}>
+        {materials.length > 0 ? (
+          <TextInput
+            accessibilityLabel={t('franchiseInventorySearchProduct')}
+            autoCapitalize="none"
+            onChangeText={setSearch}
+            placeholder={t('franchiseInventorySearchProduct')}
+            style={local.input}
+            value={search}
+          />
+        ) : null}
         {formOpen ? (
           <View style={styles.storeCard}>
             <Text style={styles.storeTitle}>
@@ -177,23 +203,74 @@ export function AdminRawMaterialsScreen({ onToast }: Props) {
               accessibilityLabel={t('adminRawMaterialName')}
               autoCapitalize="words"
               editable={!saving}
-              maxLength={editingId ? 100 : 1000}
+              maxLength={100}
               onChangeText={value => {
                 setName(value);
                 setFormError('');
               }}
-              placeholder={t('franchiseInventoryNewProductsPlaceholder')}
+              placeholder="e.g. Vanilla tub"
               style={local.input}
               value={name}
             />
+            <Text style={styles.fieldLabel}>{t('adminRawMaterialUnit')}</Text>
+            <View accessibilityRole="radiogroup" style={local.unitOptions}>
+              {(['g', 'ml', 'each'] as const).map(option => (
+                <Pressable
+                  key={option}
+                  accessibilityRole="button"
+                  accessibilityState={{ selected: unit === option }}
+                  disabled={saving}
+                  onPress={() => setUnit(option)}
+                  style={[
+                    local.unitOption,
+                    unit === option && local.unitOptionSelected,
+                  ]}
+                >
+                  <Text
+                    style={[
+                      local.unitOptionText,
+                      unit === option && local.unitOptionTextSelected,
+                    ]}
+                  >
+                    {option === 'g' ? 'Grams (g)' : option === 'ml' ? 'Milliliters (ml)' : 'Count (each)'}
+                  </Text>
+                </Pressable>
+              ))}
+            </View>
+            <Text style={styles.fieldLabel}>{t('adminRawMaterialType')}</Text>
+            <View accessibilityRole="radiogroup" style={local.unitOptions}>
+              {(['food', 'packing', 'none'] as const).map(option => (
+                <Pressable
+                  key={option}
+                  accessibilityRole="button"
+                  accessibilityState={{ selected: materialType === option }}
+                  disabled={saving}
+                  onPress={() => setMaterialType(option)}
+                  style={[
+                    local.unitOption,
+                    materialType === option && local.unitOptionSelected,
+                  ]}
+                >
+                  <Text
+                    style={[
+                      local.unitOptionText,
+                      materialType === option && local.unitOptionTextSelected,
+                    ]}
+                  >
+                    {t(
+                      option === 'food'
+                        ? 'adminRawMaterialFood'
+                        : option === 'packing'
+                          ? 'adminRawMaterialPacking'
+                          : 'adminRawMaterialNone',
+                    )}
+                  </Text>
+                </Pressable>
+              ))}
+            </View>
             {formError ? (
               <Text accessibilityRole="alert" style={local.error}>
                 {formError}
-              </Text>
-            ) : null}
-            {!editingId ? (
-              <Text style={styles.screenDescription}>
-                {t('franchiseInventoryProductsHint')}
               </Text>
             ) : null}
             <View style={styles.storeCardActions}>
@@ -222,14 +299,28 @@ export function AdminRawMaterialsScreen({ onToast }: Props) {
         {materials.length === 0 ? (
           <Text style={styles.stateMessage}>{t('adminRawMaterialsEmpty')}</Text>
         ) : null}
-        {materials.map(material => (
+        {materials.length > 0 && filteredMaterials.length === 0 ? (
+          <Text style={styles.stateMessage}>No raw materials match your search.</Text>
+        ) : null}
+        {filteredMaterials.map(material => (
           <View key={material._id} style={styles.storeCard}>
             <View style={styles.storeCardHeader}>
               <View style={styles.storeIconTile}>
                 <Package color={theme.colors.teal} size={20} />
               </View>
               <View style={styles.storeCardBody}>
-                <Text style={styles.storeTitle}>{material.name}</Text>
+                <Text style={styles.storeTitle}>
+                  {material.name}
+                </Text>
+                <Text style={styles.storeDescription}>
+                  {material.unit ?? 'each'} · {t(
+                    material.materialType === 'packing'
+                      ? 'adminRawMaterialPacking'
+                      : material.materialType === 'none'
+                        ? 'adminRawMaterialNone'
+                        : 'adminRawMaterialFood',
+                  )}
+                </Text>
               </View>
               <Pressable
                 accessibilityRole="button"
@@ -262,5 +353,33 @@ const local = StyleSheet.create({
     marginTop: theme.spacing.xs,
     color: theme.colors.error,
     fontSize: theme.typography.xs,
+  },
+  unitOptions: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: theme.spacing.sm,
+    marginTop: theme.spacing.sm,
+  },
+  unitOption: {
+    minHeight: 38,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: theme.spacing.md,
+    borderWidth: theme.border.width,
+    borderColor: theme.colors.beige,
+    borderRadius: 999,
+    backgroundColor: theme.colors.white,
+  },
+  unitOptionSelected: {
+    borderColor: theme.colors.teal,
+    backgroundColor: theme.colors.ice,
+  },
+  unitOptionText: {
+    color: theme.colors.muted,
+    fontSize: theme.typography.sm,
+  },
+  unitOptionTextSelected: {
+    color: theme.colors.teal,
+    fontWeight: theme.fontWeight.bold,
   },
 });

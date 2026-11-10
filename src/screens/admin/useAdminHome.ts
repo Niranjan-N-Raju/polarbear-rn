@@ -3,9 +3,11 @@ import { useWindowDimensions } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { apiRequest, setAccessToken } from '../../api/auth';
 import {
+  Boxes,
   LayoutDashboard,
   Package,
   Store,
+  Tags,
   UserRound,
   UsersRound,
 } from '../../icons';
@@ -95,17 +97,17 @@ export function useAdminHome({
           {
             key: 'raw-materials' as const,
             label: 'adminRawMaterials' as const,
-            Icon: Package,
+            Icon: Boxes,
           },
           {
             key: 'product-categories' as const,
             label: 'adminProductCategories' as const,
-            Icon: Package,
+            Icon: Tags,
           },
           {
             key: 'products' as const,
             label: 'adminProducts' as const,
-            Icon: Package,
+            Icon: Box,
           },
         ]
       : [];

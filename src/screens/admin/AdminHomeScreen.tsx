@@ -120,15 +120,12 @@ export function AdminHomeScreen({
             {primaryTabs.map(({ key, label, Icon }) => {
               const active = activeTab === key;
               if (key === 'catalog') {
-                const catalogActive = catalogTabs.some(
-                  tab => tab.key === activeTab,
-                );
                 return (
                   <View key={key}>
                     <Pressable
                       accessibilityRole="button"
                       accessibilityLabel={isSidebarCollapsed ? t(label) : undefined}
-                      accessibilityState={{ expanded: catalogExpanded, selected: catalogActive }}
+                      accessibilityState={{ expanded: catalogExpanded }}
                       onPress={() => {
                         if (isSidebarCollapsed) {
                           setIsSidebarCollapsed(false);
@@ -140,16 +137,15 @@ export function AdminHomeScreen({
                       style={[
                         styles.webSidebarItem,
                         isSidebarCollapsed && styles.webSidebarItemCollapsed,
-                        catalogActive && styles.webSidebarItemActive,
                       ]}
                     >
                       <Icon
-                        color={catalogActive ? theme.colors.teal : theme.colors.muted}
+                        color={theme.colors.muted}
                         size={layout.sidebarIconSize}
                       />
                       {!isSidebarCollapsed ? (
                         <>
-                          <Text style={[styles.webSidebarItemText, catalogActive && styles.webSidebarItemTextActive]}>
+                          <Text style={styles.webSidebarItemText}>
                             {t(label)}
                           </Text>
                           <ChevronRight
@@ -404,22 +400,18 @@ export function AdminHomeScreen({
                 {primaryTabs.map(({ key, label, Icon }) => {
                   const active = activeTab === key;
                   if (key === 'catalog') {
-                    const catalogActive = catalogTabs.some(
-                      tab => tab.key === activeTab,
-                    );
                     return (
                       <View key={key}>
                         <Pressable
                           accessibilityRole="button"
-                          accessibilityState={{ expanded: catalogExpanded, selected: catalogActive }}
+                          accessibilityState={{ expanded: catalogExpanded }}
                           onPress={() => setCatalogExpanded(value => !value)}
                           style={[
                             layout.isWeb ? styles.webSidebarItem : styles.drawerItem,
-                            catalogActive && (layout.isWeb ? styles.webSidebarItemActive : styles.drawerItemActive),
                           ]}
                         >
-                          <Icon color={catalogActive ? theme.colors.teal : theme.colors.muted} size={layout.isWeb ? layout.sidebarIconSize : theme.layout.iconSize} />
-                          <Text style={[layout.isWeb ? styles.webSidebarItemText : styles.drawerItemText, catalogActive && (layout.isWeb ? styles.webSidebarItemTextActive : styles.drawerItemTextActive)]}>
+                          <Icon color={theme.colors.muted} size={layout.isWeb ? layout.sidebarIconSize : theme.layout.iconSize} />
+                          <Text style={layout.isWeb ? styles.webSidebarItemText : styles.drawerItemText}>
                             {t(label)}
                           </Text>
                           <ChevronRight

@@ -1,5 +1,6 @@
 export {
   Archive,
+  Box,
   Boxes,
   Building2,
   Banknote,
@@ -27,6 +28,7 @@ export {
   Pencil,
   Phone,
   Package,
+  Tags,
   Percent,
   Plus,
   RefreshCw,
